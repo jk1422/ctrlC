@@ -362,5 +362,10 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+# Ignorera PublishConfiguration.xml i Properties-mappen
+Properties/PublishConfiguration.xml
+
 Utils/DiscordUtils/
 Properties/
+/Properties/Thumbnail.png
+/Properties/Thumbnail.png
