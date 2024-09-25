@@ -1,5 +1,4 @@
 import { ModRegistrar } from "cs2/modding";
-import { HelloWorldComponent } from "mods/hello-world"
 import { UIRoot } from "mods/ModUI"
 import PrefabMenu from "mods/PrefabMenu"
 

@@ -8,6 +8,7 @@ using Game.Net;
 using Colossal.Mathematics;
 using Game.Prefabs;
 using Unity.Mathematics;
+using Colossal.Entities;
 
 namespace ctrlC.Systems
 {
@@ -42,7 +43,6 @@ namespace ctrlC.Systems
                 var prefabRef = entityManager.GetComponentData<PrefabRef>(selectedEntity);
                 if (!prefabSystem.TryGetPrefab(entityManager.GetComponentData<PrefabData>(prefabRef.m_Prefab), out PrefabBase netPre))
                     continue;
-
                 if (netPre is NetPrefab netPrefab)
                 {
                     var elevation = entityManager.GetComponentData<Game.Net.Elevation>(selectedEntity);
@@ -51,19 +51,55 @@ namespace ctrlC.Systems
                     var edge = entityManager.GetComponentData<Edge>(selectedEntity);
                     var startNode = entityManager.GetComponentData<Node>(edge.m_Start);
                     var endNode = entityManager.GetComponentData<Node>(edge.m_End);
-                    //h
+                    float startEl = 0f;
+                    float endEl = 0f;
+                    bool isElevated = false;
+                    if(entityManager.TryGetComponent<Elevation>(edge.m_Start, out Elevation startElevation))
+                    {
+                        if(startElevation.m_Elevation.x > 0.1f || startElevation.m_Elevation.y > 0.1f)
+                        {
+                            isElevated = true;
+                            startEl = startElevation.m_Elevation.x;
+                        }
+                    }
+                    if (entityManager.TryGetComponent<Elevation>(edge.m_End, out Elevation endElevation))
+                    {
+                        if (endElevation.m_Elevation.x > 0.1f || endElevation.m_Elevation.y > 0.1f)
+                        {
+                            isElevated = true;
+                            endEl = endElevation.m_Elevation.x;
+                        }
+                    }
+                    
+                    float lowestY = Math.Min(curve.m_Bezier.a.y, Math.Min(curve.m_Bezier.b.y, Math.Min(curve.m_Bezier.c.y, curve.m_Bezier.d.y)));
+                    float lowestElevation = Math.Min(startEl, endEl);
+                    lowestY = lowestY - lowestElevation;
                     int2 nodeIndex = new int2(
                         nodeIndexMapping.TryGetValue(startNode, out int startIndex) ? startIndex : -1,
                         nodeIndexMapping.TryGetValue(endNode, out int endIndex) ? endIndex : -1
                     );
 
-                    Bezier4x3 normalizedBezier = new Bezier4x3
+                    Bezier4x3 normalizedBezier = new Bezier4x3();
+                    if (isElevated)
                     {
-                        a = new float3(curve.m_Bezier.a.x - centroid.x, curve.m_Bezier.a.y - baseHeight, curve.m_Bezier.a.z - centroid.z),
-                        b = new float3(curve.m_Bezier.b.x - centroid.x, curve.m_Bezier.b.y - baseHeight, curve.m_Bezier.b.z - centroid.z),
-                        c = new float3(curve.m_Bezier.c.x - centroid.x, curve.m_Bezier.c.y - baseHeight, curve.m_Bezier.c.z - centroid.z),
-                        d = new float3(curve.m_Bezier.d.x - centroid.x, curve.m_Bezier.d.y - baseHeight, curve.m_Bezier.d.z - centroid.z)
-                    };
+                        normalizedBezier = new Bezier4x3
+                        {
+                            a = new float3(curve.m_Bezier.a.x - centroid.x, curve.m_Bezier.a.y - lowestY, curve.m_Bezier.a.z - centroid.z),
+                            b = new float3(curve.m_Bezier.b.x - centroid.x, curve.m_Bezier.b.y - lowestY, curve.m_Bezier.b.z - centroid.z),
+                            c = new float3(curve.m_Bezier.c.x - centroid.x, curve.m_Bezier.c.y - lowestY, curve.m_Bezier.c.z - centroid.z),
+                            d = new float3(curve.m_Bezier.d.x - centroid.x, curve.m_Bezier.d.y - lowestY, curve.m_Bezier.d.z - centroid.z)
+                        };
+                    }
+                    else
+                    {
+                        normalizedBezier = new Bezier4x3
+                        {
+                            a = new float3(curve.m_Bezier.a.x - centroid.x, 0, curve.m_Bezier.a.z - centroid.z),
+                            b = new float3(curve.m_Bezier.b.x - centroid.x, 0, curve.m_Bezier.b.z - centroid.z),
+                            c = new float3(curve.m_Bezier.c.x - centroid.x, 0, curve.m_Bezier.c.z - centroid.z),
+                            d = new float3(curve.m_Bezier.d.x - centroid.x, 0, curve.m_Bezier.d.z - centroid.z)
+                        };
+                    }
 
                     subNetInfos.Add(new ObjectSubNetInfo
                     {

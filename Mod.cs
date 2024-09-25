@@ -79,17 +79,17 @@ namespace ctrlC
             OnCreateWorld(updateSystem);
             _notificationUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<NotificationUISystem>();
 
-            var apmNotLoadedNotification = _notificationUISystem.AddOrUpdateNotification(
-               $"ctrlCOutDated",
-               title: "ctrlC: New update available!",
-               text: "Click here to get latest update",
-               progressState: ProgressState.Indeterminate,
-               progress: 0,
-
-
-               onClicked: OpenLink,
-               thumbnail: ""
-            );
+            //var apmNotLoadedNotification = _notificationUISystem.AddOrUpdateNotification(
+            //   $"ctrlCOutDated",
+            //   title: "ctrlC: New update available!",
+            //   text: "Click here to get latest update",
+            //   progressState: ProgressState.None,
+            //   progress: 0,
+            //
+            //
+            //   onClicked: OpenLink,
+            //   thumbnail: ""
+            //);
         }
 
         public void OnCreateWorld(UpdateSystem updateSystem)

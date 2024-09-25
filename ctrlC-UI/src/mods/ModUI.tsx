@@ -154,7 +154,6 @@ const OnScreenUI: FC = () => {
             <Panel className={styles.panel}>
                 <PanelSection className={styles.panel_panelSection_HEADER} >
                     <Icon className={styles.logo} src={logo}></Icon>
-                    <Icon className={styles.jklogo} src={jk142_logo}></Icon>
                     
 
                 </PanelSection>
