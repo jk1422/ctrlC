@@ -17,36 +17,37 @@ namespace ctrlC.Tools
 {
 	public partial class StampPlacementTool : CustomOTS
 	{
-		public override string toolID => base.toolID;
+        // Properties
+        public override string toolID => base.toolID;
+        public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(StampPlacementTool)}").SetShowsErrorsInUI(false);
 
-		public PrefabBase _OriginalPre;
-		public PrefabSystem _prefabSystem;
+        // Fields
+        public PrefabBase _OriginalPre;
+        public PrefabSystem _prefabSystem;
+        internal CtrlCStampPrefab ctrlCStamp;
 
-		
+        // Input Actions
+        public InputAction c_ApplyAction;
+        public InputAction c_SecondaryApplyAction;
+        public InputAction restoreDefault;
 
-		public InputAction c_ApplyAction;
-		public InputAction c_SecondaryApplyAction;
-		public InputAction elevateUp;
-		public InputAction elevateDown;
-		public InputAction restoreDefault;
-		public InputAction mirrorAction;
-		public ModUISystem modUISystem;
+        public ProxyAction elevateUp;
+        public ProxyAction elevateDown;
+        public ProxyAction mirrorAction;
 
-		internal CtrlCStampPrefab ctrlCStamp;
+        // Other Systems
+        public ModUISystem modUISystem;
+        private SelectionTool _selectionTool;
 
+        // State variables
         private bool prepareCameraMode = false;
-		private bool isPlaceholderPaused = false;
-		private bool schedulePlaceholderPaused = false;
-		private ControlPoint lastControlPoint;
-		private float controlPointTolerance = 0.01f;
-		private float pauseDelay = 0.2f; 
-		private float pauseTimer = 0f;
-
-		public float elevation { get; set; } = 2.5f;
-
-		public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(StampPlacementTool)}").SetShowsErrorsInUI(false);
-
-		private SelectionTool _selectionTool;
+        private bool isPlaceholderPaused = false;
+        private bool schedulePlaceholderPaused = false;
+        private ControlPoint lastControlPoint;
+        private float controlPointTolerance = 0.01f;
+        private float pauseDelay = 0.2f;
+        private float pauseTimer = 0f;
+        public float elevation { get; set; } = 2.5f;
 		
 
 		public override PrefabBase GetPrefab()
@@ -59,28 +60,10 @@ namespace ctrlC.Tools
 			if (prefab is CtrlCStampPrefab assetStamp && this.Enabled)
 			{
 				Mode mode = Mode.Stamp;
-
 				ctrlCStamp = assetStamp;
 				this.prefab = assetStamp;
 				this.mode = mode;
-
 				return true;
-			}
-			else
-			{
-				log.Info($"Couldnt set prefab: {prefab}");
-
-				try
-				{
-					Mode mode = Mode.Stamp;
-					this.prefab = prefab as CtrlCStampPrefab;
-					this.mode = mode;
-					return true;
-				}
-				catch
-				{
-
-				}
 			}
 			return false;
 		}
@@ -89,32 +72,6 @@ namespace ctrlC.Tools
 		{
 			base.OnCreate();
 			Enabled = false;
-
-
-		}
-		//For testing 
-		public void PlaceBuildingOnly(PrefabData pdd, PseudoRandomSeed seed)
-		{
-
-			Enabled = true;
-			_prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-			
-			
-
-			if (_prefabSystem.TryGetPrefab(pdd, out PrefabBase prefab))
-			{
-				if (TrySetPrefab(prefab))
-				{
-					m_ToolSystem.activeTool = this;
-					
-					
-				}
-				else
-				{
-
-					log.Info($"Cannot set prefab. ");
-				}
-			}
 		}
 
 		public void ActivateTool(CtrlCStampPrefab stampPrefab, PrefabSystem prefabSystem)
@@ -125,26 +82,7 @@ namespace ctrlC.Tools
 				_prefabSystem = prefabSystem;
 				modUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
 				modUISystem.place_tool_enabled = true;
-
-				
-				
-				
-
 				m_ToolSystem.activeTool = this;
-
-                if (ctrlCStamp != null)
-                {
-                    // Iterera över ctrlCSubBuildings om de finns
-                    if (ctrlCStamp.TryGet< CtrlCSubBuildings>(out CtrlCSubBuildings cSubBuildings ))// HasComponent<CtrlCSubBuildings>())
-                    {
-						var subBuildingsComponent = cSubBuildings;
-                        foreach (var subBuildingInfo in subBuildingsComponent.m_SubObjects)
-                        {
-                            // Hantera din subBuildingInfo här
-                            log.Info($"Sub-building: {subBuildingInfo.m_Object} at position {subBuildingInfo.m_Position} with seed {subBuildingInfo.seed}");
-                        }
-                    }
-                }
             } 
 			else{
 
@@ -156,56 +94,19 @@ namespace ctrlC.Tools
 		{
 			base.OnStartRunning();
 
-
-			c_ApplyAction = new InputAction("SelectObject_Action", InputActionType.Button);
-			c_SecondaryApplyAction = new InputAction("SelectObject_SecondAction", InputActionType.Button);
-			elevateUp = new InputAction("elevateUpAction", InputActionType.Button);
-			elevateDown = new InputAction("elevateDownAction", InputActionType.Button);
-			restoreDefault = new InputAction("restoreDefaultAction", InputActionType.Button);
-			mirrorAction = new InputAction("mirrorAction", InputActionType.Button);
-			
+			InitializeInputActions();
+			EnableInputActions(true);
 
 
-			c_ApplyAction.AddBinding("<Mouse>/leftButton");
-			c_SecondaryApplyAction.AddBinding("<Mouse>/rightButton");
-
-			elevateUp.AddCompositeBinding("ButtonWithOneModifier")
-				.With("Modifier", "<Keyboard>/ctrl")
-				.With("Button", "<Keyboard>/pageUp");
-			elevateDown.AddCompositeBinding("ButtonWithOneModifier")
-				.With("Modifier", "<Keyboard>/ctrl")
-				.With("Button", "<Keyboard>/pageDown");
-
-			restoreDefault.AddCompositeBinding("ButtonWithOneModifier")
-				.With("Modifier", "<Keyboard>/ctrl")
-				.With("Button", "<Keyboard>/z");
-
-			mirrorAction.AddCompositeBinding("ButtonWithOneModifier")
-				.With("Modifier", "<Keyboard>/ctrl")
-				.With("Button", "<Keyboard>/x");
-
-			base.allowUnderground = false;
+            base.allowUnderground = false;
 			allowUnderground = false;
-
-			elevateUp.Enable();
-			elevateDown.Enable();
-			restoreDefault.Enable();
-			mirrorAction.Enable();
-			c_ApplyAction.Enable();
-			c_SecondaryApplyAction.Enable();
-			
-
 		}
 
 		protected override void OnStopRunning()
 		{
-			// Disable input actions
-			elevateUp?.Disable();
-			elevateDown?.Disable();
-			restoreDefault?.Disable();
-			mirrorAction?.Disable();
-			c_ApplyAction?.Disable();
-			c_SecondaryApplyAction?.Disable();
+            // Disable input actions
+			EnableInputActions(false);
+
 			modUISystem.place_tool_enabled = false;
 
 			// Mark prefabs as obsolete and remove them
@@ -250,13 +151,13 @@ namespace ctrlC.Tools
 
 		protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
-
-			elevateDown.performed += ctx => HandleElevationDown();
-			elevateUp.performed += ctx => HandleElevationUp();
-			//restoreDefault.performed += ctx => LoadStamp();
 			bool forceCancel = m_ForceCancel;
 			m_ForceCancel = false;
-			if (m_State == State.Adding || m_State == State.Removing)
+
+			HandleInputEvents();
+
+
+            if (m_State == State.Adding || m_State == State.Removing)
 			{
 				if (c_ApplyAction.WasPressedThisFrame() || c_ApplyAction.WasReleasedThisFrame())
 				{
@@ -289,7 +190,6 @@ namespace ctrlC.Tools
 			if(m_State != State.Rotating && c_SecondaryApplyAction.IsPressed())
 			{
 				m_State = State.Rotating;
-				//
 			}
 			if (m_State == State.Rotating && c_SecondaryApplyAction.WasReleasedThisFrame())
 			{
@@ -344,8 +244,7 @@ namespace ctrlC.Tools
 			{
 				HandleSchedulePlaceholderPaused();
 			}
-			//restoreDefault.performed += ctx => 
-			mirrorAction.performed += ctx => MirrorPrefab();
+
 			if (isPlaceholderPaused)
 			{
 
@@ -360,7 +259,61 @@ namespace ctrlC.Tools
 			
 		}
 
-		private void HandleSchedulePlaceholderPaused()
+
+        // Initialize input actions
+        private void InitializeInputActions()
+        {
+            c_ApplyAction = new InputAction("SelectObject_Action", InputActionType.Button);
+            c_SecondaryApplyAction = new InputAction("SelectObject_SecondAction", InputActionType.Button);
+            restoreDefault = new InputAction("restoreDefaultAction", InputActionType.Button);
+
+            c_ApplyAction.AddBinding("<Mouse>/leftButton");
+            c_SecondaryApplyAction.AddBinding("<Mouse>/rightButton");
+
+            restoreDefault.AddCompositeBinding("ButtonWithOneModifier")
+                .With("Modifier", "<Keyboard>/ctrl")
+                .With("Button", "<Keyboard>/z");
+
+            mirrorAction = Mod.m_MirrorAction;
+            elevateUp = Mod.m_RaiseAction;
+            elevateDown = Mod.m_FlattenAction;
+
+        }
+
+        // Enable or disable input actions
+        private void EnableInputActions(bool enable)
+        {
+            if (enable)
+            {
+                restoreDefault.Enable();
+                c_ApplyAction.Enable();
+                c_SecondaryApplyAction.Enable();
+
+                elevateUp.shouldBeEnabled = true;
+                elevateDown.shouldBeEnabled = true;
+                mirrorAction.shouldBeEnabled = true;
+            }
+            else
+            {
+                restoreDefault.Disable();
+                c_ApplyAction.Disable();
+                c_SecondaryApplyAction.Disable();
+
+                elevateUp.shouldBeEnabled = false;
+                elevateDown.shouldBeEnabled = false;
+                mirrorAction.shouldBeEnabled = false;
+            }
+        }
+
+        // Handle input events such as elevation changes and rotations
+        private void HandleInputEvents()
+        {
+            if (elevateDown.WasPerformedThisFrame()) HandleElevationDown();
+            if (elevateUp.WasPerformedThisFrame()) HandleElevationUp();
+            if (mirrorAction.WasPerformedThisFrame()) MirrorPrefab();
+        }
+
+        private void HandleSchedulePlaceholderPaused()
 		{
 			if (GetRaycastResult(out ControlPoint currentControlPoint))
 			{
@@ -492,6 +445,7 @@ namespace ctrlC.Tools
 			}
 
 			_prefabSystem.UpdatePrefab(this.prefab);
+
 			base.m_ForceUpdate = true;
 		}
 

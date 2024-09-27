@@ -10,9 +10,7 @@ using Game.Input;
 using Game.Net;
 using Game.Notifications;
 using Game.Objects;
-using Game.Prefabs;
 using Game.Tools;
-using Game.UI.InGame;
 using Game.Vehicles;
 using System;
 using System.Collections.Generic;
@@ -24,90 +22,67 @@ using UnityEngine.InputSystem;
 
 namespace ctrlC.Tools.Selection
 {
-	public struct SelectableTag : IComponentData
-	{ }
 
 	public partial class SelectionTool : SelectionToolSystem
 	{
-		public List<Entity> Selected = new List<Entity>();
-		public List<Entity> SelectedRoads = new List<Entity>();
-		public List<Entity> SelectedBuildings = new List<Entity>();
-		public List<Entity> SelectedTrees = new List<Entity>();
-		public List<Entity> SelectedProps = new List<Entity>();
+        // Logging
+        public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(SelectionTool)}").SetShowsErrorsInUI(false);
 
-		public PseudoRandomSeed seed = new PseudoRandomSeed();
+        // Systems and EntityManager
+        private EntityManager entityManager;
+        private ModUISystem modUISystem;
+        private StampPlacementTool stampPlacementTool;
+        private ToolRaycastSystem toolRaycastSystem;
 
-		private Dictionary<Entity, int> SeedDictionary = new Dictionary<Entity, int>();
+        // Selection lists
+        public List<Entity> SelectedRoads = new List<Entity>();
+        public List<Entity> SelectedBuildings = new List<Entity>();
+        public List<Entity> SelectedTrees = new List<Entity>();
+        public List<Entity> SelectedProps = new List<Entity>();
+        public List<Entity> SelectedAreas = new List<Entity>();
 
+        public PseudoRandomSeed seed = new PseudoRandomSeed();
 
+        // Input and actions
+        private ProxyAction _copyAction;
+        private InputAction _altModifier;
+        private InputAction _ApplyAction;
+        private InputAction _SecondaryApplyAction;
 
-		private InputAction _copyAction;
-		private InputAction _altModifier;
-		private InputAction m_ApplyAction;
-		private InputAction m_SecondaryApplyAction;
-		private StampPlacementTool stampPlacementTool;
-		private bool isSelecting = false;
-		private bool isDeselecting = false;
+        // State-vars
+        private bool isSelecting = false;
+        private bool isDeselecting = false;
 
-		private Vector3 circleCenter;
-		private float circleRadius;
-		private Vector3 deselectCircleCenter;
-		private float deselectCircleRadius;
+        // Circle Selection 
+        private Vector3 circleCenter;
+        private float circleRadius;
+        private Vector3 deselectCircleCenter;
+        private float deselectCircleRadius;
+        private Entity circleEntity;
+        private Entity deselectCircleEntity;
+        private Entity idleCircleEntity;
 
-		// ray
-		private Entity lastSelectedEntity;
+        // Ray vars
+        private Entity lastSelectedEntity;
+        public Entity HoveredEntity;
+        public float3 LastPos;
+        private Entity prev;
+        private bool rayDefaultMode = true;
 
-		public Entity HoveredEntity;
-		public float3 LastPos;
-		private Entity prev;
-		private bool rayDefaultMode = true;
+        // Filters
+        public SelectableFilters activeFilters = SelectableFilters.None;
+        private EntityQuery selectablesQuery;
 
-		// New filter system
-		public SelectableFilters activeFilters = SelectableFilters.None;
-
-		private EntityQuery selectablesQuery;
-		private Entity circleEntity;
-		private Entity deselectCircleEntity;
-		private Entity idleCircleEntity;
-		private ToolRaycastSystem toolRaycastSystem;
-
-		private ModUISystem modUISystem => World.GetOrCreateSystemManaged<ModUISystem>();
-
-		public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(SelectionTool)}").SetShowsErrorsInUI(false);
-
-		private EntityManager entityManager => World.EntityManager;
-
-
-
-
-		protected override void OnCreate()
+        // This is called when the tool is created (Not the same as started)
+        protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			Enabled = false;
-			m_ApplyAction = new InputAction("SelectObject_Action", InputActionType.Button);
-			m_ApplyAction.AddBinding("<Mouse>/leftButton");
-			m_SecondaryApplyAction = new InputAction("DeselectObject_Action", InputActionType.Button);
-			m_SecondaryApplyAction.AddBinding("<Mouse>/rightButton");
-			_altModifier = new InputAction("SelectObject_AltModifier", InputActionType.Button);
-			_altModifier.AddBinding("<Keyboard>/alt");
-
-			_copyAction = new InputAction("SelectObject_Copy", InputActionType.Button);
-			_copyAction.AddCompositeBinding("ButtonWithOneModifier")
-					   .With("Modifier", "<Keyboard>/ctrl")
-					   .With("Button", "<Keyboard>/c");
-
-			stampPlacementTool = World.GetOrCreateSystemManaged<StampPlacementTool>();
-
-			selectablesQuery = GetEntityQuery(
-				ComponentType.ReadOnly<Game.Objects.Transform>()
-			);
-
-			circleEntity = EntityManager.CreateEntity(typeof(CircleOverlay));
-			deselectCircleEntity = EntityManager.CreateEntity(typeof(DeselectCircleOverlay));
-			idleCircleEntity = EntityManager.CreateEntity(typeof(CircleIdle));
+            // Make sure the tool isn't enabled when the game just started
+            Enabled = false;
 		}
 
+        // A public function to toggle the tool on and off
 		public void ToggleTool(bool enable)
 		{
 			if (enable && m_ToolSystem.activeTool != this)
@@ -126,54 +101,89 @@ namespace ctrlC.Tools.Selection
 			}
 		}
 
-		protected override void OnStartRunning()
+        // This function is called on enabling the tool
+        protected override void OnStartRunning()
+        {
+            // Call base implementation to ensure the necessary setup is done
+            base.OnStartRunning();
+
+            // Mark the tool as enabled and initialize required systems and tools
+            Enabled = true;
+            InitializeToolContext();
+
+            // Enable input actions for user interactions
+            EnableActions(true);
+
+            // Notify the UI that this tool is now active
+            modUISystem.sct_tool_enabled = true;
+        }
+
+        protected override void OnStopRunning()
+        {
+            // Call base implementation to ensure proper shutdown procedures are executed
+            base.OnStopRunning();
+
+            // Notify the UI that this tool is now disabled
+            modUISystem.sct_tool_enabled = false;
+
+            // Disable input actions to prevent further user interactions
+            EnableActions(false);
+
+            // Clean up resources and reset tool state
+            CleanUp();
+
+            // Mark the tool as disabled
+            Enabled = false;
+        }
+
+        // Manually creating actions (This was the old way)
+        private void SetActions()
 		{
-			base.OnStartRunning();
-			Enabled = true;
-			_copyAction.Enable();
-			toolRaycastSystem = World.GetOrCreateSystemManaged<ToolRaycastSystem>();
-			m_ApplyAction.Enable();
-			
-			m_SecondaryApplyAction.Enable();
-			
-			_altModifier.Enable();
-			modUISystem.sct_tool_enabled = true;
+            _ApplyAction = new InputAction("SelectObject_Action", InputActionType.Button);
+            _ApplyAction.AddBinding("<Mouse>/leftButton");
+            _SecondaryApplyAction = new InputAction("DeselectObject_Action", InputActionType.Button);
+            _SecondaryApplyAction.AddBinding("<Mouse>/rightButton");
+            _altModifier = new InputAction("SelectObject_AltModifier", InputActionType.Button);
+            _altModifier.AddBinding("<Keyboard>/alt");
+        }
+		private void EnableActions(bool x)
+		{
+            if (x) // Enable
+			{
+				// Defining actions
+                SetActions();
+
+                // Enabling actions to ensure we can use them
+                _ApplyAction.Enable();
+                _SecondaryApplyAction.Enable();
+                _altModifier.Enable();
+
+				// Updated actions to use bindings set in ctrlC's settings
+                _copyAction = Mod.m_CopyAction;
+                _copyAction.shouldBeEnabled = true;
+            }
+			else // Disable
+			{
+                // InputActions is Enabled/Disabled by calling Enable() or Disable();
+                _ApplyAction.Disable();
+                _SecondaryApplyAction.Disable();
+                _altModifier.Disable();
+
+                // ProxyActions is Enabled/Disabled by setting shouldBeEnabled to true/false
+                _copyAction.shouldBeEnabled = false;
+            }
 		}
-
-		protected override void OnStopRunning()
+        
+        // Remove all highlights on every selected object
+		private void RemoveHighlights()
 		{
-			base.OnStopRunning();
-
-			// Disable input actions
-			_copyAction.Disable();
-			m_ApplyAction.Disable();
-			m_SecondaryApplyAction.Disable();
-			_altModifier.Disable();
-
-			// Remove components from entities
-			if (EntityManager.Exists(circleEntity))
-			{
-				EntityManager.RemoveComponent<CircleOverlay>(circleEntity);
-				EntityManager.RemoveComponent<CircleIdle>(circleEntity);
-			}
-
-			if (EntityManager.Exists(deselectCircleEntity))
-			{
-				EntityManager.RemoveComponent<DeselectCircleOverlay>(deselectCircleEntity);
-			}
-
-			// Update UI and state
-			modUISystem.sct_tool_enabled = false;
-			Enabled = false;
-
-			// Clear highlighting from selected entities
-			foreach (var entity in SelectedBuildings)
-			{
-				if (entityManager.Exists(entity))
-				{
-					entityManager.ChangeHighlighting_MainThread(entity, Highlighter.ChangeMode.RemoveHighlight);
-				}
-			}
+            foreach (var entity in SelectedBuildings)
+            {
+                if (entityManager.Exists(entity))
+                {
+                    entityManager.ChangeHighlighting_MainThread(entity, Highlighter.ChangeMode.RemoveHighlight);
+                }
+            }
             foreach (var entity in SelectedProps)
             {
                 if (entityManager.Exists(entity))
@@ -195,60 +205,82 @@ namespace ctrlC.Tools.Selection
                     entityManager.ChangeHighlighting_MainThread(entity, Highlighter.ChangeMode.RemoveHighlight);
                 }
             }
-			SelectedBuildings.Clear();
-			SelectedProps.Clear();
-			SelectedRoads.Clear();
-			SelectedTrees.Clear();
+        }
 
-            lastSelectedEntity = Entity.Null;
+        // Cleans up the tool's resources and resets its state to prevent any residual data
+        private void CleanUp()
+        {
+            // Remove highlights from all selected objects
+            RemoveHighlights();
 
-			// Reset active tool to default tool system if necessary
-			try
-			{
-				if (m_ToolSystem.activeTool == this)
-				{
-					m_ToolSystem.selected = Entity.Null;
-					m_ToolSystem.activeTool = m_DefaultToolSystem;
-				}
-			}
-			catch (Exception) { }
-		}
+            // Remove components and destroy temporary entities
+            DestroyEntity(circleEntity);
+            DestroyEntity(deselectCircleEntity);
+            DestroyEntity(idleCircleEntity);
 
+            // Clear selection lists
+            ClearSelectionLists();
+
+            // Reset input actions to prevent unintended triggers
+            ResetInputActions();
+
+            // Reset state variables
+            ResetStateVariables();
+
+            // Reset system references and queries
+            ResetSystemReferences();
+
+            // Log cleanup completion
+            log.Info("CleanUp completed successfully.");
+        }
+
+        // This function is called when tool is started and sets up all tools and systems we need
+        private void InitializeToolContext()
+		{
+			entityManager = World.EntityManager;
+			modUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
+            stampPlacementTool = World.GetOrCreateSystemManaged<StampPlacementTool>();
+            toolRaycastSystem = World.GetOrCreateSystemManaged<ToolRaycastSystem>();
+
+            selectablesQuery = GetEntityQuery( ComponentType.ReadOnly<Game.Objects.Transform>());
+
+            circleEntity = EntityManager.CreateEntity(typeof(CircleOverlay));
+            deselectCircleEntity = EntityManager.CreateEntity(typeof(DeselectCircleOverlay));
+            idleCircleEntity = EntityManager.CreateEntity(typeof(CircleIdle));
+        }
+
+        // This function is for copying (Duuh)
         public void Copy()
         {
-
-            log.Info($"Copy shall we?");
+            // Creating an empty CtrlCStampPrefab
             CtrlCStampPrefab assetStamp = null;
+
+            // To ensure the mod or the game wont crash if something goes wrong we're using a try-catch block
             try
             {
+                // Calling the CopySystem to run some magic copy-logic and store the copied Prefab in our assetStamp
+                assetStamp = CopySystem.CopyItems(entityManager, m_PrefabSystem, SelectedBuildings, SelectedRoads, SelectedProps, SelectedTrees, SelectedAreas);
 
-                log.Info($"calling copySystem to create an asset stamp");
-                assetStamp = CopySystem.CopyItems(entityManager, m_PrefabSystem, SelectedBuildings, SelectedRoads, SelectedProps, SelectedTrees);
-
-                log.Info($"Created assetstamp: {assetStamp.name}");
+                // When the copying is done, we call StampPlacementTool to be able to place our newly copied prefab
                 stampPlacementTool.ActivateTool(assetStamp, this.m_PrefabSystem);
                 assetStamp = null;
-
             }
             catch (Exception ex)
             {
-                log.Info($"Not critical but something went wrong when copying: {ex.Message}.");
+                log.Info($"Not critical but something went wrong when copying: {ex.Message}."); 
 
+                // Incase something goes horribly wrong, we deactivate the tool 
                 m_ToolSystem.selected = Entity.Null;
                 m_ToolSystem.activeTool = m_DefaultToolSystem;
             }
-
-
-
         }
 
+		//TODO: Clean up this mess lazy ass 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			if (_copyAction.WasPressedThisFrame())
 			{
-				
 				Copy();
-				
 			}
 			if (_altModifier.WasPerformedThisFrame() && rayDefaultMode == true)
 			{
@@ -273,7 +305,7 @@ namespace ctrlC.Tools.Selection
 				EntityManager.RemoveComponent<CircleIdle>(circleEntity);
 			}
 
-			if (!_altModifier.IsPressed() && m_ApplyAction.IsPressed())
+			if (!_altModifier.IsPressed() && _ApplyAction.IsPressed())
 			{
 				RaycastSelect();
 			}
@@ -281,7 +313,7 @@ namespace ctrlC.Tools.Selection
 			if (GetRaycastResult(out Entity e, out Game.Common.RaycastHit hit))
 			{
 				HandleHover(e, hit);
-				if (!_altModifier.IsPressed() && m_SecondaryApplyAction.IsPressed())
+				if (!_altModifier.IsPressed() && _SecondaryApplyAction.IsPressed())
 				{
 					if (SelectedBuildings.Contains(e))
 					{

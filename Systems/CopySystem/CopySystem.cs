@@ -29,7 +29,7 @@ namespace ctrlC.Systems
 
 		private static List<ObjectSubObjectInfo> subObjectInfos = new List<ObjectSubObjectInfo>();
 		internal static List<CtrlCSubBuildingsInfo> subBuildingsInfos = new List<CtrlCSubBuildingsInfo>();
-		public static CtrlCStampPrefab CopyItems(EntityManager entityManager, PrefabSystem prefabSystem, List<Entity> buildings, List<Entity> roads, List<Entity> props, List<Entity> trees)
+		public static CtrlCStampPrefab CopyItems(EntityManager entityManager, PrefabSystem prefabSystem, List<Entity> buildings, List<Entity> roads, List<Entity> props, List<Entity> trees, List<Entity> areas)
 		{
 
 			log.Info($"Copying stuff");
@@ -51,13 +51,15 @@ namespace ctrlC.Systems
             // Initialize ObjectSubObjects and ObjectSubNetsaa
             ObjectSubObjects objectSubObjects = ScriptableObject.CreateInstance<ObjectSubObjects>();
 			ObjectSubNets objectSubNets = ScriptableObject.CreateInstance<ObjectSubNets>();
+			ObjectSubAreas objectSubAreas = ScriptableObject.CreateInstance<ObjectSubAreas>();
 
 			objectSubNets.m_InvertWhen = NetInvertMode.LefthandTraffic;
 
 			subObjectInfos = new List<ObjectSubObjectInfo>();
 			List<ObjectSubNetInfo> subNetInfos = new List<ObjectSubNetInfo>();
+            List<ObjectSubAreaInfo> objectSubAreaInfos = new List<ObjectSubAreaInfo>();
 
-			Dictionary<Node, int> nodeIndexMapping = new Dictionary<Node, int>();
+            Dictionary<Node, int> nodeIndexMapping = new Dictionary<Node, int>();
             int currentIndex = 0;
             // Map nodes to indices
             MapNodesToIndices(roads, entityManager, nodeIndexMapping, ref currentIndex);
@@ -74,16 +76,26 @@ namespace ctrlC.Systems
 			if(trees.Count > 0)
 			{
 				CopyTrees(trees, entityManager, prefabSystem, subObjectInfos);
-			}
-			ctrlCSubBuildings.m_SubObjects = subBuildingsInfos.ToArray();
+            }
+            if (areas.Count > 0)
+            {
+                CopyAreas(areas, entityManager, prefabSystem, objectSubAreaInfos);
+            }
+            ctrlCSubBuildings.m_SubObjects = subBuildingsInfos.ToArray();
 			assetStamp.components.Add(ctrlCSubBuildings);
             objectSubObjects.m_SubObjects = subObjectInfos.ToArray();
 			assetStamp.components.Add(objectSubObjects);
 
             objectSubNets.m_SubNets = subNetInfos.ToArray();
-            assetStamp.components.Add(objectSubNets);
-            // Add the duplicate prefab to the prefab system
-            AddPrefabToSystem(prefabSystem, assetStamp);
+			assetStamp.components.Add(objectSubNets);
+
+
+            objectSubAreas.m_SubAreas = objectSubAreaInfos.ToArray();
+			assetStamp.components.Add(objectSubAreas);
+
+
+			// Add the duplicate prefab to the prefab system
+			AddPrefabToSystem(prefabSystem, assetStamp);
 			return assetStamp;
 		}
 		private static void InitializeVariables()

@@ -9,77 +9,94 @@ namespace ctrlC.Tools.Selection
 {
 	public partial class SelectionTool
 	{
-		private void RaycastSelect()
-		{
-			if (GetRaycastResult(out Entity e, out Game.Common.RaycastHit result))
-			{
-				if (e != Entity.Null)
-				{
-					if (e != lastSelectedEntity)
-					{
-						if (!Selected.Contains(e))
-						{
-							// Classify the entity and add it to the appropriate list
-							if (EntityManager.HasComponent<Curve>(e))
-							{
-								SelectedRoads.Add(e);
-							}
-							else if (EntityManager.HasComponent<Building>(e))
-							{
-								SelectedBuildings.Add(e);
-								if(EntityManager.HasComponent<PseudoRandomSeed>(e))
-								{
-									seed = EntityManager.GetComponentData<PseudoRandomSeed>(e);
-								}
-							}
-							else if (EntityManager.HasComponent<Plant>(e))
-							{
-								SelectedTrees.Add(e);
-							}
-							else if (EntityManager.HasComponent<Game.Objects.Object>(e))
-							{
-								SelectedProps.Add(e);
-							}
+        /// <summary>
+        /// This performs a raycast selection and adds the selected entity to the appropriate list if not already selected
+        /// </summary>
+        private void RaycastSelect()
+        {
+            if (GetRaycastResult(out Entity entity, out RaycastHit result))
+            {
+                if (entity != Entity.Null && entity != lastSelectedEntity && !IsEntityAlreadySelected(entity))
+                {
+                    ClassifyAndSelectEntity(entity);
+                    lastSelectedEntity = entity;
+                }
+            }
+        }
 
-							Selected.Add(e);
-							EntityManager.ChangeHighlighting_MainThread(e, Highlighter.ChangeMode.AddHighlight);
-							lastSelectedEntity = e;
-						}
-					}
-				}
-				else
-				{
-				}
-			}
-		}
+        // Handles hover highlighting when the raycast hits a new entity
+        private void HandleHover(Entity entity, RaycastHit hit)
+        {
+            var previousHoveredEntity = HoveredEntity;
+            HoveredEntity = entity;
+            LastPos = hit.m_HitPosition;
 
-		private void HandleHover(Entity e, Game.Common.RaycastHit rc)
-		{
-			prev = HoveredEntity;
-			HoveredEntity = e;
-			LastPos = rc.m_HitPosition;
+            if (previousHoveredEntity != HoveredEntity)
+            {
+                UpdateEntityHighlighting(previousHoveredEntity, Highlighter.ChangeMode.RemoveHighlight);
+                UpdateEntityHighlighting(HoveredEntity, Highlighter.ChangeMode.AddHighlight);
+            }
+        }
 
-			if (prev != HoveredEntity)
-			{
-				if (!SelectedBuildings.Contains(prev) && !SelectedProps.Contains(prev) && !SelectedRoads.Contains(prev) && !SelectedTrees.Contains(prev))
-				{
-					EntityManager.ChangeHighlighting_MainThread(prev, Highlighter.ChangeMode.RemoveHighlight);
-				}
-				EntityManager.ChangeHighlighting_MainThread(HoveredEntity, Highlighter.ChangeMode.AddHighlight);
-			}
-		}
+        // Clears hover highlighting when the raycast no longer hits an entity
+        private void HandleHoverClear()
+        {
+            UpdateEntityHighlighting(HoveredEntity, Highlighter.ChangeMode.RemoveHighlight);
+            HoveredEntity = Entity.Null;
+        }
 
-		private void HandleHoverClear()
-		{
-			if (!SelectedBuildings.Contains(prev) && !SelectedProps.Contains(prev) && !SelectedRoads.Contains(prev) && !SelectedTrees.Contains(prev))
-			{
-				EntityManager.ChangeHighlighting_MainThread(prev, Highlighter.ChangeMode.RemoveHighlight);
-			}
-			if (!SelectedBuildings.Contains(HoveredEntity) && !SelectedProps.Contains(HoveredEntity) && !SelectedRoads.Contains(HoveredEntity) && !SelectedTrees.Contains(HoveredEntity))
-			{
-				EntityManager.ChangeHighlighting_MainThread(HoveredEntity, Highlighter.ChangeMode.RemoveHighlight);
-			}
-			HoveredEntity = Entity.Null;
-		}
-	}
+        // Classifies an entity and adds it to the appropriate selection list
+        private void ClassifyAndSelectEntity(Entity entity)
+        {
+            if (EntityManager.HasComponent<Curve>(entity))
+            {
+                SelectedRoads.Add(entity);
+            }
+            else if (EntityManager.HasComponent<Building>(entity))
+            {
+                SelectedBuildings.Add(entity);
+                UpdatePseudoRandomSeed(entity);
+            }
+            else if (EntityManager.HasComponent<Plant>(entity))
+            {
+                SelectedTrees.Add(entity);
+            }
+            else if (EntityManager.HasComponent<Game.Objects.Object>(entity))
+            {
+                SelectedProps.Add(entity);
+            }
+            else if (EntityManager.HasComponent<Game.Areas.Area>(entity))
+            {
+                SelectedAreas.Add(entity);
+            }
+
+            // Highlight the newly selected entity
+            EntityManager.ChangeHighlighting_MainThread(entity, Highlighter.ChangeMode.AddHighlight);
+        }
+
+        private void UpdatePseudoRandomSeed(Entity entity)
+        {
+            if (EntityManager.HasComponent<PseudoRandomSeed>(entity))
+            {
+                seed = EntityManager.GetComponentData<PseudoRandomSeed>(entity);
+            }
+        }
+
+        private void UpdateEntityHighlighting(Entity entity, Highlighter.ChangeMode mode)
+        {
+            if (entity != Entity.Null && !IsEntityAlreadySelected(entity))
+            {
+                EntityManager.ChangeHighlighting_MainThread(entity, mode);
+            }
+        }
+
+        private bool IsEntityAlreadySelected(Entity entity)
+        {
+            return SelectedBuildings.Contains(entity) ||
+                   SelectedProps.Contains(entity) ||
+                   SelectedRoads.Contains(entity) ||
+                   SelectedTrees.Contains(entity) ||
+                   SelectedAreas.Contains(entity);
+        }
+    }
 }

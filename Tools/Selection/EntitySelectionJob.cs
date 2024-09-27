@@ -21,6 +21,7 @@ namespace ctrlC.Tools.Selection
 		[NativeDisableParallelForRestriction] public NativeQueue<Entity>.ParallelWriter buildingsQueue;
 		[NativeDisableParallelForRestriction] public NativeQueue<Entity>.ParallelWriter treesQueue;
 		[NativeDisableParallelForRestriction] public NativeQueue<Entity>.ParallelWriter propsQueue;
+		[NativeDisableParallelForRestriction] public NativeQueue<Entity>.ParallelWriter areasQueue;
 
 		public void Execute(int index)
 		{
@@ -72,6 +73,9 @@ namespace ctrlC.Tools.Selection
 				else if (entityManager.HasComponent<Game.Objects.Object>(entity))
 				{
 					propsQueue.Enqueue(entity);
+				}else if (entityManager.HasComponent<Game.Areas.Area>(entity))
+				{
+					areasQueue.Enqueue(entity);
 				}
 			}
 		}

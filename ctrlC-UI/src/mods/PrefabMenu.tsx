@@ -26,16 +26,17 @@ const prefabs = bindValue<string[][]>(
     []
 );
 
-const prefabStorageString = bindValue<string>(
+const prefabCategories = bindValue<string>(
     mod.id,
     UIBindingConstants.PREFAB_ENV,
-    ""
+    "Category 1, Category 2, Category 3, Category 4"
 );
 
 export const PrefabMenu: FC<PrefabMenuProps> = ({ refreshSignal, onCategoryChange }) => {
     const [prefabID, getPrefabID] = useState('');
     const [prefabList, setPrefabList] = useState<PrefabData[]>([]);
     const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0); // Sparar kategori som index
+    const [categories, setCategories] = useState<string[]>([]); 
 
     // Uppdateringsfunktion
     const updatePrefabList = () => {
@@ -48,7 +49,7 @@ export const PrefabMenu: FC<PrefabMenuProps> = ({ refreshSignal, onCategoryChang
                             name: prefab[1],
                             description: prefab[2],
                             imagePath: prefab[3],
-                            category: prefab[4] // Antar att category är en sträng som representerar ett index
+                            category: prefab[4] // category är en sträng som representerar ett index
                         };
                     } else {
                         return null;
@@ -60,6 +61,16 @@ export const PrefabMenu: FC<PrefabMenuProps> = ({ refreshSignal, onCategoryChang
             console.error("Failed to update prefab list", error);
         }
     };
+    // Uppdatera kategorilistan baserat på prefabCategories när komponenten laddas eller vid förändring
+    useEffect(() => {
+        if (prefabCategories.value && prefabCategories.value.length > 0) {
+            const categoriesArray = prefabCategories.value.split(", ");
+            setCategories(categoriesArray);
+        } else {
+            setCategories(["error 1", "error 2", "error 3", "error 4"]); // Fallback om inga kategorier finns
+        }
+    }, [prefabCategories.value]);
+
 
     // Uppdatera listan vid komponentmontering och varje gång refreshSignal ändras
     useEffect(() => {
@@ -75,9 +86,6 @@ export const PrefabMenu: FC<PrefabMenuProps> = ({ refreshSignal, onCategoryChang
     const handleClick = (id: string) => {
         trigger(mod.id, UIBindingConstants.PREFAB_INSTANCIATE, id);
     };
-
-    // Kategorinamn för UI (här används indexen 0, 1, 2, 3 osv.)
-    const categories = ["Category 1", "Category 2", "Category 3", "Category 4"];
 
     // Filtrera prefabs baserat på valt kategoriindex
     const filteredPrefabList = prefabList.filter(prefab => parseInt(prefab.category) === selectedCategoryIndex);

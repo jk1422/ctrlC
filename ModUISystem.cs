@@ -36,6 +36,19 @@ namespace ctrlC
             writer.ArrayEnd();
         }
     }
+
+    public class StringArrayWriter : IWriter<string[]>
+    {
+        public void Write(IJsonWriter writer, string[] value)
+        {
+            writer.ArrayBegin(value.Length); // Börjar en array 
+            foreach (var item in value)
+            {
+                writer.Write(item); // Skriver varje string
+            }
+            writer.ArrayEnd(); // Avslutar arrayen
+        }
+    }
     public partial class ModUISystem : UISystemBase, IPreDeserialize
     {
         public static ILog _log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
@@ -43,7 +56,7 @@ namespace ctrlC
 
         private SelectionTool selectionTool;
         private StampPlacementTool stampPlacementTool;
-        //private KeyListener _keyListener;
+
         public bool sct_tool_enabled { get; set; } = false;
         public bool place_tool_enabled { get; set; } = false;
         public bool fullElevationStep { get; set; } = true;
@@ -60,7 +73,7 @@ namespace ctrlC
         public string environmentString { get; set; } = EnvironmentConstants.PrefabStorage;
 
         public bool UpdatePrefabs { get; set; } = false;
-        //
+        public string PrefabCategoriesStringed = "";
 
         protected override void OnGamePreload(Purpose purpose, GameMode mode)
         {
@@ -68,7 +81,9 @@ namespace ctrlC
             {
                 _prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
                 ctrlCPrefabStorage.LoadAssetsToStorage();
-
+                _log.Info("ModUISystem loaded");
+                _log.Info($"PrefabCategories: {PrefabCategoriesStringed}");
+                AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_ENV, () => PrefabCategoriesStringed));
             }
         }
 
@@ -85,7 +100,7 @@ namespace ctrlC
         protected override void OnCreate()
         {
             base.OnCreate();
-            _log.Info("Creating ModUISystem..");
+            _log.Info("ModUISystem OnCreate");
             try
             {
                 // Mod Actions
@@ -120,7 +135,7 @@ namespace ctrlC
 
 
                 }
-                catch (Exception ex)//
+                catch (Exception ex)
                 {
                     _log.Error("ModUISysyem: Error when adding bindings: " + ex.Message);
                 }
@@ -137,8 +152,8 @@ namespace ctrlC
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_TREES, () => sct_trees));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_PROPS, () => sct_props));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_AREAS, () => sct_areas));
-
-                AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_ENV, () => environmentString));
+                
+                
             }
             catch (Exception ex)
             {
@@ -183,8 +198,22 @@ namespace ctrlC
                 throw;
             }
         }
-
-        private void OnSelectButtonClicked()
+        internal void StartMod()
+        {
+            try
+            {
+                if (!selectionTool.Enabled && !stampPlacementTool.Enabled)
+                {
+                    selectionTool.ToggleTool(true);
+                    sct_tool_enabled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Error when toggling tool: " + ex);
+            }
+        }
+        internal void OnSelectButtonClicked()
         {
             try
             {
@@ -192,13 +221,14 @@ namespace ctrlC
                 {
                     selectionTool.ToggleTool(false);
                     sct_tool_enabled = false;
-
+                    //Set modbinding till true
 
                 }
                 else
                 {
                     selectionTool.ToggleTool(true);
                     sct_tool_enabled = true;
+                   //set modbinding till false
 
                 }
             }
@@ -225,7 +255,7 @@ namespace ctrlC
             {
                 var data = EntityManager.GetComponentData<PrefabRef>(ent);
                 var mindex = EntityManager.GetComponentData<PrefabData>(data);
-                stampPlacementTool.PlaceBuildingOnly(mindex, selectionTool.seed);
+                
             }
 
         }

@@ -1,10 +1,10 @@
 ﻿using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
-using Colossal.PSI.Common;
+using ctrlC.Data;
 using ctrlC.Rendering;
 using ctrlC.Systems;
-using ctrlC.Tools.Selection;
 using ctrlC.Tools;
+using ctrlC.Tools.Selection;
 using Game;
 using Game.Input;
 using Game.Modding;
@@ -12,36 +12,30 @@ using Game.SceneFlow;
 using Game.UI.Menu;
 using Unity.Entities;
 using UnityEngine;
-using Game.UI;
-using static Colossal.Win32.ProcessCommandLine;
-using static Game.Tools.ValidationSystem;
-using UnityEngine.InputSystem;
-using ctrlC.Data;
 
 namespace ctrlC
 {
-    //[SceneFlow] [ERROR]  Error when initializing prefab: ctrlC_new2 System.ArgumentNullException: Value cannot be null.
-    //  Parameter name: key
-    //    at System.Collections.Generic.Dictionary`2[TKey, TValue].FindEntry(TKey key) [0x00008] in <467a840a914a47078e4ae9b0b1e8779e>:0 
-    //at System.Collections.Generic.Dictionary`2[TKey, TValue].TryGetValue (TKey key, TValue& value) [0x00000] in <467a840a914a47078e4ae9b0b1e8779e>:0 
-    //at Game.Prefabs.PrefabSystem.IsUnlockable(Game.Prefabs.PrefabBase prefab) [0x00000] in <90828bfc0c9f40fd836083aaf60516d9>:0 
-    //at Game.Prefabs.UnlockableBase.DefaultLateInitialize(Unity.Entities.EntityManager entityManager, Unity.Entities.Entity entity, System.Collections.Generic.List`1[T] dependencies) [0x00023] in <90828bfc0c9f40fd836083aaf60516d9>:0 
-    //at Game.Prefabs.PrefabInitializeSystem.LateInitializePrefab(Unity.Entities.Entity entity, Game.Prefabs.PrefabBase prefab, System.Collections.Generic.List`1[T] dependencies, System.Collections.Generic.List`1[T] components) [0x000b1] in <90828bfc0c9f40fd836083aaf60516d9>:0 
-
     public class Mod : IMod
     {
         public const string MOD_NAME = nameof(ctrlC);
 
         private static NotificationUISystem _notificationUISystem;
         public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
-        private Setting m_Setting;
-        public static ProxyAction m_ButtonAction;
-        public static ProxyAction m_AxisAction;
-        public static ProxyAction m_VectorAction;
+        internal Setting m_Setting;
+        internal ModUISystem m_ModUISystem;
+        public static ProxyAction m_OpenModAction;
+        public static ProxyAction m_CopyAction;
+        public static ProxyAction m_MirrorAction;
+        public static ProxyAction m_RaiseAction;
+        public static ProxyAction m_FlattenAction;
 
-        public const string kButtonActionName = "ButtonBinding";
-        public const string kAxisActionName = "FloatBinding";
-        public const string kVectorActionName = "Vector2Binding";
+        public const string kOpenModActionName = "Open Mod Binding";
+        public const string kCopyActionName = "Copy Binding";
+        public const string kMirrorActionName = "Mirror Binding";
+        public const string kRaiseActionName = "Raise Binding";
+        public const string kFlattenActionName = "Flatten Binding";
+
+        public static string[] PrefabCategories = new string[4];
 
         public void OnLoad(UpdateSystem updateSystem)
         {
@@ -54,29 +48,19 @@ namespace ctrlC
                 log.Info($"Environment ModPath set to: {EnvironmentConstants.ModPath}");
             }
 
-
-
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
-
             m_Setting.RegisterKeyBindings();
-
-            m_ButtonAction = m_Setting.GetAction(kButtonActionName);
-            m_AxisAction = m_Setting.GetAction(kAxisActionName);
-            m_VectorAction = m_Setting.GetAction(kVectorActionName);
-            //hello
-            m_ButtonAction.shouldBeEnabled = true;
-            m_AxisAction.shouldBeEnabled = true;
-            m_VectorAction.shouldBeEnabled = true;
-
-            m_ButtonAction.onInteraction += (_, phase) => log.Info($"[{m_ButtonAction.name}] On{phase} {m_ButtonAction.ReadValue<float>()}");
-            m_AxisAction.onInteraction += (_, phase) => log.Info($"[{m_AxisAction.name}] On{phase} {m_AxisAction.ReadValue<float>()}");
-            m_VectorAction.onInteraction += (_, phase) => log.Info($"[{m_VectorAction.name}] On{phase} {m_VectorAction.ReadValue<Vector2>()}");
 
             AssetDatabase.global.LoadSettings(nameof(ctrlC), m_Setting, new Setting(this));
 
+            m_ModUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ModUISystem>();
+            ReadCategoryNames(m_Setting.Category1Name, m_Setting.Category2Name, m_Setting.Category3Name, m_Setting.Category4Name);
+            SetActions();
+
             OnCreateWorld(updateSystem);
+            
             _notificationUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<NotificationUISystem>();
 
             //var apmNotLoadedNotification = _notificationUISystem.AddOrUpdateNotification(
@@ -92,6 +76,27 @@ namespace ctrlC
             //);
         }
 
+        public void SetActions()
+        {
+            m_OpenModAction = m_Setting.GetAction(kOpenModActionName);
+            m_CopyAction = m_Setting.GetAction(kCopyActionName);
+            m_MirrorAction = m_Setting.GetAction(kMirrorActionName);
+            m_RaiseAction = m_Setting.GetAction(kRaiseActionName);
+            m_FlattenAction = m_Setting.GetAction(kFlattenActionName);
+
+            m_OpenModAction.shouldBeEnabled = true;
+            m_OpenModAction.onInteraction += (_, phase) => m_ModUISystem.StartMod();
+        }
+        
+        public static void ReadCategoryNames(string cat1, string cat2, string cat3, string cat4)
+        {
+            PrefabCategories[0] = cat1;
+            PrefabCategories[1] = cat2;
+            PrefabCategories[2] = cat3;
+            PrefabCategories[3] = cat4;
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ModUISystem>().PrefabCategoriesStringed = string.Join(", ", PrefabCategories);
+        }
+
         public void OnCreateWorld(UpdateSystem updateSystem)
         {
             updateSystem.UpdateAt<ModUISystem>(SystemUpdatePhase.UIUpdate);
@@ -101,8 +106,6 @@ namespace ctrlC
             updateSystem.UpdateAt<AssetLoadSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAt<CircleOverlaySystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<CustomOTS>(SystemUpdatePhase.ApplyTool);
-
-
         }
 
         private void OpenLink()
