@@ -19,6 +19,7 @@ namespace ctrlC.Systems
     // However, since my little break made me forget where I was, I decided to quickly assemble the Copy System to just make it work. 
     // So the code is pretty dirty and there is some changes needed here in order to make it work as intended.
 
+
     internal static partial class CopySystem
     {
 		public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(CopySystem)}").SetShowsErrorsInUI(false);
@@ -26,16 +27,16 @@ namespace ctrlC.Systems
 		internal static float3 centroid = float3.zero; 
 		private static int pointCount = 0;
 		private static EntityManager _entityManager;
+		private static PrefabSystem _prefabSystem;
 
 		private static List<ObjectSubObjectInfo> subObjectInfos = new List<ObjectSubObjectInfo>();
 		internal static List<CtrlCSubBuildingsInfo> subBuildingsInfos = new List<CtrlCSubBuildingsInfo>();
-		public static CtrlCStampPrefab CopyItems(EntityManager entityManager, PrefabSystem prefabSystem, List<Entity> buildings, List<Entity> roads, List<Entity> props, List<Entity> trees, List<Entity> areas)
+		public static AssetStampPrefab CopyItems(EntityManager entityManager, PrefabSystem prefabSystem, List<Entity> buildings, List<Entity> roads, List<Entity> props, List<Entity> trees, List<Entity> areas)
 		{
-
-			log.Info($"Copying stuff");
+			_prefabSystem = prefabSystem;
 			
 			InitializeVariables();
-			CtrlCStampPrefab assetStamp = CreateAssetStampPrefab();
+            AssetStampPrefab assetStamp = CreateAssetStampPrefab();
 			_entityManager = entityManager;
 			List<Entity> items = new List<Entity>();	
 			if(roads.Count > 0) { items.AddRange(roads); }
@@ -57,29 +58,31 @@ namespace ctrlC.Systems
 
 			subObjectInfos = new List<ObjectSubObjectInfo>();
 			List<ObjectSubNetInfo> subNetInfos = new List<ObjectSubNetInfo>();
-            List<ObjectSubAreaInfo> objectSubAreaInfos = new List<ObjectSubAreaInfo>();
+            List<ObjectSubAreaInfo> areaInfos = new List<ObjectSubAreaInfo>();
 
             Dictionary<Node, int> nodeIndexMapping = new Dictionary<Node, int>();
             int currentIndex = 0;
-            // Map nodes to indices
-            MapNodesToIndices(roads, entityManager, nodeIndexMapping, ref currentIndex);
+
+            if (buildings.Count > 0)
+            {
+                CopyBuildings(buildings, _prefabSystem, roads, areaInfos);
+            }
             if (roads.Count > 0)
             {
-                ProcessEdgesAndCurves(roads, entityManager, prefabSystem, subNetInfos, nodeIndexMapping);
+                MapNodesToIndices(roads, entityManager, nodeIndexMapping, ref currentIndex);
+                ProcessEdgesAndCurves(roads, entityManager, _prefabSystem, subNetInfos, nodeIndexMapping);
             }
-            if (buildings.Count > 0) { CopyBuildings(buildings, prefabSystem); }
 			if(props.Count > 0)
 			{
-				CopyProps(props, entityManager, prefabSystem, subObjectInfos);
-
+				CopyProps(props, entityManager, _prefabSystem, subObjectInfos);
             }
 			if(trees.Count > 0)
 			{
-				CopyTrees(trees, entityManager, prefabSystem, subObjectInfos);
+				CopyTrees(trees, entityManager, _prefabSystem, subObjectInfos);
             }
             if (areas.Count > 0)
             {
-                CopyAreas(areas, entityManager, prefabSystem, objectSubAreaInfos);
+                CopyAreas(areas, entityManager, _prefabSystem, areaInfos);
             }
             ctrlCSubBuildings.m_SubObjects = subBuildingsInfos.ToArray();
 			assetStamp.components.Add(ctrlCSubBuildings);
@@ -90,7 +93,7 @@ namespace ctrlC.Systems
 			assetStamp.components.Add(objectSubNets);
 
 
-            objectSubAreas.m_SubAreas = objectSubAreaInfos.ToArray();
+            objectSubAreas.m_SubAreas = areaInfos.ToArray();
 			assetStamp.components.Add(objectSubAreas);
 
 
@@ -105,10 +108,10 @@ namespace ctrlC.Systems
 			pointCount = 0;
 			subObjectInfos = new List<ObjectSubObjectInfo>();
 		}
-		private static CtrlCStampPrefab CreateAssetStampPrefab()
+		private static AssetStampPrefab CreateAssetStampPrefab()
 		{
-			CtrlCStampPrefab assetStamp = new CtrlCStampPrefab
-			{
+            AssetStampPrefab assetStamp = new AssetStampPrefab
+            {
 				name = "CopiedSelection",
 				m_Width = 1,
 				m_Depth = 1,

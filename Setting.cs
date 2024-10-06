@@ -13,8 +13,8 @@ using UnityEngine;
 namespace ctrlC
 {
     [FileLocation(nameof(ctrlC))]
-    [SettingsUIGroupOrder(kButtonGroup, kCategoryGroup, kSliderGroup, kDropdownGroup, kKeybindingGroup)]
-    [SettingsUIShowGroupName(kButtonGroup, kCategoryGroup, kSliderGroup, kDropdownGroup, kKeybindingGroup)]
+    [SettingsUIGroupOrder(kSupportGroup, kCategoryGroup, kSliderGroup, kDropdownGroup, kKeybindingGroup)]
+    [SettingsUIShowGroupName(kSupportGroup, kCategoryGroup, kSliderGroup, kDropdownGroup, kKeybindingGroup)]
     [SettingsUIKeyboardAction(Mod.kOpenModActionName, ActionType.Button, usages: new string[] { Usages.kMenuUsage, "TestUsage" }, interactions: new string[] { "UIButton" })]
     [SettingsUIGamepadAction(Mod.kOpenModActionName, ActionType.Button, usages: new string[] { Usages.kMenuUsage, "TestUsage" }, interactions: new string[] { "UIButton" })]
     [SettingsUIMouseAction(Mod.kOpenModActionName, ActionType.Button, usages: new string[] { Usages.kMenuUsage, "TestUsage" }, interactions: new string[] { "UIButton" })]
@@ -22,7 +22,7 @@ namespace ctrlC
     {
         public const string kSection = "Main";
 
-        public const string kButtonGroup = "Button";
+        public const string kSupportGroup = "Button";
         public const string kCategoryGroup = "Toggle";
         public const string kSliderGroup = "Slider";
         public const string kDropdownGroup = "Dropdown";
@@ -31,6 +31,29 @@ namespace ctrlC
         {
            
         }
+
+        [SettingsUIButton]
+        [SettingsUIButtonGroup("LinkGroup")]
+        [SettingsUISection(kSection, kSupportGroup)]
+        public bool NavPatreon
+        {
+            set
+            {
+                Application.OpenURL(EnvironmentConstants.PatreonLink);
+            }
+        }
+        [SettingsUIButton]
+        [SettingsUIButtonGroup("LinkGroup")]
+        [SettingsUISection(kSection, kSupportGroup)]
+        public bool NavX
+        {
+            set
+            {
+                Application.OpenURL(EnvironmentConstants.XLink);
+            }
+        }
+
+
         [SettingsUIButton]
         [SettingsUISection(kSection, kCategoryGroup)]
         public bool OpenPrefabFolder
@@ -118,14 +141,20 @@ namespace ctrlC
         {
             return new Dictionary<string, string>
             {
-                { m_Setting.GetSettingsLocaleID(), "ctrlCNew" },
+                { m_Setting.GetSettingsLocaleID(), "ctrlC" },
                 { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Main" },
 
-                { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Buttons" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kSupportGroup), "Support the Developer" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kCategoryGroup), "Categories" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kSliderGroup), "Sliders" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kDropdownGroup), "Dropdowns" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kKeybindingGroup), "Key bindings" },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NavPatreon)), "Patreon"},
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.NavPatreon)), "Open the developers Patreon page."},
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NavX)), "X"},
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.NavX)), "Open the developers X page."},
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SaveCatNames)), "Save Names" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.SaveCatNames)), $"Press this magic button to refresh the category names without the need to restart" },
@@ -157,8 +186,8 @@ namespace ctrlC
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RaiseBinding)), "Raise Key" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.RaiseBinding)), $"Keyboard binding for raising the copied stuff" },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.FlattenBinding)), "Flatten Key" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.FlattenBinding)), $"Keyboard binding for flattening the copied stuff" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.FlattenBinding)), "Lower Key" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.FlattenBinding)), $"Keyboard binding for lowering the copied stuff" },
 
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetBindings)), "Reset key bindings" },
@@ -168,7 +197,7 @@ namespace ctrlC
                 { m_Setting.GetBindingKeyLocaleID(Mod.kCopyActionName), "Copy Binding" },
                 { m_Setting.GetBindingKeyLocaleID(Mod.kMirrorActionName), "Mirror Binding" },
                 { m_Setting.GetBindingKeyLocaleID(Mod.kRaiseActionName), "Raise Binding" },
-                { m_Setting.GetBindingKeyLocaleID(Mod.kFlattenActionName), "Flatten Binding" },
+                { m_Setting.GetBindingKeyLocaleID(Mod.kFlattenActionName), "Lower Binding" },
 
                 { m_Setting.GetBindingMapLocaleID(), "Mod settings sample" },
             };

@@ -81,8 +81,6 @@ namespace ctrlC
             {
                 _prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
                 ctrlCPrefabStorage.LoadAssetsToStorage();
-                _log.Info("ModUISystem loaded");
-                _log.Info($"PrefabCategories: {PrefabCategoriesStringed}");
                 AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_ENV, () => PrefabCategoriesStringed));
             }
         }
@@ -100,7 +98,6 @@ namespace ctrlC
         protected override void OnCreate()
         {
             base.OnCreate();
-            _log.Info("ModUISystem OnCreate");
             try
             {
                 // Mod Actions
@@ -168,7 +165,7 @@ namespace ctrlC
         {
 
             var prefab = ctrlCPrefabStorage._prefabDict[id];
-            stampPlacementTool.ActivateTool(prefab as CtrlCStampPrefab, _prefabSystem);
+            stampPlacementTool.ActivateTool(prefab as AssetStampPrefab, _prefabSystem);
         }
         public void ConfirmUpdate()
         {

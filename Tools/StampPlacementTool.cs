@@ -24,7 +24,7 @@ namespace ctrlC.Tools
         // Fields
         public PrefabBase _OriginalPre;
         public PrefabSystem _prefabSystem;
-        internal CtrlCStampPrefab ctrlCStamp;
+        internal AssetStampPrefab assetStampPrefab;
 
         // Input Actions
         public InputAction c_ApplyAction;
@@ -57,10 +57,10 @@ namespace ctrlC.Tools
 
 		public override bool TrySetPrefab(PrefabBase prefab)
 		{
-			if (prefab is CtrlCStampPrefab assetStamp && this.Enabled)
+			if (prefab is AssetStampPrefab assetStamp && this.Enabled)
 			{
 				Mode mode = Mode.Stamp;
-				ctrlCStamp = assetStamp;
+				assetStampPrefab = assetStamp;
 				this.prefab = assetStamp;
 				this.mode = mode;
 				return true;
@@ -74,7 +74,7 @@ namespace ctrlC.Tools
 			Enabled = false;
 		}
 
-		public void ActivateTool(CtrlCStampPrefab stampPrefab, PrefabSystem prefabSystem)
+		public void ActivateTool(AssetStampPrefab stampPrefab, PrefabSystem prefabSystem)
 		{
 			Enabled = true;
 			if (TrySetPrefab(stampPrefab))
@@ -128,9 +128,9 @@ namespace ctrlC.Tools
 				_prefabSystem?.UpdatePrefab(this.prefab);
 				_prefabSystem?.UpdatePrefab(_OriginalPre);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				log.Info($"217: {ex.Message}");
+				
 			}
 
 			_prefabSystem?.ClearAvailabilityCache();
@@ -411,7 +411,7 @@ namespace ctrlC.Tools
 		}
 		public void SavePrefab(string name, int category)
 		{
-			SaveSystem.SavePrefab(EntityManager, _prefabSystem, this.ctrlCStamp, name, category);
+			SaveSystem.SavePrefab(EntityManager, _prefabSystem, this.assetStampPrefab, name, category);
 			
 		}
 

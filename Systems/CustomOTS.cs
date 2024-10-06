@@ -1754,9 +1754,9 @@ namespace ctrlC.Systems
 
         private RandomSeed m_RandomSeed;
 
-        private CtrlCStampPrefab m_Prefab;
+        private AssetStampPrefab m_Prefab;
 
-        private CtrlCStampPrefab m_SelectedPrefab;
+        private AssetStampPrefab m_SelectedPrefab;
 
         private TransformPrefab m_TransformPrefab;
 
@@ -1820,7 +1820,7 @@ namespace ctrlC.Systems
         }
 
         [CanBeNull]
-        public CtrlCStampPrefab prefab
+        public AssetStampPrefab prefab
         {
             get
             {
@@ -2052,7 +2052,7 @@ namespace ctrlC.Systems
         {
             log.Info("Trying to set prefab..");
 
-            if (prefab is CtrlCStampPrefab objectPrefab)
+            if (prefab is AssetStampPrefab objectPrefab)
             {
                 log.Info($"prefab is CtrlCStampPrefab");
                 Mode mode = this.mode;
@@ -2098,7 +2098,7 @@ namespace ctrlC.Systems
             }
 
             mode = Mode.Move;
-            prefab = m_PrefabSystem.GetPrefab<CtrlCStampPrefab>(base.EntityManager.GetComponentData<PrefabRef>(m_MovingObject));
+            prefab = m_PrefabSystem.GetPrefab<AssetStampPrefab>(base.EntityManager.GetComponentData<PrefabRef>(m_MovingObject));
         }
 
         private void Randomize()
@@ -2142,11 +2142,11 @@ namespace ctrlC.Systems
             m_Rotation.value = value;
         }
 
-        private CtrlCStampPrefab GetObjectPrefab()
+        private AssetStampPrefab GetObjectPrefab()
         {
             if (m_ToolSystem.actionMode.IsEditor() && m_TransformPrefab != null && GetContainers(m_ContainerQuery, out var _, out var transformContainer))
             {
-                return m_PrefabSystem.GetPrefab<CtrlCStampPrefab>(transformContainer);
+                return m_PrefabSystem.GetPrefab<AssetStampPrefab>(transformContainer);
             }
 
             if (actualMode == Mode.Move)
@@ -2159,7 +2159,7 @@ namespace ctrlC.Systems
 
                 if (base.EntityManager.TryGetComponent<PrefabRef>(entity, out var component2))
                 {
-                    return m_PrefabSystem.GetPrefab<CtrlCStampPrefab>(component2);
+                    return m_PrefabSystem.GetPrefab<AssetStampPrefab>(component2);
                 }
             }
 

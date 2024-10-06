@@ -55,7 +55,7 @@ namespace ctrlC.Systems
 				centroid /= pointCount;
 		}
 
-		private static void AddPrefabToSystem(PrefabSystem prefabSystem, CtrlCStampPrefab assetStamp)
+		private static void AddPrefabToSystem(PrefabSystem prefabSystem, AssetStampPrefab assetStamp)
 		{
 			try
 			{

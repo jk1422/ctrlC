@@ -15,5 +15,10 @@ namespace ctrlC.Data
 		public static string PrefabStorage { get; } = Path.Combine(EnviromentPath, RelativePath);
 
 		public static string ModPath { get; set; } = "";
-	}
+
+		public static string PatreonLink { get; set; } = "https://www.patreon.com/jk142";
+		public static string XLink { get; set; } = "https://x.com/Jk142_Cool";
+
+
+    }
 }

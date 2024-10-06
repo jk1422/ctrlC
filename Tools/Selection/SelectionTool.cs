@@ -10,6 +10,7 @@ using Game.Input;
 using Game.Net;
 using Game.Notifications;
 using Game.Objects;
+using Game.Prefabs;
 using Game.Tools;
 using Game.Vehicles;
 using System;
@@ -229,9 +230,6 @@ namespace ctrlC.Tools.Selection
 
             // Reset system references and queries
             ResetSystemReferences();
-
-            // Log cleanup completion
-            log.Info("CleanUp completed successfully.");
         }
 
         // This function is called when tool is started and sets up all tools and systems we need
@@ -253,7 +251,7 @@ namespace ctrlC.Tools.Selection
         public void Copy()
         {
             // Creating an empty CtrlCStampPrefab
-            CtrlCStampPrefab assetStamp = null;
+            AssetStampPrefab assetStamp = null;
 
             // To ensure the mod or the game wont crash if something goes wrong we're using a try-catch block
             try
@@ -431,7 +429,7 @@ namespace ctrlC.Tools.Selection
 				queryDescs.Add(new EntityQueryDesc
 				{
 					
-					All = new ComponentType[] { typeof(Edge), typeof(Curve) },
+					All = new ComponentType[] { typeof(Edge), typeof(Curve), typeof(Aggregated) },
 					None = new ComponentType[] { typeof(Owner) }
 				});
 			}

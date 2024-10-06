@@ -43,7 +43,6 @@ namespace ctrlC
 
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
             {
-                log.Info($"Current mod asset at {asset.path}");
                 EnvironmentConstants.ModPath = asset.path.Replace("ctrlC.dll", "");
                 log.Info($"Environment ModPath set to: {EnvironmentConstants.ModPath}");
             }
@@ -108,10 +107,6 @@ namespace ctrlC
             updateSystem.UpdateAt<CustomOTS>(SystemUpdatePhase.ApplyTool);
         }
 
-        private void OpenLink()
-        {
-            Application.OpenURL("https://jk142.se/downloads");
-        }
         public void OnDispose()
         {
             log.Info(nameof(OnDispose));
