@@ -97,7 +97,7 @@ namespace ctrlC
         {
             updateSystem.UpdateAt<ModUISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<StampPlacementTool>(SystemUpdatePhase.ToolUpdate);
-            updateSystem.UpdateAt<ctrlC.Systems.ctrlC>(SystemUpdatePhase.ToolUpdate);
+            
             updateSystem.UpdateAt<SelectionTool>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<AssetLoadSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAt<CircleOverlaySystem>(SystemUpdatePhase.ToolUpdate);
