@@ -11,7 +11,7 @@ namespace ctrlC.Data
 	{
 		
 		public static string EnviromentPath { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "LocalLow", "Colossal Order", "Cities Skylines II");
-		public static string RelativePath { get; } = Path.Combine(".ctrlC~");
+		public static string RelativePath { get; } = Path.Combine(".ctrlC~"); // To ensure the game doesnt load our custom prefabs, we put a "." infront of the folder name.
 		public static string PrefabStorage { get; } = Path.Combine(EnviromentPath, RelativePath);
 
 		public static string ModPath { get; set; } = "";

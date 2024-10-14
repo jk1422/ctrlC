@@ -246,7 +246,7 @@ namespace ctrlC.Tools.Selection
             idleCircleEntity = EntityManager.CreateEntity(typeof(CircleIdle));
         }
 
-        // This function is for copying (Duuh)
+        // Creates the assetstamp and activates the Stamp Placement Tool
         public void Copy()
         {
             // Creating an empty CtrlCStampPrefab
@@ -255,12 +255,16 @@ namespace ctrlC.Tools.Selection
             // To ensure the mod or the game wont crash if something goes wrong we're using a try-catch block
             try
             {
-                // Calling the CopySystem to run some magic copy-logic and store the copied Prefab in our assetStamp
-                assetStamp = CopySystem.CopyItems(entityManager, m_PrefabSystem, SelectedBuildings, SelectedRoads, SelectedProps, SelectedTrees, SelectedAreas);
+                // To ensure we can't copy and create an empty assetStamp, we fisrt check so we have objects selected.
+                if(SelectedAreas.Count > 0 || SelectedBuildings.Count > 0 || SelectedProps.Count >0 || SelectedRoads.Count > 0 || SelectedTrees.Count > 0)
+                {
+                    // Calling the CopySystem to run some magic copy-logic and store the copied Prefab in our assetStamp
+                    assetStamp = CopySystem.CopyItems(entityManager, m_PrefabSystem, SelectedBuildings, SelectedRoads, SelectedProps, SelectedTrees, SelectedAreas);
 
-                // When the copying is done, we call StampPlacementTool to be able to place our newly copied prefab
-                stampPlacementTool.ActivateTool(assetStamp, this.m_PrefabSystem);
-                assetStamp = null;
+                    // When the copying is done, we call StampPlacementTool to be able to place our newly copied prefab
+                    stampPlacementTool.ActivateTool(assetStamp, this.m_PrefabSystem);
+                    assetStamp = null;
+                }
             }
             catch (Exception ex)
             {
