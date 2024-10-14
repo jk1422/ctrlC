@@ -1,14 +1,10 @@
 ﻿using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
-using Colossal.PSI.Common;
 using Colossal.Serialization.Entities;
-using ctrlC.Components;
 using ctrlC.Components.Prefabs;
-using ctrlC.Components.Entities;
 using ctrlC.Data;
 using Game;
 using Game.Prefabs;
-using Game.UI.Menu;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -110,17 +106,6 @@ public partial class AssetLoadSystem : GameSystemBase
 		base.OnCreate();
 		_prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 		_monoComponent = new GameObject("ctrlC-AssetLoadSystem").AddComponent<MonoComponent>();
-		
-
-
-
-
-
-	}
-
-	private void OpenLink()
-	{
-
 	}
 
 	protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
@@ -128,11 +113,8 @@ public partial class AssetLoadSystem : GameSystemBase
 		base.OnGameLoadingComplete(purpose, mode);
 		if(mode == GameMode.MainMenu)
 		{
-
-			
 			LoadCustomPrefabs();
 		}
-		
 	}
 
 	private void LoadCustomPrefabs()
@@ -156,31 +138,18 @@ public partial class AssetLoadSystem : GameSystemBase
 			{
 				try
 				{
-					
-
-					
-					
-
 					var fileName = Path.GetFileNameWithoutExtension(file.Name);
 					var relativePath = EnvironmentConstants.RelativePath.Replace("\\", "/");
 					relativePath = relativePath + "/" + fileName;
 					relativePath = Uri.UnescapeDataString(relativePath);
 				
 					var path = AssetDataPath.Create(relativePath, fileName);
-
-				
-					
-
 					var cidFilename = Path.Combine(EnvironmentConstants.PrefabStorage, fileName, fileName + ".Prefab.cid");
 					var thumbnailFilename = Path.Combine(EnvironmentConstants.PrefabStorage, fileName, fileName + ".png");
 					using StreamReader sr = new StreamReader(cidFilename);
 					var guid = sr.ReadToEnd();
 					sr.Close();
-					
-
 					var a = AssetDatabase.user.AddAsset<PrefabAsset>(path, guid);
-					
-
 				}
 				catch (Exception e)
 				{
@@ -188,7 +157,6 @@ public partial class AssetLoadSystem : GameSystemBase
 				}
 			}
 		}
-
 		_monoComponent.StartCoroutine(LoadAssets());
 		yield return null;
 	}
@@ -198,17 +166,10 @@ public partial class AssetLoadSystem : GameSystemBase
 		var allPrefabs = AssetDatabase.user.GetAssets<PrefabAsset>();
 		foreach (PrefabAsset prefabAsset in allPrefabs)
 		{
-
-			
-			
-
 			try
 			{
 				PrefabBase prefabBase = prefabAsset.Load() as PrefabBase;
 				var i = _prefabSystem.AddPrefab(prefabBase, null, null, null);
-
-				
-				
 			}
 			catch (Exception e)
 			{
@@ -218,8 +179,6 @@ public partial class AssetLoadSystem : GameSystemBase
 			yield return null;
 		}
 	}
-
-
 
 	private static Dictionary<string, List<FileInfo>> GetPrefabsFromDirectoryRecursively(string directory, string modName)
 	{

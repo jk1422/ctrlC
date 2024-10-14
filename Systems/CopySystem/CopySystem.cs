@@ -1,13 +1,7 @@
 ﻿using Colossal.Logging;
 using ctrlC.Components.Prefabs;
-using ctrlC.Components.Entities;
-using Game.Net;
 using Game.Prefabs;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -20,6 +14,8 @@ namespace ctrlC.Systems
     // However, since my little break made me forget where I was, I decided to quickly assemble the Copy System to just make it work. 
     // So the code is pretty dirty and there is some changes needed here in order to make it work as intended.
 
+    // Also in order to optimize this code, I will 'burstify' it when I have the time
+
     internal static partial class CopySystem
     {
         public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(CopySystem)}").SetShowsErrorsInUI(false);
@@ -30,11 +26,8 @@ namespace ctrlC.Systems
         private static PrefabSystem _prefabSystem;
 
         private static List<ObjectSubObjectInfo> subObjectInfos = new List<ObjectSubObjectInfo>();
-        internal static List<CtrlCBuildingsInfo> subBuildingsInfos = new List<CtrlCBuildingsInfo>();
         public static AssetStampPrefab CopyItems(EntityManager entityManager, PrefabSystem prefabSystem, List<Entity> buildings, List<Entity> roads, List<Entity> props, List<Entity> trees, List<Entity> areas)
         {
-
-
             InitializeVariables(prefabSystem);
             AssetStampPrefab assetStamp = CreateAssetStampPrefab();
             _entityManager = entityManager;
@@ -45,9 +38,6 @@ namespace ctrlC.Systems
             if (props.Count > 0) { items.AddRange(props); }
 
             ComputeBaseHeightAndCentroid(items, _entityManager);
-
-            CtrlCBuildings ctrlCSubBuildings = ScriptableObject.CreateInstance<CtrlCBuildings>();
-            subBuildingsInfos = new List<CtrlCBuildingsInfo>();
 
             // Initialize ObjectSubObjects and ObjectSubNetsaa
             ObjectSubObjects objectSubObjects = ScriptableObject.CreateInstance<ObjectSubObjects>();
@@ -91,8 +81,7 @@ namespace ctrlC.Systems
             {
                 CopyAreas(areas, entityManager, prefabSystem, objectSubAreaInfos);
             }
-            ctrlCSubBuildings.m_SubObjects = subBuildingsInfos.ToArray();
-            assetStamp.components.Add(ctrlCSubBuildings);
+
             objectSubObjects.m_SubObjects = subObjectInfos.ToArray();
             assetStamp.components.Add(objectSubObjects);
 

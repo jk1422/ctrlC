@@ -9,7 +9,7 @@ using Unity.Mathematics;
 
 namespace ctrlC.Tools.Selection
 {
-	[BurstCompile]
+    [BurstCompile]
 	public struct EntitySelectionJob : IJobParallelFor
 	{
 		[ReadOnly] public NativeArray<Entity> selectables;

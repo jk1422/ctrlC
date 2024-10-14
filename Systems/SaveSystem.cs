@@ -1,20 +1,15 @@
 ﻿using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
-using ctrlC.Components;
 using ctrlC.Components.Prefabs;
-using ctrlC.Components.Entities;
+using ctrlC.Data;
 using Game.Prefabs;
 using System;
-using Unity.Entities;
-using ctrlC.Data;
-using System.Runtime.InteropServices;
-using static Colossal.AssetPipeline.Diagnostic.Report;
 using System.IO;
-using System.Reflection;
+using Unity.Entities;
 
 namespace ctrlC.Systems
 {
-	[Serializable]
+    [Serializable]
 	public class CtrlCPrefabData
 	{
 		public string Name;
@@ -90,15 +85,15 @@ namespace ctrlC.Systems
 
 		private static void CreateThumbnail(AssetStampPrefab prefab, string ModPath)
 		{
-            // Sökväg till standard-thumbnail-bilden
+            // Sökväg till standard thumbnail bilden
             string dllPath = EnvironmentConstants.ModPath;
             string imagesFolderPath = Path.Combine(dllPath, "images");
-            // Sökväg till standard-thumbnail-bilden i images-mappen
-            string defaultThumbnailPath = Path.Combine(imagesFolderPath, "prefabThumbnail.png").Replace("\\", "/"); // "C:/Users/jk142/AppData/LocalLow/Colossal Order/Cities Skylines II/Mods/ctrlC/images/prefabThumbnail.png"
-            // Sökväg till den nya thumbnail-bilden
-            string newThumbnailPath = Path.Combine(ModPath, prefab.name +".png").Replace("%5C", "/").Replace("%20", " ").Replace("\\", "/"); // C:\\Users\\jk142\\AppData\\LocalLow\\Colossal Order\\Cities Skylines II\\.ctrlC~/ctrlC_wow/ctrlC_wow.png
+            // Sökväg till standard thumbnailbilden i images mappen
+            string defaultThumbnailPath = Path.Combine(imagesFolderPath, "prefabThumbnail.png").Replace("\\", "/");
+            // Sökväg till den nya thumbnailbilden
+            string newThumbnailPath = Path.Combine(ModPath, prefab.name +".png").Replace("%5C", "/").Replace("%20", " ").Replace("\\", "/");
 
-            // Kopiera standardbilden till prefab-mappen
+            // Kopiera standardbilden till prefab mappen
             try
             {
                 File.Copy(defaultThumbnailPath, newThumbnailPath, true); // true för att skriva över om filen redan finns
@@ -107,11 +102,6 @@ namespace ctrlC.Systems
             {
                 log.Error($"Failed to copy thumbnail image: {ex}");
             }
-
-
-
-            // Logga framgång
-            log.Info($"Thumbnail copied to: {newThumbnailPath}");
         }
 	}
 }

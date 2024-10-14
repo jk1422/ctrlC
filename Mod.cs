@@ -11,7 +11,6 @@ using Game.Modding;
 using Game.SceneFlow;
 using Game.UI.Menu;
 using Unity.Entities;
-using UnityEngine;
 
 namespace ctrlC
 {

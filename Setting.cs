@@ -4,12 +4,8 @@ using ctrlC.Data;
 using Game.Input;
 using Game.Modding;
 using Game.Settings;
-using Game.UI;
-using Game.UI.Widgets;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace ctrlC
 {

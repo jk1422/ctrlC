@@ -1,5 +1,4 @@
 ﻿using Colossal.Logging;
-using ctrlC.Components;
 using ctrlC.Rendering;
 using ctrlC.Systems;
 using ctrlC.Utils;
@@ -24,7 +23,7 @@ using UnityEngine.InputSystem;
 namespace ctrlC.Tools.Selection
 {
 
-	public partial class SelectionTool : SelectionToolSystem
+    public partial class SelectionTool : SelectionToolSystem
 	{
         // Logging
         public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(SelectionTool)}").SetShowsErrorsInUI(false);
@@ -92,7 +91,7 @@ namespace ctrlC.Tools.Selection
 				m_ToolSystem.selected = Entity.Null;
 				m_ToolSystem.activeTool = this;
 
-				UIObjectHelper.FindPrefabsInGroup(EntityManager);
+				//UIObjectHelper.FindPrefabsInGroup(EntityManager);
 			}
 			else if (!enable && m_ToolSystem.activeTool == this)
 			{

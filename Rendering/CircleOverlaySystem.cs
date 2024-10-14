@@ -1,14 +1,11 @@
-﻿using Game;
-using Game.Common;
-using Game.Rendering;
-using Unity.Collections;
+﻿using Game.Rendering;
 using Unity.Entities;
 using Unity.Jobs;
 using UnityEngine;
 
 namespace ctrlC.Rendering
 {
-	public partial class CircleOverlaySystem : SystemBase
+    public partial class CircleOverlaySystem : SystemBase
 	{
 		private OverlayRenderSystem _overlayRenderSystem;
 		private EntityQuery _circleQuery;

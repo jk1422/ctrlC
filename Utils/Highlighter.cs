@@ -1,15 +1,10 @@
 ﻿using Game.Common;
 using Game.Tools;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Unity.Entities;
 
 namespace ctrlC.Utils
 {
-	public static class Highlighter
+    public static class Highlighter
 	{
 		internal static void ChangeHighlighting_MainThread(this EntityManager entityManager, Entity entity, ChangeMode mode)
 		{

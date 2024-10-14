@@ -9,8 +9,6 @@ using Colossal.Entities;
 using Colossal.Logging;
 using Colossal.Mathematics;
 using Colossal.Serialization.Entities;
-using ctrlC.Components;
-using ctrlC.Tools;
 using Game;
 using Game.Areas;
 using Game.Audio;
@@ -33,25 +31,10 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEngine.InputSystem;
 using UnityEngine.Scripting;
 
 namespace ctrlC.Systems
 {
-    // This is just a copy of the games ObjectToolSystem.cs
-
-    // The reason was that I wanted access to some properties and the easiest way was to just copy the code and make the props Internal.
-
-
-    // Also to be able to copy trees with their age, houses with their seed and so on, we need to utilize the custom components in CustomComponents.cs.
-    // When adding CtrlCSubBuildings component to the CtrlCStampPrefab, the data about the buildings are there, but when instantiating an entity from the m_Prefab
-    // we dont get any houses.
-
-    // One potential work around for this is to add the buildings to the SubObject component and also to the CtrlCSubBuildings, then get the data from CtrlCSubBuildings and 
-    // adjust the coresponding objects in the SubObject component. 
-
-    // Or just fix the Custom Components to work properly, Idk. 
-
     public partial class CustomOTS : ObjectToolBaseSystem
     {
 
