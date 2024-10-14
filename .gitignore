@@ -366,8 +366,9 @@ FodyWeavers.xsd
 Properties/PublishConfiguration.xml
 
 Utils/DiscordUtils/
-Properties/
+Properties
 /Properties/Thumbnail.png
 /Properties/Thumbnail.png
 /Tools/ThumbnailCameraTool.cs
 /Tools/StampPlacementTool.PrepareCamera.cs
+/Properties/PublishConfiguration.xml
