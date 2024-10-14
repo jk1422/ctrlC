@@ -1,0 +1,156 @@
+﻿@import 'theme.module.scss';
+@import 'utils.module.scss';
+
+.PrefabMenu {
+    position: absolute;
+    top: 740rem;
+    left: 670rem;
+    height: 200rem;
+    width: 580rem;
+    z-index: 1;
+}
+
+.header {
+    background-color: rgba(28, 37, 55, 0.6);
+    display: flex;
+    flex-grow: 1;
+    flex-wrap: wrap;
+    height: 25%;
+    border-radius: 10rem 10rem 0rem 0rem;
+    backdrop-filter: blur(4rem);
+}
+.headerRow {
+    display: flex;
+    justify-content: flex-end; /* Placera innehållet till höger */
+    align-items: center; /* Se till att knappen är centrerad vertikalt */
+    width: 100%;
+}
+
+.closeButton {
+    background-color: rgba(0, 0, 0, 0);
+    width: 15rem; /* Anpassa bredd till en rimligare storlek */
+    height: 15rem; /* Anpassa höjd till en rimligare storlek */
+    flex-shrink: 0; /* Förhindra att knappen krymper */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 10rem;
+    margin-top: 5rem;
+    border: none;
+}
+.body {
+
+    background-color: rgba(46, 60, 91, 0.0); //background-color: rgba(46, 60, 91, 0.4);
+    height: 75%;
+    border-radius: 0rem 0rem 10rem 10rem;
+    backdrop-filter: blur(4rem);
+    overflow-y: scroll;
+}
+
+
+.categoryList {
+    display: flex;
+    width: 100%;
+    height: 65%;
+    justify-content: center;
+}
+.categoryButton {
+    min-width: 20%;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: solid 2rem rgba(0, 0, 0, 0.1);
+    border-bottom: none;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    margin: 0rem 2rem;
+    color: #ddd;
+    border-radius: 10rem 10rem 0rem 0rem;
+}
+
+.categoryBtnActive {
+    background-color: rgba(46, 60, 91, 0.1);
+    border-color: rgba(150, 150, 150, 0.7);
+}
+
+.itemRow {
+
+    display: inline-block;
+}
+
+.ItemGrid {
+    display: flex;
+    flex-wrap: wrap;
+}
+.ItemBox {
+    width: 100rem;
+    height: 130rem;
+    background-color: rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+    border-radius: 10rem;
+    display: inline-block;
+    padding: 5rem;
+    align-items: center;
+    margin: 10rem 6rem;
+    box-sizing: border-box;
+}
+
+.ItemBox:hover {
+    background-color: rgba(0,0,0,0.4);
+}
+
+.ItemTitle {
+    margin: 0rem;
+    color: white;
+}
+
+.ItemDesc {
+    margin: 0rem;
+    font-size: 10rem;
+    font-weight: 100;
+    color: rgb(200,200,200);
+}
+
+.ImageHolder {
+    width: 100%;
+    height: 90rem;
+}
+
+.Thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: solid 3rem rgba(135,135,135, 1);
+    border-radius: 8rem;
+}
+
+.ItemBoxInfo {
+    display: flex;
+    flex-direction:column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.prefabButtonRack {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+.prefabEditButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20rem;
+    width: 20rem;
+    margin: 2rem;
+    margin-top: 0;
+    padding: 3rem;
+    border: none;
+    border-radius: 3rem;
+}
+.smallIcon {
+    display: flex;
+    height: 80%;
+    width: 80%;
+}

@@ -33,7 +33,8 @@
 		// Selection Tool
 		public const string SELECTION_TOOL_TOGGLE = "selection tool toggle";
 		public const string SELECTION_TOOL_ENABLED = "selection tool enabled";
-		public const string COPY = "copy";
+		public const string SELECTION_CIRCLE_ENABLED = "circle selection enabled";
+        public const string COPY = "copy";
 
 		// Selection Tool Utils Listeners
 		public const string SCT_ALL = "sct all";
@@ -43,7 +44,8 @@
 		public const string SCT_PROPS = "sct props";
 		public const string SCT_AREAS = "sct areas";
 
-		// Selection Tool Utils Actions
+        // Selection Tool Utils Actions
+        public const string TOGGLE_CIRCLE_SELECTION = "toggle circle selection";
 		public const string TOGGLE_SCT_ALL = "toggle sct all";
 		public const string TOGGLE_SCT_ROADS = "toggle sct roads";
 		public const string TOGGLE_SCT_BUILDINGS = "toggle sct buildings";
@@ -52,5 +54,8 @@
 		public const string TOGGLE_SCT_AREAS = "toggle sct areas";
 
 		public const string DISABLE = "disable";
+
+		public const string SHOW_PREFABMENU = "show prefabMenu";
+		public const string TOGGLE_PREFABMENU = "toggle prefabMenu";
 	}
 }

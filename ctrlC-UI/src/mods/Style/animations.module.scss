@@ -1,0 +1,72 @@
+﻿@import 'theme.module.scss';
+
+/* Scaling in the main card */
+@keyframes fadeIn {
+    0% {
+        max-height: 13rem;
+    }
+
+
+    100% {
+        max-height: 300rem;
+    }
+}
+
+/* Scaling in the Body of the card */
+@keyframes bodyFadeIn {
+    0% {
+        max-height: 0rem;
+        padding: 0rem;
+    }
+
+
+    100% {
+        max-height: 300rem;
+       
+    }
+}
+
+/* fading in the Selection tools filter buttons */
+@keyframes buttonRackFadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Start the glow of the ctrlC logo */
+@keyframes startGlow {
+    0% {
+        filter: drop-shadow(-.75rem 0rem 0rem rgba(0, 0, 0, 0));
+        stroke: $logo-unlit-color;
+    }
+
+    99% {
+        filter: drop-shadow(-.75rem 0rem 0rem rgba(0, 0, 0, 0));
+        stroke: $logo-unlit-color;
+    }
+
+    100% {
+        filter: drop-shadow(-.75rem 0rem 5rem #31eefd);
+        stroke: $logo-color;
+    }
+}
+
+@keyframes flicker {
+    0%,7%, 100% {
+        stroke: $logo-color;
+    }
+
+    1%, 3%, 5% {
+        stroke: $logo-unlit-color;
+    }
+
+    2%, 4%, 6% {
+        stroke: $logo-flicker-color;
+    }
+
+    
+}

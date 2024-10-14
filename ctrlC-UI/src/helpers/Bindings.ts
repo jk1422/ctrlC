@@ -28,6 +28,7 @@
 	// Selection Tool
 	public static SELECTION_TOOL_TOGGLE: string = "selection tool toggle";
 	public static SELECTION_TOOL_ENABLED: string = "selection tool enabled";
+	public static SELECTION_CIRCLE_ENABLED: string = "circle selection enabled";
 	public static SELECTION_TOOL_COPY: string = "copy";
 
 	// Selection Tool Utils Listners
@@ -39,6 +40,7 @@
 	public static SCT_AREAS: string = "sct areas";
 
 	// Selection Tool Utils Actions
+	public static TOGGLE_CIRCLE_SELECTION: string = "toggle circle selection";
 	public static TOGGLE_SCT_ALL: string = "toggle sct all";
 	public static TOGGLE_SCT_ROADS: string = "toggle sct roads";
 	public static TOGGLE_SCT_BUILDINGS: string = "toggle sct buildings";
@@ -54,5 +56,8 @@
 	public static SET_ACTION_OVERLAY_PREVIEW: string = `setActionOverlayPreview`;
 	public static SELECTED_INTERSECTION: string = `selectedIntersection`;
 	public static APPLY_TOOL_ACTION_PREVIEW: string = `applyToolActionPreview`;
+
+	public static SHOW_PREFABMENU: string = "show prefabMenu";
+	public static TOGGLE_PREFABMENU: string = "toggle prefabMenu";
 	
 }

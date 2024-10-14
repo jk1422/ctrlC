@@ -5,6 +5,7 @@ using ctrlC.Components;
 using ctrlC.Data;
 using ctrlC.Tools;
 using ctrlC.Tools.Selection;
+using ctrlC.Utils;
 using Game;
 using Game.Debug.Tests;
 using Game.Prefabs;
@@ -18,155 +19,111 @@ using UnityEngine;
 
 namespace ctrlC
 {
-
-    public class ListOfListStringWriter : IWriter<List<List<string>>>
+    public partial class ModUISystem : UISystemBase
     {
-        public void Write(IJsonWriter writer, List<List<string>> value)
-        {
-            writer.ArrayBegin(value.Count);
-            foreach (var list in value)
-            {
-                writer.ArrayBegin(list.Count);
-                foreach (var item in list)
-                {
-                    writer.Write(item);
-                }
-                writer.ArrayEnd();
-            }
-            writer.ArrayEnd();
-        }
-    }
+        // Logger
+        private static readonly ILog Log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
 
-    public class StringArrayWriter : IWriter<string[]>
-    {
-        public void Write(IJsonWriter writer, string[] value)
-        {
-            writer.ArrayBegin(value.Length); // Börjar en array 
-            foreach (var item in value)
-            {
-                writer.Write(item); // Skriver varje string
-            }
-            writer.ArrayEnd(); // Avslutar arrayen
-        }
-    }
-    public partial class ModUISystem : UISystemBase, IPreDeserialize
-    {
-        public static ILog _log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
-
-
+        // Tools and Systems
         private SelectionTool selectionTool;
         private StampPlacementTool stampPlacementTool;
+        private PrefabSystem prefabSystem;
 
-        public bool sct_tool_enabled { get; set; } = false;
-        public bool place_tool_enabled { get; set; } = false;
-        public bool fullElevationStep { get; set; } = true;
+        // Flags
+        public bool SelectionToolEnabled { get; set; } = false;
+        public bool PlacementToolEnabled { get; set; } = false;
+        public bool CircleSelectionEnabled { get; set; } = false;
 
-        public bool sct_all { get; set; } = true;
-        public bool sct_roads { get; set; } = true;
-        public bool sct_buildings { get; set; } = true;
-        public bool sct_trees { get; set; } = true;
-        public bool sct_props { get; set; } = true;
-        public bool sct_areas { get; set; } = true;
-        private PrefabSystem _prefabSystem;
-        public List<PrefabBase> prefabs { get; set; }
+        // Selection Options
+        public bool SelectAll { get; set; } = true;
+        public bool SelectRoads { get; set; } = true;
+        public bool SelectBuildings { get; set; } = true;
+        public bool SelectTrees { get; set; } = true;
+        public bool SelectProps { get; set; } = true;
+        public bool SelectAreas { get; set; } = true;
 
-        public string environmentString { get; set; } = EnvironmentConstants.PrefabStorage;
-
+        // Prefabs and Environment
+        public List<PrefabBase> Prefabs { get; set; }
+        public string EnvironmentString { get; set; } = EnvironmentConstants.PrefabStorage;
         public bool UpdatePrefabs { get; set; } = false;
-        public string PrefabCategoriesStringed = "";
+        public string PrefabCategoriesString = "";
+
+        public bool ShowPrefabMenu { get; set; } = false;
+        public int refreshSignal { get; set; } = 0;
 
         protected override void OnGamePreload(Purpose purpose, GameMode mode)
         {
             if (mode == GameMode.Game || mode == GameMode.Editor)
             {
-                _prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+                prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
                 ctrlCPrefabStorage.LoadAssetsToStorage();
-                AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_ENV, () => PrefabCategoriesStringed));
+                AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_ENV, () => PrefabCategoriesString));
             }
         }
-
-
-
-        public void PreDeserialize(Context context)
-        {
-
-        }
-
-
-
 
         protected override void OnCreate()
         {
             base.OnCreate();
+            InitializeBindings();
+            InitializeTools();
+        }
+
+        private void InitializeBindings()
+        {
             try
             {
-                // Mod Actions
-                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.PATREON_OPEN, openPatreon));
+                // General Actions
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_PREFABMENU, TogglePrefabMenu));
                 AddBinding(new TriggerBinding<string, int>(Mod.MOD_NAME, UIBindingConstants.ACTION_SAVE, Save));
-
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.PREFABS_UPDATE_CALLBACK, ConfirmUpdate));
-                AddBinding(new TriggerBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_INSTANCIATE, instanciatePrefab));
+                AddBinding(new TriggerBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_INSTANCIATE, InstantiatePrefab));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.ACTION_PMT_RESET, ResetPrefab));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.ACTION_PMT_MIRROR, MirrorPrefab));
 
-                // Placement Tool Actions
-                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_PMT_ELEVATION, toggleElevationStep));
-                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.ACTION_PMT_RESET, resetPrefab));
-                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.ACTION_PMT_MIRROR, mirrorPrefab));
+                // Selection Tool Actions
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.SELECTION_TOOL_TOGGLE, ToggleSelectionTool));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_CIRCLE_SELECTION, ToggleCircleSelection));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_ALL, ToggleSelectAll));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_ROADS, () => ToggleSelectionOption(nameof(SelectRoads))));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_BUILDINGS, () => ToggleSelectionOption(nameof(SelectBuildings))));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_TREES, () => ToggleSelectionOption(nameof(SelectTrees))));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_PROPS, () => ToggleSelectionOption(nameof(SelectProps))));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_AREAS, () => ToggleSelectionOption(nameof(SelectAreas))));
 
-                //Selection Tool Actions
-                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.SELECTION_TOOL_TOGGLE, OnSelectButtonClicked));
-                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_ALL, toggleSCTAll));
-                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_ROADS, toggleSCTRoads));
-                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_BUILDINGS, toggleSCTBuildings));
-                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_TREES, toggleSCTTrees));
-                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_PROPS, toggleSCTProps));
-                AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_AREAS, toggleSCTAreas));
-
-                try
-                {
-                    AddUpdateBinding(new GetterValueBinding<List<List<string>>>(
-                        Mod.MOD_NAME,
-                        UIBindingConstants.PREFABS_GET,
-                        () => ctrlCPrefabStorage._prefabList,
-                        new ListOfListStringWriter()
-                    ));
-
-
-                }
-                catch (Exception ex)
-                {
-                    _log.Error("ModUISysyem: Error when adding bindings: " + ex.Message);
-                }
-
-                // Placement tool senders
-                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.PMT_ELEVATION_FULL, () => fullElevationStep));
-                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.PLACEMENT_TOOL_ENABLED, () => place_tool_enabled));
+                // Update Bindings
+                AddUpdateBinding(new GetterValueBinding<List<List<string>>>(Mod.MOD_NAME, UIBindingConstants.PREFABS_GET, () => ctrlCPrefabStorage._prefabList, new StringListWriter()));
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SHOW_PREFABMENU, () => ShowPrefabMenu));
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.PLACEMENT_TOOL_ENABLED, () => PlacementToolEnabled));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.PREFABS_UPDATE, () => UpdatePrefabs));
-                // Selection Tool senders
-                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SELECTION_TOOL_ENABLED, () => sct_tool_enabled));
-                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_ALL, () => sct_all));
-                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_ROADS, () => sct_roads));
-                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_BUILDINGS, () => sct_buildings));
-                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_TREES, () => sct_trees));
-                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_PROPS, () => sct_props));
-                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_AREAS, () => sct_areas));
-                
-                
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SELECTION_CIRCLE_ENABLED, () => CircleSelectionEnabled));
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SELECTION_TOOL_ENABLED, () => SelectionToolEnabled));
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_ALL, () => SelectAll));
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_ROADS, () => SelectRoads));
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_BUILDINGS, () => SelectBuildings));
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_TREES, () => SelectTrees));
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_PROPS, () => SelectProps));
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_AREAS, () => SelectAreas));
+
+                AddUpdateBinding(new GetterValueBinding<int>(Mod.MOD_NAME, "refreshSignal", () => refreshSignal));
             }
             catch (Exception ex)
             {
-                _log.Error("ModUISysyem:  Error when adding bindings: " + ex.Message);
+                Log.Error("ModUISystem: Error when adding bindings: " + ex.Message);
             }
+        }
 
+        private void InitializeTools()
+        {
             selectionTool = World.GetOrCreateSystemManaged<SelectionTool>();
             stampPlacementTool = World.GetOrCreateSystemManaged<StampPlacementTool>();
         }
 
-        public void instanciatePrefab(string id)
+        public void InstantiatePrefab(string id)
         {
-
             var prefab = ctrlCPrefabStorage._prefabDict[id];
-            stampPlacementTool.ActivateTool(prefab as AssetStampPrefab, _prefabSystem);
+            stampPlacementTool.ActivateTool(prefab as AssetStampPrefab, prefabSystem);
         }
+
         public void ConfirmUpdate()
         {
             UpdatePrefabs = false;
@@ -174,27 +131,22 @@ namespace ctrlC
 
         public void Save(string name, int category)
         {
-
             try
             {
                 stampPlacementTool.SavePrefab(name, category);
                 ctrlCPrefabStorage.LoadAssetsToStorage();
-                new GetterValueBinding<List<List<string>>>(
-                        Mod.MOD_NAME,
-                        UIBindingConstants.PREFABS_GET,
-                        () => ctrlCPrefabStorage._prefabList,
-                        new ListOfListStringWriter()
-                    );
-
                 UpdatePrefabs = true;
+                ++refreshSignal; 
             }
             catch (Exception ex)
             {
-
-                log.Error($"Error when trying to save: {ex.Message}");
+                Log.Error($"Error when trying to save: {ex.Message}");
                 throw;
             }
         }
+
+
+
         internal void StartMod()
         {
             try
@@ -202,118 +154,87 @@ namespace ctrlC
                 if (!selectionTool.Enabled && !stampPlacementTool.Enabled)
                 {
                     selectionTool.ToggleTool(true);
-                    sct_tool_enabled = true;
+                    SelectionToolEnabled = true;
                 }
             }
             catch (Exception ex)
             {
-                _log.Error("Error when toggling tool: " + ex);
+                Log.Error("Error when toggling tool: " + ex);
             }
         }
-        internal void OnSelectButtonClicked()
+
+        internal void ToggleSelectionTool()
         {
             try
             {
-                if (selectionTool.Enabled)
-                {
-                    selectionTool.ToggleTool(false);
-                    sct_tool_enabled = false;
-                    //Set modbinding till true
-
-                }
-                else
-                {
-                    selectionTool.ToggleTool(true);
-                    sct_tool_enabled = true;
-                   //set modbinding till false
-
-                }
+                SelectionToolEnabled = !selectionTool.Enabled;
+                selectionTool.ToggleTool(SelectionToolEnabled);
             }
             catch (Exception ex)
             {
-                _log.Error("Error when toggling tool: " + ex);
+                Log.Error("Error when toggling tool: " + ex);
             }
         }
 
-        public void setToolEnabled(bool enabled)
+        internal void TogglePrefabMenu()
         {
-            sct_tool_enabled = enabled;
+            ShowPrefabMenu = !ShowPrefabMenu;
         }
 
-        public void toggleElevationStep()
+        public void SetToolEnabled(bool enabled)
         {
-            fullElevationStep = !fullElevationStep;
+            SelectionToolEnabled = enabled;
         }
 
-        public void resetPrefab()
+        public void ResetPrefab()
         {
-            Entity ent = selectionTool.SelectedBuildings.First<Entity>();
-            if (ent != null)
+            Entity entity = selectionTool.SelectedBuildings.FirstOrDefault();
+            if (entity != null)
             {
-                var data = EntityManager.GetComponentData<PrefabRef>(ent);
-                var mindex = EntityManager.GetComponentData<PrefabData>(data);
-                
+                var data = EntityManager.GetComponentData<PrefabRef>(entity);
+                var index = EntityManager.GetComponentData<PrefabData>(data);
             }
+        }
 
-        }
-        public void openPatreon()
-        {
-            string url = "https://www.patreon.com/jk142/membership";
-            Application.OpenURL(url);
-        }
-        public void mirrorPrefab()
+        public void MirrorPrefab()
         {
             stampPlacementTool.MirrorPrefab();
         }
 
-        public void toggleSCTAll()
+        public void ToggleCircleSelection()
         {
-            sct_all = !sct_all;
-            if (sct_all)
+            CircleSelectionEnabled = !CircleSelectionEnabled;
+        }
+
+        public void ToggleSelectAll()
+        {
+            SelectAll = !SelectAll;
+            SetAllSelectionOptions(SelectAll);
+        }
+
+        private void ToggleSelectionOption(string propertyName)
+        {
+            var property = GetType().GetProperty(propertyName);
+            if (property != null && property.PropertyType == typeof(bool))
             {
-                sct_roads = true;
-                sct_buildings = true;
-                sct_trees = true;
-                sct_props = true;
-                sct_areas = true;
-            }
-            else
-            {
-                sct_roads = false;
-                sct_buildings = false;
-                sct_trees = false;
-                sct_props = false;
-                sct_areas = false;
+                bool currentValue = (bool)property.GetValue(this);
+                property.SetValue(this, !currentValue);
+                CheckAll();
             }
         }
-        public void toggleSCTRoads()
+
+        public void CheckAll()
         {
-            sct_roads = !sct_roads;
-            checkAll();
+            SelectAll = SelectRoads && SelectBuildings && SelectTrees && SelectProps && SelectAreas;
         }
-        public void toggleSCTBuildings()
+
+        private void SetAllSelectionOptions(bool value)
         {
-            sct_buildings = !sct_buildings;
-            checkAll();
-        }
-        public void toggleSCTTrees()
-        {
-            sct_trees = !sct_trees;
-            checkAll();
-        }
-        public void toggleSCTProps()
-        {
-            sct_props = !sct_props;
-            checkAll();
-        }
-        public void toggleSCTAreas()
-        {
-            sct_areas = !sct_areas;
-            checkAll();
-        }
-        public void checkAll()
-        {
-            sct_all = sct_roads && sct_buildings && sct_trees && sct_props && sct_areas;
+            SelectRoads = value;
+            SelectBuildings = value;
+            SelectTrees = value;
+            SelectProps = value;
+            SelectAreas = value;
         }
     }
 }

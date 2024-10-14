@@ -1,9 +1,5 @@
-﻿using Colossal.Logging;
-using ctrlC.Components;
-using ctrlC.Systems;
+﻿using ctrlC.Systems;
 using ctrlC.Tools.Selection;
-using Game.Buildings;
-using Game.Common;
 using Game.Input;
 using Game.Prefabs;
 using Game.Tools;
@@ -15,11 +11,10 @@ using UnityEngine.InputSystem;
 
 namespace ctrlC.Tools
 {
-	public partial class StampPlacementTool : CustomOTS
-	{
+    public partial class StampPlacementTool : CustomOTS
+    {
         // Properties
         public override string toolID => base.toolID;
-        public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(StampPlacementTool)}").SetShowsErrorsInUI(false);
 
         // Fields
         public PrefabBase _OriginalPre;
@@ -31,8 +26,6 @@ namespace ctrlC.Tools
         public InputAction c_SecondaryApplyAction;
         public InputAction restoreDefault;
 
-        public ProxyAction elevateUp;
-        public ProxyAction elevateDown;
         public ProxyAction mirrorAction;
 
         // Other Systems
@@ -48,219 +41,235 @@ namespace ctrlC.Tools
         private float pauseDelay = 0.2f;
         private float pauseTimer = 0f;
         public float elevation { get; set; } = 2.5f;
-		
 
-		public override PrefabBase GetPrefab()
-		{
-			return this.prefab;
-		}
+        public override PrefabBase GetPrefab()
+        {
+            return this.prefab;
+        }
 
-		public override bool TrySetPrefab(PrefabBase prefab)
-		{
-			if (prefab is AssetStampPrefab assetStamp && this.Enabled)
-			{
-				Mode mode = Mode.Stamp;
-				assetStampPrefab = assetStamp;
-				this.prefab = assetStamp;
-				this.mode = mode;
-				return true;
-			}
-			return false;
-		}
+        public override bool TrySetPrefab(PrefabBase prefab)
+        {
+            if (prefab is AssetStampPrefab assetStamp && this.Enabled)
+            {
+                assetStampPrefab = assetStamp;
+                this.prefab = assetStamp;
+                this.mode = Mode.Stamp;
+                return true;
+            }
+            return false;
+        }
 
-		protected override void OnCreate()
-		{
-			base.OnCreate();
-			Enabled = false;
-		}
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+            Enabled = false;
+        }
 
-		public void ActivateTool(AssetStampPrefab stampPrefab, PrefabSystem prefabSystem)
-		{
-			Enabled = true;
-			if (TrySetPrefab(stampPrefab))
-			{
-				_prefabSystem = prefabSystem;
-				modUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
-				modUISystem.place_tool_enabled = true;
-				m_ToolSystem.activeTool = this;
-            } 
-			else{
+        public void ActivateTool(AssetStampPrefab stampPrefab, PrefabSystem prefabSystem)
+        {
+            Enabled = true;
+            if (TrySetPrefab(stampPrefab))
+            {
+                _prefabSystem = prefabSystem;
+                modUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
+                modUISystem.PlacementToolEnabled = true;
+                m_ToolSystem.activeTool = this;
+            }
+            else
+            {
+                log.Info("Cannot set prefab.");
+            }
+        }
 
-				log.Info($"Cannot set prefab. ");
-			}
-		}
+        protected override void OnStartRunning()
+        {
+            base.OnStartRunning();
 
-		protected override void OnStartRunning()
-		{
-			base.OnStartRunning();
+            // Initialize input actions before enabling them
+            InitializeInputActions();
 
-			InitializeInputActions();
-			EnableInputActions(true);
+            // Check if input actions are initialized properly
+            if (c_ApplyAction != null && c_SecondaryApplyAction != null && restoreDefault != null)
+            {
+                EnableInputActions(true);
+            }
+            else
+            {
+                log.Error("Input actions are not initialized correctly.");
+            }
 
+            // Ensure modUISystem is available
+            modUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
+            if (modUISystem != null)
+            {
+                modUISystem.PlacementToolEnabled = true;
+            }
+            else
+            {
+                log.Error("ModUISystem is not available.");
+            }
 
-            base.allowUnderground = false;
-			allowUnderground = false;
-		}
+            allowUnderground = false;
+        }
 
-		protected override void OnStopRunning()
-		{
-            // Disable input actions
-			EnableInputActions(false);
+        protected override void OnStopRunning()
+        {
+            // Check if modUISystem is not null before using it
+            if (modUISystem != null)
+            {
+                modUISystem.PlacementToolEnabled = false;
+            }
 
-			modUISystem.place_tool_enabled = false;
+            // Disable input actions safely
+            if (c_ApplyAction != null && c_SecondaryApplyAction != null && restoreDefault != null)
+            {
+                EnableInputActions(false);
+            }
 
-			// Mark prefabs as obsolete and remove them
-			if (_OriginalPre != null)
-			{
-				_OriginalPre.name = "obsolete";
-				_OriginalPre.Remove<PrefabBase>();
-			}
+            MarkPrefabAsObsolete(_OriginalPre);
+            MarkPrefabAsObsolete(this.prefab);
 
-			if (this.prefab != null)
-			{
-				this.prefab.name = "obsolete";
-				this.prefab.Remove<PrefabBase>();
-			}
+            UpdatePrefabSafe(_prefabSystem, this.prefab);
+            UpdatePrefabSafe(_prefabSystem, _OriginalPre);
 
-			// Update and clear prefabs
-			try
-			{
-				_prefabSystem?.UpdatePrefab(this.prefab);
-				_prefabSystem?.UpdatePrefab(_OriginalPre);
-			}
-			catch (Exception)
-			{
-				
-			}
+            _prefabSystem?.ClearAvailabilityCache();
 
-			_prefabSystem?.ClearAvailabilityCache();
+            CleanUpReferences();
 
-			// Clean up references
-			modUISystem = null;
-			_prefabSystem = null;
-			this.prefab = null;
-			_OriginalPre = null;
-			
-			base.OnStopRunning();
-			_selectionTool = World.GetOrCreateSystemManaged<SelectionTool>();
-			m_ToolSystem.activeTool = _selectionTool;
-			
+            base.OnStopRunning();
 
-		}
+            _selectionTool = World.GetOrCreateSystemManaged<SelectionTool>();
+            if (_selectionTool != null)
+            {
+                m_ToolSystem.activeTool = _selectionTool;
+            }
+            else
+            {
+                log.Error("SelectionTool is not available.");
+            }
+        }
 
+        private void MarkPrefabAsObsolete(PrefabBase prefab)
+        {
+            if (prefab != null)
+            {
+                prefab.name = "obsolete";
+                prefab.Remove<PrefabBase>();
+            }
+        }
 
-		protected override JobHandle OnUpdate(JobHandle inputDeps)
-		{
-			bool forceCancel = m_ForceCancel;
-			m_ForceCancel = false;
+        private void UpdatePrefabSafe(PrefabSystem prefabSystem, PrefabBase prefab)
+        {
+            try
+            {
+                prefabSystem?.UpdatePrefab(prefab);
+            }
+            catch (Exception)
+            {
+                // Handle error if needed
+            }
+        }
 
-			HandleInputEvents();
+        private void CleanUpReferences()
+        {
+            modUISystem = null;
+            _prefabSystem = null;
+            this.prefab = null;
+            _OriginalPre = null;
+        }
 
+        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        {
+            m_ForceCancel = false;
+            HandleInputEvents();
 
             if (m_State == State.Adding || m_State == State.Removing)
-			{
-				if (c_ApplyAction.WasPressedThisFrame() || c_ApplyAction.WasReleasedThisFrame())
-				{
-					return Apply(inputDeps);
-				}
+            {
+                if (c_ApplyAction.WasPressedThisFrame() || c_ApplyAction.WasReleasedThisFrame())
+                {
+                    return Apply(inputDeps);
+                }
 
-				if (forceCancel || c_SecondaryApplyAction.WasPressedThisFrame() || c_SecondaryApplyAction.WasReleasedThisFrame())
-				{
-					return Cancel(inputDeps);
-				}
+                if (m_ForceCancel || c_SecondaryApplyAction.WasPressedThisFrame() || c_SecondaryApplyAction.WasReleasedThisFrame())
+                {
+                    return Cancel(inputDeps);
+                }
 
-				return Update(inputDeps);
-			}
-			if (c_ApplyAction.WasPressedThisFrame())
-			{
-				if (mode == Mode.Move)
-				{
-					m_ToolSystem.activeTool = m_DefaultToolSystem;
-					m_TerrainSystem.OnBuildingMoved(m_MovingObject);
-				}
+                return Update(inputDeps);
+            }
 
-				return Apply(inputDeps, c_ApplyAction.WasReleasedThisFrame());
-			}
+            if (c_ApplyAction.WasPressedThisFrame())
+            {
+                if (mode == Mode.Move)
+                {
+                    m_ToolSystem.activeTool = m_DefaultToolSystem;
+                    m_TerrainSystem.OnBuildingMoved(m_MovingObject);
+                }
 
+                return Apply(inputDeps, c_ApplyAction.WasReleasedThisFrame());
+            }
 
-			if ((mode != Mode.Upgrade || (m_SnapOffMask & Snap.OwnerSide) != 0) && c_SecondaryApplyAction.WasPressedThisFrame())
-			{
-				return Cancel(inputDeps, c_SecondaryApplyAction.WasReleasedThisFrame());
-			}
-			if(m_State != State.Rotating && c_SecondaryApplyAction.IsPressed())
-			{
-				m_State = State.Rotating;
-			}
-			if (m_State == State.Rotating && c_SecondaryApplyAction.WasReleasedThisFrame())
-			{
-				StopRotating();
-				return Update(inputDeps);
-			}
+            if ((mode != Mode.Upgrade || (m_SnapOffMask & Snap.OwnerSide) != 0) && c_SecondaryApplyAction.WasPressedThisFrame())
+            {
+                return Cancel(inputDeps, c_SecondaryApplyAction.WasReleasedThisFrame());
+            }
 
-			if (m_State != 0 && (c_ApplyAction.WasReleasedThisFrame() || c_SecondaryApplyAction.WasReleasedThisFrame()))
-			{
-				m_State = State.Default;
-			}
-			if (m_State == State.Rotating)
-			{
-				
-					
-				float3 @float = InputManager.instance.mousePosition;
-				if (@float.x != m_RotationStartPosition.x)
-				{
-					Rotation value2 = m_Rotation.value;
-					float angle = (@float.x - m_RotationStartPosition.x) * ((float)Math.PI * 2f) * 0.002f;
+            if (m_State != State.Rotating && c_SecondaryApplyAction.IsPressed())
+            {
+                m_State = State.Rotating;
+            }
 
-					
-					value2.m_Rotation = math.normalizesafe(math.mul(m_StartRotation, quaternion.RotateY(angle)), quaternion.identity);
-					
+            if (m_State == State.Rotating && c_SecondaryApplyAction.WasReleasedThisFrame())
+            {
+                StopRotating();
+                return Update(inputDeps);
+            }
 
-					m_RotationModified = true;
-					value2.m_IsAligned = false;
-					m_Rotation.value = value2;
-				}
+            if (m_State != 0 && (c_ApplyAction.WasReleasedThisFrame() || c_SecondaryApplyAction.WasReleasedThisFrame()))
+            {
+                m_State = State.Default;
+            }
 
-					
-				
-			}
+            if (m_State == State.Rotating)
+            {
+                float3 mousePosition = InputManager.instance.mousePosition;
+                if (mousePosition.x != m_RotationStartPosition.x)
+                {
+                    Rotation value2 = m_Rotation.value;
+                    float angle = (mousePosition.x - m_RotationStartPosition.x) * ((float)Math.PI * 2f) * 0.002f;
+                    value2.m_Rotation = math.normalizesafe(math.mul(m_StartRotation, quaternion.RotateY(angle)), quaternion.identity);
+                    m_RotationModified = true;
+                    value2.m_IsAligned = false;
+                    m_Rotation.value = value2;
+                }
+            }
 
-			//TODO: create a new action for Apply. Make a function to disable m_ApplyAction when preparing Camera mode
-			if (prepareCameraMode && c_ApplyAction.WasPerformedThisFrame())
-			{
-				
-				if (!isPlaceholderPaused)
-				{
-					schedulePlaceholderPaused = true;
+            if (prepareCameraMode && c_ApplyAction.WasPerformedThisFrame())
+            {
+                if (!isPlaceholderPaused)
+                {
+                    schedulePlaceholderPaused = true;
+                    pauseTimer = 0f;
+                }
+                else
+                {
+                    isPlaceholderPaused = false;
+                }
+            }
 
-					pauseTimer = 0f; // Reset the timer when scheduling a pause
-				}
-				else
-				{
-					isPlaceholderPaused = false;
-				}
-				
-			}
-			if (schedulePlaceholderPaused)
-			{
-				HandleSchedulePlaceholderPaused();
-			}
+            if (schedulePlaceholderPaused)
+            {
+                HandleSchedulePlaceholderPaused();
+            }
 
-			if (isPlaceholderPaused)
-			{
+            if (isPlaceholderPaused)
+            {
+                return default;
+            }
 
-				//return inputDeps;
+            return base.OnUpdate(inputDeps);
+        }
 
-				return default;
-			}
-			else
-			{
-				return base.OnUpdate(inputDeps);
-			}
-			
-		}
-
-
-        // Initialize input actions
         private void InitializeInputActions()
         {
             c_ApplyAction = new InputAction("SelectObject_Action", InputActionType.Button);
@@ -275,12 +284,8 @@ namespace ctrlC.Tools
                 .With("Button", "<Keyboard>/z");
 
             mirrorAction = Mod.m_MirrorAction;
-            elevateUp = Mod.m_RaiseAction;
-            elevateDown = Mod.m_FlattenAction;
-
         }
 
-        // Enable or disable input actions
         private void EnableInputActions(bool enable)
         {
             if (enable)
@@ -289,8 +294,6 @@ namespace ctrlC.Tools
                 c_ApplyAction.Enable();
                 c_SecondaryApplyAction.Enable();
 
-                elevateUp.shouldBeEnabled = true;
-                elevateDown.shouldBeEnabled = true;
                 mirrorAction.shouldBeEnabled = true;
             }
             else
@@ -299,159 +302,82 @@ namespace ctrlC.Tools
                 c_ApplyAction.Disable();
                 c_SecondaryApplyAction.Disable();
 
-                elevateUp.shouldBeEnabled = false;
-                elevateDown.shouldBeEnabled = false;
                 mirrorAction.shouldBeEnabled = false;
             }
         }
 
-        // Handle input events such as elevation changes and rotations
         private void HandleInputEvents()
         {
-            if (elevateDown.WasPerformedThisFrame()) HandleElevationDown();
-            if (elevateUp.WasPerformedThisFrame()) HandleElevationUp();
             if (mirrorAction.WasPerformedThisFrame()) MirrorPrefab();
         }
 
         private void HandleSchedulePlaceholderPaused()
-		{
-			if (GetRaycastResult(out ControlPoint currentControlPoint))
-			{
-				if (lastControlPoint.Equals(default(ControlPoint)))
-				{
-					lastControlPoint = currentControlPoint;
-					pauseTimer = 0f; // Reset the timer
-				}
-				else
-				{
-					float distance = math.distance(lastControlPoint.m_Position, currentControlPoint.m_Position);
-					if (distance < controlPointTolerance)
-					{
-						pauseTimer += SystemAPI.Time.DeltaTime;
-						if (pauseTimer >= pauseDelay)
-						{
-							// Mouse is still for the duration of the delay, we can pause the placeholder
-							isPlaceholderPaused = true;
-							schedulePlaceholderPaused = false;
-							// Optionally save the current state here if needed
-						}
-					}
-					else
-					{
-						// Mouse moved, reset the timer and last control point
-						lastControlPoint = currentControlPoint;
-						pauseTimer = 0f;
-					}
-				}
-			}
-		}
+        {
+            if (GetRaycastResult(out ControlPoint currentControlPoint))
+            {
+                if (lastControlPoint.Equals(default(ControlPoint)))
+                {
+                    lastControlPoint = currentControlPoint;
+                    pauseTimer = 0f;
+                }
+                else
+                {
+                    float distance = math.distance(lastControlPoint.m_Position, currentControlPoint.m_Position);
+                    if (distance < controlPointTolerance)
+                    {
+                        pauseTimer += SystemAPI.Time.DeltaTime;
+                        if (pauseTimer >= pauseDelay)
+                        {
+                            isPlaceholderPaused = true;
+                            schedulePlaceholderPaused = false;
+                        }
+                    }
+                    else
+                    {
+                        lastControlPoint = currentControlPoint;
+                        pauseTimer = 0f;
+                    }
+                }
+            }
+        }
 
+        public void SavePrefab(string name, int category)
+        {
+            SaveSystem.SavePrefab(EntityManager, _prefabSystem, this.assetStampPrefab, name, category);
+        }
 
-		private void HandleElevationUp()
-		{
-			if (modUISystem.fullElevationStep)
-			{
-				elevation = 1.5f;
-			}
-			else
-			{
-				elevation = 0.5f;
-			}
+        public void LoadStamp()
+        {
+            ObjectPrefab old = this.prefab;
+            TrySetPrefab(_prefabSystem.DuplicatePrefab(_OriginalPre));
+            MarkPrefabAsObsolete(old);
+            UpdatePrefabSafe(_prefabSystem, old);
+            base.m_ForceUpdate = true;
+        }
 
-			foreach (var subnet in this.prefab.GetComponent<ObjectSubNets>().m_SubNets)
-			{
-				subnet.m_BezierCurve.a.y += elevation;
-				subnet.m_BezierCurve.b.y += elevation;
-				subnet.m_BezierCurve.c.y += elevation;
-				subnet.m_BezierCurve.d.y += elevation;
-			}
+        public void MirrorPrefab()
+        {
+            foreach (var subnet in this.prefab.GetComponent<ObjectSubNets>().m_SubNets)
+            {
+                subnet.m_BezierCurve.a.x = invertedFloat(subnet.m_BezierCurve.a.x);
+                subnet.m_BezierCurve.b.x = invertedFloat(subnet.m_BezierCurve.b.x);
+                subnet.m_BezierCurve.c.x = invertedFloat(subnet.m_BezierCurve.c.x);
+                subnet.m_BezierCurve.d.x = invertedFloat(subnet.m_BezierCurve.d.x);
+            }
 
-			_prefabSystem.UpdatePrefab(this.prefab);
-			base.m_ForceUpdate = true;
-		}
+            foreach (var subobj in this.prefab.GetComponent<ObjectSubObjects>().m_SubObjects)
+            {
+                subobj.m_Position.x = invertedFloat(subobj.m_Position.x);
+                subobj.m_Rotation = new quaternion(subobj.m_Rotation.value.x, invertedFloat(subobj.m_Rotation.value.y), subobj.m_Rotation.value.z, subobj.m_Rotation.value.w);
+            }
 
-		private void HandleElevationDown()
-		{
-			if (modUISystem.fullElevationStep)
-			{
-				elevation = 1.5f;
-			}
-			else
-			{
-				elevation = 0.5f;
-			}
+            UpdatePrefabSafe(_prefabSystem, this.prefab);
+            base.m_ForceUpdate = true;
+        }
 
-			foreach (var subnet in this.prefab.GetComponent<ObjectSubNets>().m_SubNets)
-			{
-				subnet.m_BezierCurve.a.y -= elevation;
-				subnet.m_BezierCurve.b.y -= elevation;
-				subnet.m_BezierCurve.c.y -= elevation;
-				subnet.m_BezierCurve.d.y -= elevation;
-
-				if (subnet.m_BezierCurve.a.y < 0)
-				{
-					subnet.m_BezierCurve.a.y = 0;
-				}
-				if (subnet.m_BezierCurve.b.y < 0)
-				{
-					subnet.m_BezierCurve.b.y = 0;
-				}
-				if (subnet.m_BezierCurve.c.y < 0)
-				{
-					subnet.m_BezierCurve.c.y = 0;
-				}
-				if (subnet.m_BezierCurve.d.y < 0)
-				{
-					subnet.m_BezierCurve.d.y = 0;
-				}
-			}
-
-			_prefabSystem.UpdatePrefab(this.prefab);
-			base.m_ForceUpdate = true;
-		}
-		public void SavePrefab(string name, int category)
-		{
-			SaveSystem.SavePrefab(EntityManager, _prefabSystem, this.assetStampPrefab, name, category);
-			
-		}
-
-		public void LoadStamp()
-		{
-			ObjectPrefab old = this.prefab;
-			TrySetPrefab(_prefabSystem.DuplicatePrefab(_OriginalPre));
-			old.name = "obsolete";
-			old.Remove<PrefabBase>();
-			_prefabSystem.UpdatePrefab(old);
-			base.m_ForceUpdate = true;
-
-
-
-		}
-
-		public void MirrorPrefab()
-		{
-			foreach (var subnet in this.prefab.GetComponent<ObjectSubNets>().m_SubNets)
-			{
-				subnet.m_BezierCurve.a.x = invertedFloat(subnet.m_BezierCurve.a.x);
-				subnet.m_BezierCurve.b.x = invertedFloat(subnet.m_BezierCurve.b.x);
-				subnet.m_BezierCurve.c.x = invertedFloat(subnet.m_BezierCurve.c.x);
-				subnet.m_BezierCurve.d.x = invertedFloat(subnet.m_BezierCurve.d.x);
-			}
-
-			foreach (var subobj in this.prefab.GetComponent<ObjectSubObjects>().m_SubObjects)
-			{
-				subobj.m_Position.x = invertedFloat(subobj.m_Position.x);
-				subobj.m_Rotation = new quaternion(subobj.m_Rotation.value.x, invertedFloat(subobj.m_Rotation.value.y), subobj.m_Rotation.value.z, subobj.m_Rotation.value.w);
-			}
-
-			_prefabSystem.UpdatePrefab(this.prefab);
-
-			base.m_ForceUpdate = true;
-		}
-
-		public float invertedFloat(float original)
-		{
-			return original - (original * 2);
-		}
-	}
+        public float invertedFloat(float original)
+        {
+            return original * -1;
+        }
+    }
 }

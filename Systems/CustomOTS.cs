@@ -10,6 +10,7 @@ using Colossal.Logging;
 using Colossal.Mathematics;
 using Colossal.Serialization.Entities;
 using ctrlC.Components;
+using ctrlC.Tools;
 using Game;
 using Game.Areas;
 using Game.Audio;
@@ -40,8 +41,8 @@ namespace ctrlC.Systems
     // This is just a copy of the games ObjectToolSystem.cs
 
     // The reason was that I wanted access to some properties and the easiest way was to just copy the code and make the props Internal.
-    
-    
+
+
     // Also to be able to copy trees with their age, houses with their seed and so on, we need to utilize the custom components in CustomComponents.cs.
     // When adding CtrlCSubBuildings component to the CtrlCStampPrefab, the data about the buildings are there, but when instantiating an entity from the m_Prefab
     // we dont get any houses.
@@ -52,7 +53,7 @@ namespace ctrlC.Systems
     // Or just fix the Custom Components to work properly, Idk. 
 
     public partial class CustomOTS : ObjectToolBaseSystem
-{
+    {
 
         public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(CustomOTS)}").SetShowsErrorsInUI(false);
         public enum Mode
@@ -1754,9 +1755,9 @@ namespace ctrlC.Systems
 
         private RandomSeed m_RandomSeed;
 
-        private AssetStampPrefab m_Prefab;
+        private ObjectPrefab m_Prefab;
 
-        private AssetStampPrefab m_SelectedPrefab;
+        private ObjectPrefab m_SelectedPrefab;
 
         private TransformPrefab m_TransformPrefab;
 
@@ -1774,7 +1775,7 @@ namespace ctrlC.Systems
         {
             get
             {
-                Mode mode = this.mode; //Mode is stamp
+                Mode mode = this.mode;
                 if (!allowBrush && mode == Mode.Brush)
                 {
                     mode = Mode.Create;
@@ -1795,7 +1796,7 @@ namespace ctrlC.Systems
                     mode = Mode.Stamp;
                 }
 
-                return mode; //Returning Mode.Create
+                return mode;
             }
         }
 
@@ -1820,7 +1821,7 @@ namespace ctrlC.Systems
         }
 
         [CanBeNull]
-        public AssetStampPrefab prefab
+        public ObjectPrefab prefab
         {
             get
             {
@@ -1990,7 +1991,6 @@ namespace ctrlC.Systems
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            
             m_ControlPoints.Clear();
             m_LastRaycastPoint = default(ControlPoint);
             m_StartPoint = default(ControlPoint);
@@ -2003,7 +2003,7 @@ namespace ctrlC.Systems
             base.requireNetArrows = false;
             base.requireAreas = AreaTypeMask.Lots;
             base.requireNet = Layer.None;
-            if (m_ToolSystem.actionMode.IsEditor())
+            if (m_ToolSystem.actionMode.IsEditor()) // false
             {
                 base.requireAreas |= AreaTypeMask.Spaces;
             }
@@ -2014,9 +2014,9 @@ namespace ctrlC.Systems
         [Preserve]
         protected override void OnStopRunning()
         {
-            m_ApplyAction.shouldBeEnabled = false;
-            m_SecondaryApplyAction.shouldBeEnabled = false;
-            m_CancelAction.shouldBeEnabled = false;
+            //m_ApplyAction.enabled = false;
+            //m_SecondaryApplyAction.enabled = false;
+            //m_CancelAction.enabled = false;
             m_ApplyDisplayOverride.state = DisplayNameOverride.State.Off;
             m_SecondaryApplyDisplayOverride.state = DisplayNameOverride.State.Off;
             base.OnStopRunning();
@@ -2040,21 +2040,19 @@ namespace ctrlC.Systems
 
         protected override bool GetAllowApply()
         {
-            //if (base.GetAllowApply())
-            //{
-            //    return !m_TempQuery.IsEmptyIgnoreFilter;
-            //}
-
             return true;
+            if (base.GetAllowApply())
+            {
+                return !m_TempQuery.IsEmptyIgnoreFilter;
+            }
+
+            return false;
         }
 
         public override bool TrySetPrefab(PrefabBase prefab)
         {
-            log.Info("Trying to set prefab..");
-
-            if (prefab is AssetStampPrefab objectPrefab)
+            if (prefab is ObjectPrefab objectPrefab)
             {
-                log.Info($"prefab is CtrlCStampPrefab");
                 Mode mode = this.mode;
                 if (!m_ToolSystem.actionMode.IsEditor() && prefab.Has<Game.Prefabs.ServiceUpgrade>())
                 {
@@ -2080,12 +2078,11 @@ namespace ctrlC.Systems
 
             if (prefab is TransformPrefab transformPrefab)
             {
-                log.Info("prefab is TransformPrefab");
                 transform = transformPrefab;
                 this.mode = Mode.Create;
                 return true;
             }
-            log.Info("returning false on TrySetPrefab");
+
             return false;
         }
 
@@ -2098,7 +2095,7 @@ namespace ctrlC.Systems
             }
 
             mode = Mode.Move;
-            prefab = m_PrefabSystem.GetPrefab<AssetStampPrefab>(base.EntityManager.GetComponentData<PrefabRef>(m_MovingObject));
+            prefab = m_PrefabSystem.GetPrefab<ObjectPrefab>(base.EntityManager.GetComponentData<PrefabRef>(m_MovingObject));
         }
 
         private void Randomize()
@@ -2106,7 +2103,7 @@ namespace ctrlC.Systems
             m_RandomSeed = RandomSeed.Next();
             if (!(m_SelectedPrefab != null) || !m_PrefabSystem.TryGetComponentData<PlaceableObjectData>(m_SelectedPrefab, out var component) || component.m_RotationSymmetry == RotationSymmetry.None)
             {
-                return; // we are returning early
+                return;
             }
 
             Unity.Mathematics.Random random = m_RandomSeed.GetRandom(567890109);
@@ -2142,14 +2139,14 @@ namespace ctrlC.Systems
             m_Rotation.value = value;
         }
 
-        private AssetStampPrefab GetObjectPrefab()
+        private ObjectPrefab GetObjectPrefab()
         {
-            if (m_ToolSystem.actionMode.IsEditor() && m_TransformPrefab != null && GetContainers(m_ContainerQuery, out var _, out var transformContainer))
+            if (m_ToolSystem.actionMode.IsEditor() && m_TransformPrefab != null && GetContainers(m_ContainerQuery, out var _, out var transformContainer)) // false
             {
-                return m_PrefabSystem.GetPrefab<AssetStampPrefab>(transformContainer);
+                return m_PrefabSystem.GetPrefab<ObjectPrefab>(transformContainer);
             }
 
-            if (actualMode == Mode.Move)
+            if (actualMode == Mode.Move) // false
             {
                 Entity entity = m_MovingObject;
                 if (m_ToolSystem.actionMode.IsEditor() && base.EntityManager.HasComponent<Game.Buildings.ServiceUpgrade>(entity) && base.EntityManager.TryGetComponent<Owner>(entity, out var component))
@@ -2159,11 +2156,11 @@ namespace ctrlC.Systems
 
                 if (base.EntityManager.TryGetComponent<PrefabRef>(entity, out var component2))
                 {
-                    return m_PrefabSystem.GetPrefab<AssetStampPrefab>(component2);
+                    return m_PrefabSystem.GetPrefab<ObjectPrefab>(component2);
                 }
             }
 
-            return m_SelectedPrefab; // this was the return
+            return m_SelectedPrefab;
         }
 
         public override void SetUnderground(bool underground)
@@ -2194,13 +2191,13 @@ namespace ctrlC.Systems
             {
                 float3 rayOffset = default(float3);
                 Bounds3 bounds = default(Bounds3);
-                if (m_PrefabSystem.TryGetComponentData<ObjectGeometryData>(m_Prefab, out var component)) //This was true
+                if (m_PrefabSystem.TryGetComponentData<ObjectGeometryData>(m_Prefab, out var component)) // true
                 {
                     rayOffset.y -= component.m_Pivot.y;
                     bounds = component.m_Bounds;
                 }
 
-                if (m_PrefabSystem.TryGetComponentData<PlaceableObjectData>(m_Prefab, out var component2))
+                if (m_PrefabSystem.TryGetComponentData<PlaceableObjectData>(m_Prefab, out var component2)) // false
                 {
                     rayOffset.y -= component2.m_PlacementOffset.y;
                     if ((component2.m_Flags & Game.Objects.PlacementFlags.Hanging) != 0)
@@ -2211,14 +2208,14 @@ namespace ctrlC.Systems
 
                 m_ToolRaycastSystem.rayOffset = rayOffset;
                 GetAvailableSnapMask(out var onMask, out var offMask);
-                Snap actualSnap = ToolBaseSystem.GetActualSnap(selectedSnap, onMask, offMask);
-                if ((actualSnap & (Snap.NetArea | Snap.NetNode)) != 0)
+                Snap actualSnap = ToolBaseSystem.GetActualSnap(selectedSnap, onMask, offMask); // selectedSnap: ExistingGeometry | CellLength | StraightDirection | NetSide | NetArea | OwnerSide | ObjectSide | NetMiddle | Shoreline | NearbyGeometry | GuideLines | ZoneGrid | NetNode | ObjectSurface | Upright | LotGrid | PrefabType
+                if ((actualSnap & (Snap.NetArea | Snap.NetNode)) != 0) // false
                 {
                     m_ToolRaycastSystem.typeMask |= TypeMask.Net;
                     m_ToolRaycastSystem.netLayerMask |= Layer.Road | Layer.TrainTrack | Layer.TramTrack | Layer.SubwayTrack | Layer.PublicTransportRoad;
                 }
 
-                if ((actualSnap & Snap.ObjectSurface) != 0)
+                if ((actualSnap & Snap.ObjectSurface) != 0) // false
                 {
                     m_ToolRaycastSystem.typeMask |= TypeMask.StaticObjects;
                     if (m_ToolSystem.actionMode.IsEditor())
@@ -2227,7 +2224,7 @@ namespace ctrlC.Systems
                     }
                 }
 
-                if ((actualSnap & (Snap.NetArea | Snap.NetNode | Snap.ObjectSurface)) != 0 && !m_PrefabSystem.HasComponent<BuildingData>(m_Prefab))
+                if ((actualSnap & (Snap.NetArea | Snap.NetNode | Snap.ObjectSurface)) != 0 && !m_PrefabSystem.HasComponent<BuildingData>(m_Prefab)) // false
                 {
                     if (underground)
                     {
@@ -2249,7 +2246,7 @@ namespace ctrlC.Systems
                 else
                 {
                     m_ToolRaycastSystem.typeMask |= TypeMask.Terrain;
-                    if ((component2.m_Flags & (Game.Objects.PlacementFlags.Shoreline | Game.Objects.PlacementFlags.Floating | Game.Objects.PlacementFlags.Hovering)) != 0)
+                    if ((component2.m_Flags & (Game.Objects.PlacementFlags.Shoreline | Game.Objects.PlacementFlags.Floating | Game.Objects.PlacementFlags.Hovering)) != 0) // false
                     {
                         m_ToolRaycastSystem.typeMask |= TypeMask.Water;
                     }
@@ -2266,7 +2263,7 @@ namespace ctrlC.Systems
                 m_ToolRaycastSystem.rayOffset = default(float3);
             }
 
-            if (m_ToolSystem.actionMode.IsEditor())
+            if (m_ToolSystem.actionMode.IsEditor()) // false
             {
                 m_ToolRaycastSystem.raycastFlags |= RaycastFlags.SubElements;
             }
@@ -2320,79 +2317,17 @@ namespace ctrlC.Systems
             m_Rotation.value = value;
         }
 
-        bool NeedToUpdateEntity(Entity entity)
-        {
-            base.EntityManager.TryGetBuffer<SubB>(entity, false, out DynamicBuffer<SubB> c);
-            // get component "CtrlCSubBuildings" in m_Prefab 
-            CtrlCSubBuildings x = m_Prefab.GetComponent<CtrlCSubBuildings>();
-
-            if (c.Length < x.m_SubObjects.Length)
-            {
-                return true;
-            }
-            return false;
-        }
-        internal bool EntityIsUpdated = false;
-
-        // tested to add Pseudo seed to the created entity, didnt work. 
-        Entity UpdatedEntity()
-        {
-            Entity entity = m_PrefabSystem.GetEntity(m_Prefab);
-            if (!EntityIsUpdated)
-            {
-                // get component "CtrlCSubBuildings" in m_Prefab 
-                CtrlCSubBuildings x = m_Prefab.GetComponent<CtrlCSubBuildings>();
-
-                // Get all CtrlCSubBuildingsInfo in m_SubObjects
-                List<CtrlCSubBuildingsInfo> infos = new List<CtrlCSubBuildingsInfo>();
-
-                foreach (var info in x.m_SubObjects)
-                {
-                    infos.Add(info);
-                }
-
-
-                if (base.EntityManager.TryGetBuffer<Game.Prefabs.SubObject>(entity, false, out DynamicBuffer<Game.Prefabs.SubObject> subObj))
-                {
-                    NativeArray<Game.Prefabs.SubObject> nativeArray = new NativeArray<Game.Prefabs.SubObject>(infos.Count, Allocator.Temp);
-                    for (int i = 0; i < infos.Count; i++)
-                    {
-                        CtrlCSubBuildingsInfo info = infos[i];
-                        // Anta att m_Object i CtrlCSubBuildingsInfo motsvarar en Entity i SubB
-                        Entity m_object = m_PrefabSystem.GetEntity(info.m_Object);
-                        var seedComponent = base.EntityManager.AddComponentData<PseudoRandomSeed>(m_object, new PseudoRandomSeed() { m_Seed = info.seed});
-                        Game.Prefabs.SubObject subObject = new Game.Prefabs.SubObject()
-                        {
-                            m_Prefab = m_object,
-                            m_Position = info.m_Position,
-                            m_Rotation = info.m_Rotation,
-                            m_Probability = 100
-
-                        };
-                        nativeArray[i] = subObject;
-                    }
-
-                    subObj.AddRange(nativeArray);
-                    nativeArray.Dispose();
-                }
-                EntityIsUpdated = true;
-            }
-
-            return entity;
-        }
-
-
         [Preserve]
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             m_UpgradingObject = Entity.Null;
-            Mode mode = actualMode; //Mode is create
-            if (mode == Mode.Brush && base.brushType == null)
+            Mode mode = actualMode; // stamp //Create
+            if (mode == Mode.Brush && base.brushType == null) // false
             {
                 base.brushType = FindDefaultBrush(m_BrushQuery);
             }
 
-            if (mode != Mode.Move)
+            if (mode != Mode.Move) // true
             {
                 m_MovingObject = Entity.Null;
             }
@@ -2405,19 +2340,14 @@ namespace ctrlC.Systems
             }
 
             UpdateActions(forceEnabled: false);
-            if (m_Prefab != null)
+            if (m_Prefab != null) // true
             {
                 allowUnderground = false;
                 base.requireUnderground = false;
                 base.requireNet = Layer.None;
                 base.requireNetArrows = false;
                 base.requireStops = TransportType.None;
-                Entity entity = m_PrefabSystem.GetEntity(m_Prefab);
-
-
-
-
-                UpdateInfoview(m_ToolSystem.actionMode.IsEditor() ? Entity.Null : entity);
+                UpdateInfoview(m_ToolSystem.actionMode.IsEditor() ? Entity.Null : m_PrefabSystem.GetEntity(m_Prefab));
                 GetAvailableSnapMask(out m_SnapOnMask, out m_SnapOffMask);
                 m_PrefabSystem.TryGetComponentData<ObjectGeometryData>(m_Prefab, out var component);
                 if (m_PrefabSystem.TryGetComponentData<PlaceableObjectData>(m_Prefab, out var component2))
@@ -2521,7 +2451,14 @@ namespace ctrlC.Systems
                             m_TerrainSystem.OnBuildingMoved(m_MovingObject);
                         }
 
-                        return Apply(inputDeps, m_ApplyAction.WasReleasedThisFrame());
+                        // First, apply the initial action
+                        inputDeps = Apply(inputDeps, m_ApplyAction.WasReleasedThisFrame());
+                        log.Info("Apply");
+                        // Now, combine the dependency chain to ensure Apply is completed before starting ApplyExtras2
+                        inputDeps = ApplyExtras2(inputDeps, finalPoint);
+                        log.Info("Apply2");
+                        return inputDeps;
+
                     }
 
                     if (m_State == State.Rotating)
@@ -2591,8 +2528,8 @@ namespace ctrlC.Systems
 
         public override void ToggleToolOptions(bool enabled)
         {
-            m_ApplyAction.shouldBeEnabled = !enabled;
-            m_SecondaryApplyAction.shouldBeEnabled = !enabled;
+            //m_ApplyAction.enabled = !enabled;
+            //m_SecondaryApplyAction.enabled = !enabled;
             m_ApplyDisplayOverride.state = (m_ApplyAction.enabled ? DisplayNameOverride.State.GlobalHint : DisplayNameOverride.State.Off);
             m_SecondaryApplyDisplayOverride.state = (m_SecondaryApplyAction.enabled ? DisplayNameOverride.State.GlobalHint : DisplayNameOverride.State.Off);
         }
@@ -2601,9 +2538,9 @@ namespace ctrlC.Systems
         {
             if (forceEnabled)
             {
-                m_ApplyAction.shouldBeEnabled = true;
-                m_SecondaryApplyAction.shouldBeEnabled = true;
-                m_CancelAction.shouldBeEnabled = actualMode == Mode.Upgrade;
+                //m_ApplyAction.enabled = true;
+                //m_SecondaryApplyAction.enabled = true;
+                //m_CancelAction.enabled = actualMode == Mode.Upgrade;
                 m_ApplyDisplayOverride.state = DisplayNameOverride.State.GlobalHint;
                 m_SecondaryApplyDisplayOverride.state = DisplayNameOverride.State.GlobalHint;
             }
@@ -2612,17 +2549,17 @@ namespace ctrlC.Systems
                 //m_CancelAction.enabled = m_ApplyAction.enabled && actualMode == Mode.Upgrade;
             }
 
-            if (actualMode == Mode.Upgrade)
+            if (actualMode == Mode.Upgrade) // false
             {
                 m_ApplyDisplayOverride.displayName = "Place Upgrade";
                 m_SecondaryApplyDisplayOverride.displayName = "Rotate Object";
             }
-            else if (actualMode == Mode.Move)
+            else if (actualMode == Mode.Move) // false  
             {
                 m_ApplyDisplayOverride.displayName = "Move Object";
                 m_SecondaryApplyDisplayOverride.displayName = "Rotate Object";
             }
-            else if (actualMode == Mode.Brush)
+            else if (actualMode == Mode.Brush) //false
             {
                 m_ApplyDisplayOverride.displayName = "Paint Object";
                 m_SecondaryApplyDisplayOverride.displayName = "Erase Object";
@@ -2636,14 +2573,14 @@ namespace ctrlC.Systems
 
         public override void GetAvailableSnapMask(out Snap onMask, out Snap offMask)
         {
-            if (m_Prefab != null)
+            if (m_Prefab != null) // true
             {
-                Mode num = actualMode;
-                bool flag = m_PrefabSystem.HasComponent<BuildingData>(m_Prefab);
-                bool isAssetStamp = !flag && m_PrefabSystem.HasComponent<AssetStampData>(m_Prefab);
-                bool flag2 = num == Mode.Brush;
-                bool stamping = num == Mode.Stamp;
-                if (m_PrefabSystem.HasComponent<PlaceableObjectData>(m_Prefab))
+                Mode num = actualMode; // stamp //Create
+                bool flag = m_PrefabSystem.HasComponent<BuildingData>(m_Prefab); // false
+                bool isAssetStamp = !flag && m_PrefabSystem.HasComponent<AssetStampData>(m_Prefab); // true //False
+                bool flag2 = num == Mode.Brush; // false
+                bool stamping = num == Mode.Stamp; // true // False
+                if (m_PrefabSystem.HasComponent<PlaceableObjectData>(m_Prefab)) // false
                 {
                     GetAvailableSnapMask(m_PrefabSystem.GetComponentData<PlaceableObjectData>(m_Prefab), m_ToolSystem.actionMode.IsEditor(), flag, isAssetStamp, flag2, stamping, out onMask, out offMask);
                 }
@@ -2662,11 +2599,11 @@ namespace ctrlC.Systems
         {
             onMask = Snap.Upright;
             offMask = Snap.None;
-            if ((prefabPlaceableData.m_Flags & (Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.OwnerSide)) == Game.Objects.PlacementFlags.OwnerSide)
+            if ((prefabPlaceableData.m_Flags & (Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.OwnerSide)) == Game.Objects.PlacementFlags.OwnerSide) // false
             {
                 onMask |= Snap.OwnerSide;
             }
-            else if ((prefabPlaceableData.m_Flags & (Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.Shoreline | Game.Objects.PlacementFlags.Floating | Game.Objects.PlacementFlags.Hovering)) != 0)
+            else if ((prefabPlaceableData.m_Flags & (Game.Objects.PlacementFlags.RoadSide | Game.Objects.PlacementFlags.Shoreline | Game.Objects.PlacementFlags.Floating | Game.Objects.PlacementFlags.Hovering)) != 0) // false
             {
                 if ((prefabPlaceableData.m_Flags & Game.Objects.PlacementFlags.OwnerSide) != 0)
                 {
@@ -2698,7 +2635,7 @@ namespace ctrlC.Systems
                     offMask |= Snap.ObjectSurface;
                 }
             }
-            else if ((prefabPlaceableData.m_Flags & (Game.Objects.PlacementFlags.RoadNode | Game.Objects.PlacementFlags.RoadEdge)) != 0)
+            else if ((prefabPlaceableData.m_Flags & (Game.Objects.PlacementFlags.RoadNode | Game.Objects.PlacementFlags.RoadEdge)) != 0) // false
             {
                 if ((prefabPlaceableData.m_Flags & Game.Objects.PlacementFlags.RoadNode) != 0)
                 {
@@ -2710,20 +2647,20 @@ namespace ctrlC.Systems
                     onMask |= Snap.NetArea;
                 }
             }
-            else if (editorMode && !isBuilding)
+            else if (editorMode && !isBuilding) // false
             {
                 onMask |= Snap.ObjectSurface;
                 offMask |= Snap.ObjectSurface;
                 offMask |= Snap.Upright;
             }
 
-            if (editorMode && (!isAssetStamp || stamping))
+            if (editorMode && (!isAssetStamp || stamping)) // false
             {
                 onMask |= Snap.AutoParent;
                 offMask |= Snap.AutoParent;
             }
 
-            if (brushing)
+            if (brushing) // false
             {
                 onMask &= Snap.Upright;
                 offMask &= Snap.Upright;
@@ -2731,7 +2668,7 @@ namespace ctrlC.Systems
                 offMask |= Snap.PrefabType;
             }
 
-            if (isBuilding || isAssetStamp)
+            if (isBuilding || isAssetStamp) // true // False
             {
                 onMask |= Snap.ContourLines;
                 offMask |= Snap.ContourLines;
@@ -2756,7 +2693,7 @@ namespace ctrlC.Systems
                     m_State = State.Removing;
                     m_ForceCancel = singleFrameOnly;
                     GetRaycastResult(out m_LastRaycastPoint);
-                    return UpdateDefinitions(inputDeps);
+                    return UpdateDefinitions(inputDeps, false);
                 }
 
                 if (m_State == State.Removing && GetAllowApply())
@@ -2766,14 +2703,14 @@ namespace ctrlC.Systems
                     m_StartPoint = default(ControlPoint);
                     m_State = State.Default;
                     GetRaycastResult(out m_LastRaycastPoint);
-                    return UpdateDefinitions(inputDeps);
+                    return UpdateDefinitions(inputDeps, false);
                 }
 
                 base.applyMode = ApplyMode.Clear;
                 m_StartPoint = default(ControlPoint);
                 m_State = State.Default;
                 GetRaycastResult(out m_LastRaycastPoint);
-                return UpdateDefinitions(inputDeps);
+                return UpdateDefinitions(inputDeps, false);
             }
 
             if (actualMode != Mode.Upgrade || (m_SnapOffMask & Snap.OwnerSide) != 0)
@@ -2796,7 +2733,7 @@ namespace ctrlC.Systems
                 controlPoint.m_Rotation = m_Rotation.value.m_Rotation;
                 m_ControlPoints.Add(in controlPoint);
                 inputDeps = SnapControlPoint(inputDeps);
-                inputDeps = UpdateDefinitions(inputDeps);
+                inputDeps = UpdateDefinitions(inputDeps, false);
             }
 
             return inputDeps;
@@ -2826,64 +2763,50 @@ namespace ctrlC.Systems
             m_State = State.Default;
         }
 
-        internal JobHandle Apply(JobHandle inputDeps, bool singleFrameOnly = false)
+        internal JobHandle ApplyExtras2(JobHandle inputDeps, ControlPoint controlPoint)
         {
-            if (actualMode == Mode.Brush) // false
+            log.Info("Applying extras2");
+            int count = 2;
+            float offset = 40f;
+            for (int i = 0; i < count; i++)
             {
-                bool allowApply = true;//GetAllowApply();
-                if (m_State == State.Default)
-                {
-                    base.applyMode = (allowApply ? ApplyMode.Apply : ApplyMode.Clear);
-                    Randomize();
-                    if (!singleFrameOnly)
-                    {
-                        m_StartPoint = m_LastRaycastPoint;
-                        m_State = State.Adding;
-                    }
+                controlPoint.m_Position.z += offset * i;
+                Telemetry.PlaceBuilding(m_UpgradingObject, m_Prefab, controlPoint.m_Position);
+            }
+            return inputDeps;
+        }
 
-                    GetRaycastResult(out m_LastRaycastPoint);
-                    return UpdateDefinitions(inputDeps);
-                }
+        internal JobHandle SecondaryApply(JobHandle inputDeps, ControlPoint controlPoint)
+        {
+            log.Info("Applying secondary");
+            base.applyMode = ApplyMode.Apply;
 
-                if (m_State == State.Adding && allowApply)
-                {
-                    base.applyMode = ApplyMode.Apply;
-                    Randomize();
-                    m_StartPoint = default(ControlPoint);
-                    m_State = State.Default;
-                    GetRaycastResult(out m_LastRaycastPoint);
-                    return UpdateDefinitions(inputDeps);
-                }
+            m_ControlPoints.Clear();
 
-                base.applyMode = ApplyMode.Clear;
-                m_StartPoint = default(ControlPoint);
-                m_State = State.Default;
-                GetRaycastResult(out m_LastRaycastPoint);
-                return UpdateDefinitions(inputDeps);
+            if (m_ToolSystem.actionMode.IsGame())
+            {
+                Telemetry.PlaceBuilding(m_UpgradingObject, m_Prefab, controlPoint.m_Position); //this
             }
 
-            if (GetAllowApply()) // true
+            controlPoint.m_Rotation = m_Rotation.value.m_Rotation;
+            m_ControlPoints.Add(in controlPoint);
+            inputDeps = SnapControlPoint(inputDeps);
+            inputDeps = UpdateDefinitions(inputDeps, true);
+
+            //ApplyExtras(m_Prefab, controlPoint.m_Position, controlPoint.m_Rotation);
+            log.Info($"Placed one secondary.. {m_Prefab.name}, {controlPoint.m_Position}");
+            return inputDeps;
+        }
+        internal ControlPoint finalPoint;
+        internal JobHandle Apply(JobHandle inputDeps, bool singleFrameOnly = false)
+        {
+            if (GetAllowApply())
             {
                 base.applyMode = ApplyMode.Apply;
                 Randomize();
-                if (m_Prefab is BuildingPrefab) // false
-                {
-                    if (m_Prefab.TryGet<Game.Prefabs.ServiceUpgrade>(out var _))
-                    {
-                        //m_AudioManager.PlayUISound(m_SoundQuery.GetSingleton<ToolUXSoundSettingsData>().m_PlaceUpgradeSound);
-                    }
-                    else
-                    {
-                        //m_AudioManager.PlayUISound(m_SoundQuery.GetSingleton<ToolUXSoundSettingsData>().m_PlaceBuildingSound);
-                    }
-                }
-                else if (m_Prefab is StaticObjectPrefab || m_ToolSystem.actionMode.IsEditor()) // false
-                {
-                    //m_AudioManager.PlayUISound(m_SoundQuery.GetSingleton<ToolUXSoundSettingsData>().m_PlacePropSound);
-                }
 
                 m_ControlPoints.Clear();
-                if (m_ToolSystem.actionMode.IsGame() && !m_LotQuery.IsEmptyIgnoreFilter) // false
+                if (m_ToolSystem.actionMode.IsGame() && !m_LotQuery.IsEmptyIgnoreFilter)
                 {
                     NativeArray<Entity> nativeArray = m_LotQuery.ToEntityArray(Allocator.TempJob);
                     try
@@ -2909,23 +2832,28 @@ namespace ctrlC.Systems
                     }
                 }
 
-                if (GetRaycastResult(out var controlPoint)) // true
+                if (GetRaycastResult(out var controlPoint))
                 {
-                    if (m_ToolSystem.actionMode.IsGame()) // true
+                    if (m_ToolSystem.actionMode.IsGame())
                     {
-                        Telemetry.PlaceBuilding(m_UpgradingObject, m_Prefab, controlPoint.m_Position);
+                        Telemetry.PlaceBuilding(m_UpgradingObject, m_Prefab, controlPoint.m_Position); //this
                     }
 
                     controlPoint.m_Rotation = m_Rotation.value.m_Rotation;
+                    finalPoint = controlPoint;
                     m_ControlPoints.Add(in controlPoint);
                     inputDeps = SnapControlPoint(inputDeps);
-                    inputDeps = UpdateDefinitions(inputDeps);
+                    inputDeps = UpdateDefinitions(inputDeps, true);
+
+                    //ApplyExtras(m_Prefab, controlPoint.m_Position, controlPoint.m_Rotation);
                 }
             }
             else
             {
                 //m_AudioManager.PlayUISound(m_SoundQuery.GetSingleton<ToolUXSoundSettingsData>().m_PlaceBuildingFailSound);
                 inputDeps = Update(inputDeps);
+
+
             }
 
             return inputDeps;
@@ -2943,7 +2871,7 @@ namespace ctrlC.Systems
                         Randomize();
                         m_StartPoint = m_LastRaycastPoint;
                         m_LastRaycastPoint = controlPoint;
-                        return UpdateDefinitions(inputDeps);
+                        return UpdateDefinitions(inputDeps, false);
                     }
 
                     if (m_LastRaycastPoint.Equals(controlPoint) && !forceUpdate)
@@ -2955,7 +2883,7 @@ namespace ctrlC.Systems
                     base.applyMode = ApplyMode.Clear;
                     m_StartPoint = controlPoint;
                     m_LastRaycastPoint = controlPoint;
-                    return UpdateDefinitions(inputDeps);
+                    return UpdateDefinitions(inputDeps, false);
                 }
 
                 if (m_LastRaycastPoint.Equals(default(ControlPoint)) && !forceUpdate)
@@ -2978,7 +2906,7 @@ namespace ctrlC.Systems
                     m_LastRaycastPoint = default(ControlPoint);
                 }
 
-                return UpdateDefinitions(inputDeps);
+                return UpdateDefinitions(inputDeps, false);
             }
 
             if (GetRaycastResult(out ControlPoint controlPoint2, out bool forceUpdate2))
@@ -2998,17 +2926,17 @@ namespace ctrlC.Systems
                     m_ControlPoints.Add(in controlPoint2);
                     inputDeps = SnapControlPoint(inputDeps);
                     JobHandle.ScheduleBatchedJobs();
-                    if (!forceUpdate2) // true
+                    if (!forceUpdate2)
                     {
                         inputDeps.Complete();
                         ControlPoint other = m_ControlPoints[0];
                         forceUpdate2 = !controlPoint3.EqualsIgnoreHit(other);
                     }
 
-                    if (forceUpdate2) //true
+                    if (forceUpdate2)
                     {
                         base.applyMode = ApplyMode.Clear;
-                        inputDeps = UpdateDefinitions(inputDeps); 
+                        inputDeps = UpdateDefinitions(inputDeps, false);
                     }
                 }
             }
@@ -3055,10 +2983,10 @@ namespace ctrlC.Systems
             __TypeHandle.__Game_Common_Owner_RO_ComponentLookup.Update(ref base.CheckedStateRef);
             SnapJob jobData = default(SnapJob);
             jobData.m_EditorMode = m_ToolSystem.actionMode.IsEditor();
-            jobData.m_Snap = GetActualSnap();
-            jobData.m_Mode = actualMode;
+            jobData.m_Snap = GetActualSnap(); // NetSide/Upright
+            jobData.m_Mode = actualMode; //Create
             jobData.m_Prefab = m_PrefabSystem.GetEntity(m_Prefab);
-            jobData.m_Selected = selected;
+            jobData.m_Selected = selected; //Entity null
             jobData.m_OwnerData = __TypeHandle.__Game_Common_Owner_RO_ComponentLookup;
             jobData.m_TransformData = __TypeHandle.__Game_Objects_Transform_RO_ComponentLookup;
             jobData.m_AttachedData = __TypeHandle.__Game_Objects_Attached_RO_ComponentLookup;
@@ -3103,15 +3031,13 @@ namespace ctrlC.Systems
             return jobHandle;
         }
 
-        private JobHandle UpdateDefinitions(JobHandle inputDeps)
+        private JobHandle UpdateDefinitions(JobHandle inputDeps, bool isPlacing)
         {
             JobHandle jobHandle = DestroyDefinitions(m_DefinitionQuery, m_ToolOutputBarrier, inputDeps);
             if (m_Prefab != null)
             {
-                Entity entity = m_PrefabSystem.GetEntity(m_Prefab); // SubBuilding array in the entity is [0], but correct in m_Prefab //Game.Prefabs.SubObject[2]
+                Entity entity = m_PrefabSystem.GetEntity(m_Prefab); // här ska vi kladda lite  
 
-
-                //base.EntityManager.TryGetComponent<SubObject>(entity, out var subObject);
                 Entity laneContainer = Entity.Null;
                 Entity transformPrefab = Entity.Null;
                 Entity brushPrefab = Entity.Null;
@@ -3167,13 +3093,15 @@ namespace ctrlC.Systems
                     inputDeps = IJobExtensions.Schedule(jobData, JobHandle.CombineDependencies(inputDeps, outJobHandle));
                     chunks.Dispose(inputDeps);
                 }
-                //This entity has [0] items in SubBuilding
+
                 jobHandle = JobHandle.CombineDependencies(jobHandle, CreateDefinitions(entity, transformPrefab, brushPrefab, m_UpgradingObject, m_MovingObject, laneContainer, m_CityConfigurationSystem.defaultTheme, m_ControlPoints, attachmentPrefab, m_ToolSystem.actionMode.IsEditor(), m_CityConfigurationSystem.leftHandTraffic, m_State == State.Removing, actualMode == Mode.Stamp, base.brushSize, math.radians(base.brushAngle), base.brushStrength, deltaTime, m_RandomSeed, GetActualSnap(), actualAgeMask, inputDeps));
                 if (attachmentPrefab.IsCreated)
                 {
+
                     attachmentPrefab.Dispose(jobHandle);
                 }
             }
+
 
             return jobHandle;
         }
@@ -3191,9 +3119,9 @@ namespace ctrlC.Systems
         }
 
         [Preserve]
-	public CustomOTS()
-	{
-	}
-}
+        public CustomOTS()
+        {
+        }
+    }
 }
 

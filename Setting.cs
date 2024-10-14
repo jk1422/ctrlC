@@ -9,6 +9,7 @@ using Game.UI.Widgets;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace ctrlC
 {
@@ -101,15 +102,6 @@ namespace ctrlC
         [SettingsUIKeyboardBinding(BindingKeyboard.X, Mod.kMirrorActionName, ctrl: true)]
         [SettingsUISection(kSection, kKeybindingGroup)]
         public ProxyBinding MirrorBinding { get; set; }
-        
-        [SettingsUIKeyboardBinding(BindingKeyboard.PageUp, Mod.kRaiseActionName, ctrl: true)]
-        [SettingsUISection(kSection, kKeybindingGroup)]
-        public ProxyBinding RaiseBinding { get; set; }
-
-        [SettingsUIKeyboardBinding(BindingKeyboard.PageDown, Mod.kFlattenActionName, ctrl: true)]
-        [SettingsUISection(kSection, kKeybindingGroup)]
-        public ProxyBinding FlattenBinding { get; set; }
-      
 
         [SettingsUISection(kSection, kKeybindingGroup)]
         public bool ResetBindings
@@ -171,8 +163,6 @@ namespace ctrlC
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.Category4Name)), "Category 4 name:" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.Category4Name)), $"Here you can adjust names of your categories" },
 
-
-
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenModBinding)), "Mod Key" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenModBinding)), $"Keyboard binding for opening the mod" },
 
@@ -182,22 +172,13 @@ namespace ctrlC
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.MirrorBinding)), "Mirror Key" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.MirrorBinding)), $"Keyboard binding for mirroring the copied stuff" },
 
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RaiseBinding)), "Raise Key" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.RaiseBinding)), $"Keyboard binding for raising the copied stuff" },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.FlattenBinding)), "Lower Key" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.FlattenBinding)), $"Keyboard binding for lowering the copied stuff" },
-
-
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetBindings)), "Reset key bindings" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetBindings)), $"Reset all key bindings of the mod" },
 
                 { m_Setting.GetBindingKeyLocaleID(Mod.kOpenModActionName), "Open Mod Binding" },
                 { m_Setting.GetBindingKeyLocaleID(Mod.kCopyActionName), "Copy Binding" },
                 { m_Setting.GetBindingKeyLocaleID(Mod.kMirrorActionName), "Mirror Binding" },
-                { m_Setting.GetBindingKeyLocaleID(Mod.kRaiseActionName), "Raise Binding" },
-                { m_Setting.GetBindingKeyLocaleID(Mod.kFlattenActionName), "Lower Binding" },
+
 
                 { m_Setting.GetBindingMapLocaleID(), "Mod settings sample" },
             };

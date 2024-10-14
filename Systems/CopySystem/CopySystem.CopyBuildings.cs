@@ -1,5 +1,7 @@
 ﻿using Colossal.Entities;
 using ctrlC.Components;
+using ctrlC.Components.Prefabs;
+using ctrlC.Components.Entities;
 using Game.Common;
 using Game.Net;
 using Game.Prefabs;
@@ -33,24 +35,21 @@ namespace ctrlC.Systems
 					var seed = _entityManager.GetComponentData<Game.Common.PseudoRandomSeed>(buildings[i]);
 					float3 normalizedPosition = new float3(transform.m_Position.x - centroid.x, 0, transform.m_Position.z - centroid.z);
 
-
-                    ProcessSubElements(buildings[i], areaInfos);
+                    ProcessSubElements(buildings[i], areaInfos, i);
 
 					subObjectInfos.Add(new ObjectSubObjectInfo
 					{
 						m_Object = prefab as ObjectPrefab,
 						m_Position = normalizedPosition,
 						m_Rotation = transform.m_Rotation,
-						m_GroupIndex = 0,
+						m_GroupIndex = i,
 						m_ParentMesh = 0,
 						m_Probability = 100,
 					});
-					log.Info($"added building to subBuildingsInfos");
-
 				}
             }
         }
-        private static void ProcessSubElements(Entity building, List<ObjectSubAreaInfo> areaInfos)
+        private static void ProcessSubElements(Entity building, List<ObjectSubAreaInfo> areaInfos, int index)
 		{
             if (_entityManager.TryGetBuffer<Game.Areas.SubArea>(building, true, out DynamicBuffer<Game.Areas.SubArea> areas))
             {

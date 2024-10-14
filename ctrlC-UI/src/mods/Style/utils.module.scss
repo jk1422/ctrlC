@@ -1,0 +1,39 @@
+﻿@import 'theme.module.scss';
+
+.col3{
+    width: 33.33%;
+    padding-top: 4rem;
+}
+.dFlex{
+    display:flex;
+    flex-grow: 1;
+    justify-content: center;
+    align-items:center;
+}
+.h100{
+    height:100%;
+}
+
+.pe{
+    padding-right:9rem;
+}
+.ps {
+    padding-left: 9rem;
+}
+
+.row {
+    display: flex;
+}
+
+.Hidden {
+    display: none;
+    width: 0px;
+    height: 0px;
+}
+
+.primary{
+    background-color: $primary-color !important;
+}
+.danger {
+    background-color: $danger-color !important;
+}

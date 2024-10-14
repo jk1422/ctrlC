@@ -1,0 +1,248 @@
+﻿@import 'theme.module.scss';
+@font-face {
+    font-family: 'Share Tech Mono';
+    src: url('ShareTechMono-Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'LCDdot';
+    src: url('lcddot_tr.ttf');
+}
+
+.toolButtonActive, .toolButtonInactive:active {
+    background-color: rgb(150,0,0); /* Grundfärg för knappen */
+    background-image: radial-gradient( circle at center, rgba(245, 120, 90, 0.9) 0%, /* Ljusaste delen i mitten */
+    rgba(255, 100, 100, 0.6) 70% /* Ljus rödtonad glöd närmast mitten */
+    );
+    background-blend-mode: luminosity;
+    box-shadow: inset 0rem 0rem 4rem rgba(255, 100, 100, 0.8), /* Ljusglans runt lampan */
+    0rem 0rem 15rem 1rem rgba(255, 20, 20, 0.4); /* Yttre röd ljusglans */
+    padding: 3rem;
+    min-height: 26rem;
+    min-width: 26rem;
+    width: fit-content;
+    height: fit-content;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Centrerar ikonen */
+    transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    border: inset solid 60rem;
+    border-image: linear-gradient(-45deg, rgba(200, 0, 0, 0.5), rgba(155, 0, 0, 0.5)) 1; /* Gradient för ramen */
+    border-radius: 0rem;
+    border-width: 3rem;
+    transform: translateY(0); /* Standardläge utan rörelse */
+}
+.toolButtonInactive {
+    background-color: rgb(150,40,40);
+    box-shadow: inset 0rem 0rem 10rem 1rem rgba(90,20,20,0.8);
+    padding: 3rem;
+    min-height: 26rem;
+    min-width: 26rem;
+    width: fit-content;
+    height: fit-content;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Centrerar ikonen */
+    transition: background-color 0.2s;
+    border-image: linear-gradient(-45deg, rgba(50,15,15, 1), rgba(140,35,35, 1)) 1; /* Gradient för ramen */
+    border-width: 3rem;
+    border-radius: 1rem;
+}
+
+
+.icon {
+    position: center;
+    width: 16rem;
+    height: 16rem;
+    opacity: 0.6;
+}
+
+.toolButtonLabel {
+    font-family: 'Share Tech Mono';
+    font-size: 14rem;
+    color: white;
+    opacity: 0.6;
+}
+
+
+.toolButtonFrame {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: fit-content;
+    width: fit-content;
+    border-radius: 3rem;
+    padding: 5rem;
+    background-color: $background-color;
+}
+
+/*Selection tool button */
+/* Grundläggande stil för hela knappgruppen */
+.button-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #222;
+    padding: 8rem;
+    padding-bottom: 5rem;
+    margin: auto;
+    margin-top: 5rem;
+    border-radius: 5rem 5rem 0rem 0rem;
+    width: fit-content;
+    max-width: 60rem;
+}
+
+/* Stilen för knapparna */
+.button {
+    background-color: $btn-inActive;
+    box-shadow: inset 0 0 10rem rgba(0, 0, 0, 0.4);
+    color: #fff;
+    padding: 10rem 10rem;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    text-transform: uppercase;
+    border-radius: 0;
+}
+
+/* Aktiv knapp (radio/toggle-effekt) */
+.button.active {
+    background-color: $btn-active;
+    box-shadow: inset 0rem 4rem 8rem rgba(0, 0, 0, 0.7);
+    
+}
+
+/* Stil för vänster knapp */
+.left-button {
+    border-top-left-radius: 3rem;
+    border-bottom-left-radius: 3rem;
+}
+
+/* Stil för höger knapp */
+.right-button {
+    border-top-right-radius: 3rem;
+    border-bottom-right-radius: 3rem;
+}
+
+/* Hover-effekt */
+.button:hover {
+    
+}
+
+/* När knappen är aktiv */
+.button:active {
+    background-color: $btn-active;
+    box-shadow: inset 0rem 5rem 8rem rgba(0, 0, 0, 0.7);
+}
+
+.saveModule {
+    background-color: $background-color;
+    padding: 8rem 6rem;
+    border-radius: 2rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.LCDScreen {
+    width: 80%;
+    height: 155rem;
+    padding: 4rem;
+    border-radius: 1.5rem;
+    background: rgba(36, 71, 235, 0.8);
+    display: flex;
+    flex-direction: column;
+}
+
+.LCDInputGroup, .LCDCategoryInput, .LCDCategoryInputSelected {
+    width: 100%;
+    height: 20rem;
+    font-family: 'LCDdot', sans-serif;
+    font-size: 30rem;
+    margin-bottom: 3rem;
+    padding: 2rem 4rem;
+    color: rgb(106, 158, 171);
+    border: none;
+    text-shadow: 0 0 10rem rgba(106, 158, 171, 0.5), 0 0 20rem rgba(106, 158, 171, 0.4);
+}
+
+.LCDInputGroup {
+    display: flex;
+    height: 25rem;
+    overflow: hidden;
+    margin-bottom: 10rem;
+    color: rgb(106, 158, 171);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.LCDMessageTitle, .LCDTextInput, .LCDTextInputLabel {
+    font-family: 'LCDdot', sans-serif;
+    text-shadow: 0 0 10rem rgba(106, 158, 171, 0.5), 0 0 20rem rgba(106, 158, 171, 0.4);
+}
+
+.LCDMessageTitle {
+    font-size: 30rem;
+    padding: 4rem;
+}
+
+.LCDTextInput {
+    width: 75%;
+    font-size: 25rem;
+    padding: 2rem;
+    color: rgb(106, 158, 171);
+    background: transparent;
+    border: none;
+}
+
+.LCDTextInputLabel {
+    width: 25%;
+    font-size: 25rem;
+    padding: 2rem;
+    margin-bottom: 10rem;
+}
+
+.LCDCategoryInputSelected {
+    color: rgba(0, 0, 0, 1);
+    background: rgb(106, 158, 171);
+}
+
+.saveButtonFrame{
+    display:flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.saveButtonLabel {
+    font-family: 'Share Tech Mono';
+    font-size: 14rem;
+    padding: 2rem;
+    color: dimgray;
+    opacity: 0.6;
+}
+
+.saveButton {
+    background-color: rgb(25, 25, 25);
+    border-left-color: rgb(45, 45, 45);
+    border-right-color: rgb(15, 15, 15);
+    border-top-color: rgb(45, 45, 45);
+    border-bottom-color: rgb(15, 15, 15);
+    margin-right: 2rem;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.saveButton:hover {
+    border-left-color: rgb(35, 35, 35);
+    border-right-color: rgb(10, 10, 10);
+    border-top-color: rgb(35, 35, 35);
+    border-bottom-color: rgb(10, 10, 10);
+}
+
+.saveButton:active {
+    transition: none; 
+    border-left-color: rgb(30, 30, 30);
+    border-right-color: rgb(8, 8, 8);
+    border-top-color: rgb(30, 30, 30);
+    border-bottom-color: rgb(8, 8, 8);
+}

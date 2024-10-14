@@ -14,25 +14,25 @@ namespace ctrlC.Systems
 {
     internal static partial class CopySystem
     {
-		private static void MapNodesToIndices(List<Entity> entities, EntityManager entityManager, Dictionary<Node, int> nodeIndexMapping, ref int currentIndex)
-		{
-			foreach (var selected in entities)
-			{
-				if (!entityManager.HasComponent<Edge>(selected))
-					continue;
+        private static void MapNodesToIndices(List<Entity> entities, EntityManager entityManager, Dictionary<Entity, int> nodeIndexMapping, ref int currentIndex)
+        {
+            foreach (var selected in entities)
+            {
+                if (!entityManager.HasComponent<Edge>(selected))
+                    continue;
 
-				var edge = entityManager.GetComponentData<Edge>(selected);
-				var startNode = entityManager.GetComponentData<Node>(edge.m_Start);
-				var endNode = entityManager.GetComponentData<Node>(edge.m_End);
+                var edge = entityManager.GetComponentData<Edge>(selected);
+                var startNode = edge.m_Start;
+                var endNode = edge.m_End;
 
-				if (!nodeIndexMapping.ContainsKey(startNode))
-					nodeIndexMapping[startNode] = currentIndex++;
-				if (!nodeIndexMapping.ContainsKey(endNode))
-					nodeIndexMapping[endNode] = currentIndex++;
-			}
-		}
+                if (!nodeIndexMapping.ContainsKey(startNode))
+                    nodeIndexMapping[startNode] = currentIndex++;
+                if (!nodeIndexMapping.ContainsKey(endNode))
+                    nodeIndexMapping[endNode] = currentIndex++;
+            }
+        }
 
-        private static void ProcessEdgesAndCurves(List<Entity> entities, EntityManager entityManager, PrefabSystem prefabSystem, List<ObjectSubNetInfo> subNetInfos, Dictionary<Node, int> nodeIndexMapping)
+        private static void ProcessEdgesAndCurves(List<Entity> entities, EntityManager entityManager, PrefabSystem prefabSystem, List<ObjectSubNetInfo> subNetInfos, Dictionary<Entity, int> nodeIndexMapping)
         {
             foreach (var selectedEntity in entities)
             {
@@ -49,28 +49,25 @@ namespace ctrlC.Systems
                     entityManager.AddComponentData(selectedEntity, new Game.Net.Elevation { m_Elevation = elevation.m_Elevation });
 
                     var edge = entityManager.GetComponentData<Edge>(selectedEntity);
-                    var startNode = entityManager.GetComponentData<Node>(edge.m_Start);
-                    var endNode = entityManager.GetComponentData<Node>(edge.m_End);
+                    var startNode = edge.m_Start;
+                    var endNode = edge.m_End;
                     float startEl = 0f;
                     float endEl = 0f;
-                    bool isElevated = false;
-                    if(entityManager.TryGetComponent<Elevation>(edge.m_Start, out Elevation startElevation))
+                    if (entityManager.TryGetComponent<Elevation>(startNode, out Elevation startElevation))
                     {
-                        if(startElevation.m_Elevation.x > 0.1f || startElevation.m_Elevation.y > 0.1f)
+                        if (startElevation.m_Elevation.x > 0.1f || startElevation.m_Elevation.y > 0.1f)
                         {
-                            isElevated = true;
                             startEl = startElevation.m_Elevation.x;
                         }
                     }
-                    if (entityManager.TryGetComponent<Elevation>(edge.m_End, out Elevation endElevation))
+                    if (entityManager.TryGetComponent<Elevation>(endNode, out Elevation endElevation))
                     {
                         if (endElevation.m_Elevation.x > 0.1f || endElevation.m_Elevation.y > 0.1f)
                         {
-                            isElevated = true;
                             endEl = endElevation.m_Elevation.x;
                         }
                     }
-                    
+
                     float lowestY = Math.Min(curve.m_Bezier.a.y, Math.Min(curve.m_Bezier.b.y, Math.Min(curve.m_Bezier.c.y, curve.m_Bezier.d.y)));
                     float lowestElevation = Math.Min(startEl, endEl);
                     lowestY = lowestY - lowestElevation;
@@ -79,27 +76,16 @@ namespace ctrlC.Systems
                         nodeIndexMapping.TryGetValue(endNode, out int endIndex) ? endIndex : -1
                     );
 
-                    Bezier4x3 normalizedBezier = new Bezier4x3();
-                    if (isElevated)
+
+
+                    Bezier4x3 normalizedBezier = new Bezier4x3
                     {
-                        normalizedBezier = new Bezier4x3
-                        {
-                            a = new float3(curve.m_Bezier.a.x - centroid.x, curve.m_Bezier.a.y - lowestY, curve.m_Bezier.a.z - centroid.z),
-                            b = new float3(curve.m_Bezier.b.x - centroid.x, curve.m_Bezier.b.y - lowestY, curve.m_Bezier.b.z - centroid.z),
-                            c = new float3(curve.m_Bezier.c.x - centroid.x, curve.m_Bezier.c.y - lowestY, curve.m_Bezier.c.z - centroid.z),
-                            d = new float3(curve.m_Bezier.d.x - centroid.x, curve.m_Bezier.d.y - lowestY, curve.m_Bezier.d.z - centroid.z)
-                        };
-                    }
-                    else
-                    {
-                        normalizedBezier = new Bezier4x3
-                        {
-                            a = new float3(curve.m_Bezier.a.x - centroid.x, 0, curve.m_Bezier.a.z - centroid.z),
-                            b = new float3(curve.m_Bezier.b.x - centroid.x, 0, curve.m_Bezier.b.z - centroid.z),
-                            c = new float3(curve.m_Bezier.c.x - centroid.x, 0, curve.m_Bezier.c.z - centroid.z),
-                            d = new float3(curve.m_Bezier.d.x - centroid.x, 0, curve.m_Bezier.d.z - centroid.z)
-                        };
-                    }
+                        a = new float3(curve.m_Bezier.a.x - centroid.x, startEl, curve.m_Bezier.a.z - centroid.z),
+                        b = new float3(curve.m_Bezier.b.x - centroid.x, 0, curve.m_Bezier.b.z - centroid.z),
+                        c = new float3(curve.m_Bezier.c.x - centroid.x, 0, curve.m_Bezier.c.z - centroid.z),
+                        d = new float3(curve.m_Bezier.d.x - centroid.x, endEl, curve.m_Bezier.d.z - centroid.z)
+                    };
+
 
                     subNetInfos.Add(new ObjectSubNetInfo
                     {

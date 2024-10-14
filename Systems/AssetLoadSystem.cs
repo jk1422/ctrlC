@@ -3,6 +3,8 @@ using Colossal.Logging;
 using Colossal.PSI.Common;
 using Colossal.Serialization.Entities;
 using ctrlC.Components;
+using ctrlC.Components.Prefabs;
+using ctrlC.Components.Entities;
 using ctrlC.Data;
 using Game;
 using Game.Prefabs;
@@ -34,16 +36,13 @@ public static class ctrlCPrefabStorage
 
     public static void LoadAssetsToStorage()
     {
-        // Rensa befintliga data för att undvika duplicering
         _prefabDict.Clear();
         _prefabList.Clear();
 
-        // Hämta alla prefabs från AssetDatabase
         var allPrefabs = AssetDatabase.user.GetAssets<PrefabAsset>();
 
         foreach (var prefab in allPrefabs)
         {
-            // Kontrollera att prefab har ett giltigt namn
             if (prefab.name.StartsWith("ctrlC_"))
             {
                 try

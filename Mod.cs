@@ -23,17 +23,16 @@ namespace ctrlC
         public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
         internal Setting m_Setting;
         internal ModUISystem m_ModUISystem;
+
         public static ProxyAction m_OpenModAction;
         public static ProxyAction m_CopyAction;
         public static ProxyAction m_MirrorAction;
-        public static ProxyAction m_RaiseAction;
-        public static ProxyAction m_FlattenAction;
+
 
         public const string kOpenModActionName = "Open Mod Binding";
         public const string kCopyActionName = "Copy Binding";
         public const string kMirrorActionName = "Mirror Binding";
-        public const string kRaiseActionName = "Raise Binding";
-        public const string kFlattenActionName = "Flatten Binding";
+
 
         public static string[] PrefabCategories = new string[4];
 
@@ -80,8 +79,6 @@ namespace ctrlC
             m_OpenModAction = m_Setting.GetAction(kOpenModActionName);
             m_CopyAction = m_Setting.GetAction(kCopyActionName);
             m_MirrorAction = m_Setting.GetAction(kMirrorActionName);
-            m_RaiseAction = m_Setting.GetAction(kRaiseActionName);
-            m_FlattenAction = m_Setting.GetAction(kFlattenActionName);
 
             m_OpenModAction.shouldBeEnabled = true;
             m_OpenModAction.onInteraction += (_, phase) => m_ModUISystem.StartMod();
@@ -93,7 +90,7 @@ namespace ctrlC
             PrefabCategories[1] = cat2;
             PrefabCategories[2] = cat3;
             PrefabCategories[3] = cat4;
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ModUISystem>().PrefabCategoriesStringed = string.Join(", ", PrefabCategories);
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ModUISystem>().PrefabCategoriesString = string.Join(", ", PrefabCategories);
         }
 
         public void OnCreateWorld(UpdateSystem updateSystem)

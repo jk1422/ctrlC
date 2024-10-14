@@ -116,7 +116,7 @@ namespace ctrlC.Tools.Selection
             EnableActions(true);
 
             // Notify the UI that this tool is now active
-            modUISystem.sct_tool_enabled = true;
+            modUISystem.SelectionToolEnabled = true;
         }
 
         protected override void OnStopRunning()
@@ -125,7 +125,7 @@ namespace ctrlC.Tools.Selection
             base.OnStopRunning();
 
             // Notify the UI that this tool is now disabled
-            modUISystem.sct_tool_enabled = false;
+            modUISystem.SelectionToolEnabled = false;
 
             // Disable input actions to prevent further user interactions
             EnableActions(false);
@@ -282,6 +282,7 @@ namespace ctrlC.Tools.Selection
 			}
 			if (_altModifier.WasPerformedThisFrame() && rayDefaultMode == true)
 			{
+                modUISystem.CircleSelectionEnabled = true;
 				toolRaycastSystem.typeMask = TypeMask.All;
 				toolRaycastSystem.collisionMask = (CollisionMask.OnGround | CollisionMask.Overground);
 				toolRaycastSystem.iconLayerMask = IconLayerMask.None;
@@ -290,7 +291,8 @@ namespace ctrlC.Tools.Selection
 			}
 			else if (!_altModifier.WasReleasedThisFrame() && rayDefaultMode == false &&toolRaycastSystem != null)
 			{
-				toolRaycastSystem.typeMask = TypeMask.All;
+                
+                toolRaycastSystem.typeMask = TypeMask.All;
 				toolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
 				toolRaycastSystem.netLayerMask = Layer.Road | Layer.Pathway | Layer.TramTrack | Layer.TrainTrack;
 				toolRaycastSystem.iconLayerMask = IconLayerMask.Default;
@@ -298,6 +300,10 @@ namespace ctrlC.Tools.Selection
 				toolRaycastSystem.raycastFlags = RaycastFlags.SubElements | RaycastFlags.Cargo | RaycastFlags.Passenger | RaycastFlags.EditorContainers | RaycastFlags.Decals;
 				rayDefaultMode = true;
 			}
+            else if (_altModifier.WasReleasedThisFrame())
+            {
+                modUISystem.CircleSelectionEnabled = false;
+            }
 			if (!_altModifier.IsPressed() && EntityManager.HasComponent<CircleIdle>(circleEntity))
 			{
 				EntityManager.RemoveComponent<CircleIdle>(circleEntity);
@@ -396,23 +402,23 @@ namespace ctrlC.Tools.Selection
 		{
 			SelectableFilters filters = SelectableFilters.None;
 
-			if (modUISystem.sct_roads)
+			if (modUISystem.SelectRoads)
 			{
 				filters |= SelectableFilters.Road;
 			}
-			if (modUISystem.sct_buildings)
+			if (modUISystem.SelectBuildings)
 			{
 				filters |= SelectableFilters.Building;
 			}
-			if (modUISystem.sct_trees)
+			if (modUISystem.SelectTrees)
 			{
 				filters |= SelectableFilters.Tree;
 			}
-			if (modUISystem.sct_props)
+			if (modUISystem.SelectProps)
 			{
 				filters |= SelectableFilters.Prop;
 			}
-			if (modUISystem.sct_areas)
+			if (modUISystem.SelectAreas)
 			{
 				filters |= SelectableFilters.Area;
 			}

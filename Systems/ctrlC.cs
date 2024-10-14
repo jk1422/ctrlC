@@ -83,7 +83,7 @@ namespace ctrlC.Systems
 
 					m_ToolSystem.selected = Entity.Null;
 					m_ToolSystem.activeTool = selectionTool;
-					modUISystem.sct_tool_enabled = true;
+					modUISystem.SelectionToolEnabled = true;
 				}
 			}
 			catch (Exception e)
