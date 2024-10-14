@@ -369,3 +369,5 @@ Utils/DiscordUtils/
 Properties/
 /Properties/Thumbnail.png
 /Properties/Thumbnail.png
+/Tools/ThumbnailCameraTool.cs
+/Tools/StampPlacementTool.PrepareCamera.cs
