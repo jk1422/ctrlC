@@ -11,6 +11,7 @@ using Game.Modding;
 using Game.SceneFlow;
 using Game.UI.Menu;
 using Unity.Entities;
+using UnityEngine.InputSystem;
 
 namespace ctrlC
 {
@@ -73,6 +74,8 @@ namespace ctrlC
             //);
         }
 
+
+
         public void SetActions()
         {
             m_OpenModAction = m_Setting.GetAction(kOpenModActionName);
@@ -80,9 +83,14 @@ namespace ctrlC
             m_MirrorAction = m_Setting.GetAction(kMirrorActionName);
 
             m_OpenModAction.shouldBeEnabled = true;
-            m_OpenModAction.onInteraction += (_, phase) => m_ModUISystem.StartMod();
+            m_OpenModAction.onInteraction += (_, phase) => StartMod();
         }
-        
+        private void StartMod()
+        {
+            m_ModUISystem.StartMod();
+            //TODO: Disable conflicting inputs, but how
+        }
+
         public static void ReadCategoryNames(string cat1, string cat2, string cat3, string cat4)
         {
             PrefabCategories[0] = cat1;

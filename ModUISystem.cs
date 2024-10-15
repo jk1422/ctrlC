@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Entities;
+using UnityEngine.InputSystem;
 
 namespace ctrlC
 {
@@ -47,6 +48,9 @@ namespace ctrlC
         public bool ShowPrefabMenu { get; set; } = false;
         public int refreshSignal { get; set; } = 0;
 
+        public static List<InputAction> conflictingInputs = new List<InputAction>();
+        private InputAction _CBtn;
+
         protected override void OnGamePreload(Purpose purpose, GameMode mode)
         {
             if (mode == GameMode.Game || mode == GameMode.Editor)
@@ -54,8 +58,77 @@ namespace ctrlC
                 prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
                 ctrlCPrefabStorage.LoadAssetsToStorage();
                 AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_ENV, () => PrefabCategoriesString));
-                log.Info("created");
+                Log.Info("created");
             }
+        }
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            base.OnGameLoadingComplete(purpose, mode);
+            if (mode == GameMode.Game)
+            {
+                CheckBindingsForCKey();
+                _CBtn = new InputAction("cbtn", InputActionType.Button);
+                _CBtn.AddBinding("<Keyboard>/C");
+                _CBtn.Enable();
+            }
+        }
+        void CheckBindingsForCKey()
+        {
+            var inputActions = InputSystem.ListEnabledActions(); // Get all enabled actions
+            conflictingInputs.Clear();
+            foreach (var action in inputActions)
+            {
+                foreach (var binding in action.bindings)
+                {
+                    
+                    if (binding.effectivePath.Contains("<Keyboard>/c"))  // Check if "C" is bound
+                    {
+                        if(action.name != "Open Mod Binding" && action.name != "cbtn")
+                        {
+                            conflictingInputs.Add(action);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void DisableConflictingInputs()
+        {
+            foreach (var input in conflictingInputs)
+            {
+                if (input.enabled)
+                {
+                    input.Disable();
+                }
+            }
+        }
+        private void EnableConflictingInputs()
+        {
+            foreach (var input in conflictingInputs)
+            {
+                if (!input.enabled)
+                {
+                    input.Enable();
+                }
+            }
+        }
+        protected override void OnUpdate()
+        {
+            base.OnUpdate();
+            if(selectionTool.Enabled || stampPlacementTool.Enabled)
+            {
+                if (_CBtn.WasPerformedThisFrame())
+                {
+                    log.Info("cbtn performed");
+                    DisableConflictingInputs();
+                }
+                else if (_CBtn.WasReleasedThisFrame())
+                {
+                    log.Info("cbtn released");
+                    EnableConflictingInputs();
+                }
+            }
+
         }
 
         protected override void OnCreate()

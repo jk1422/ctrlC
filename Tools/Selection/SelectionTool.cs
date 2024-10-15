@@ -19,6 +19,8 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
+using UnityEngine.Windows;
 
 namespace ctrlC.Tools.Selection
 {
@@ -147,6 +149,8 @@ namespace ctrlC.Tools.Selection
             _SecondaryApplyAction.AddBinding("<Mouse>/rightButton");
             _altModifier = new InputAction("SelectObject_AltModifier", InputActionType.Button);
             _altModifier.AddBinding("<Keyboard>/alt");
+
+
         }
 		private void EnableActions(bool x)
 		{
@@ -160,7 +164,8 @@ namespace ctrlC.Tools.Selection
                 _SecondaryApplyAction.Enable();
                 _altModifier.Enable();
 
-				// Updated actions to use bindings set in ctrlC's settings
+
+                // Updated actions to use bindings set in ctrlC's settings
                 _copyAction = Mod.m_CopyAction;
                 _copyAction.shouldBeEnabled = true;
             }
@@ -281,13 +286,19 @@ namespace ctrlC.Tools.Selection
         {
             standardToolMode = !standardToolMode;
         }
+
+
         //TODO: Clean up this mess lazy ass 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
+
 			if (_copyAction.WasPressedThisFrame())
 			{
-				Copy();
-			}
+                
+                Copy();
+                return inputDeps;
+            }
+
 			if (_altModifier.WasPerformedThisFrame() && rayDefaultMode == true)
 			{
                 modUISystem.CircleSelectionEnabled = standardToolMode;
