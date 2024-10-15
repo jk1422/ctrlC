@@ -40,7 +40,7 @@ namespace ctrlC.Systems
 			CtrlCPrefabComponent ctrlCObject = new CtrlCPrefabComponent
 			{
 				c_name = name,
-				c_description = "ctrlC Object",
+				c_description = "",
 				c_imagePath = "/ctrlC_" + name + ".png",
 				c_category = category
 			};

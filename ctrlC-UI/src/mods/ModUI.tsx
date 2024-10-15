@@ -9,7 +9,7 @@ import thumbnailPlaceholder from "img/prefabThumbnail.png";
 import { LEDSign, LogoText, SelectionToolBG, SelectionToolUI, PlacementToolUI } from 'mods/Utils/Components';
 
 // Icons
-import icon from "img/ctrlC_icon.svg";
+import icon from "img/Logo.svg";
 
 
 

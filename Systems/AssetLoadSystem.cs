@@ -122,13 +122,48 @@ public partial class AssetLoadSystem : GameSystemBase
 		if (!Directory.Exists(EnvironmentConstants.PrefabStorage))
 		{
 			Directory.CreateDirectory(EnvironmentConstants.PrefabStorage);
-			log.Warn($"Prefab storage directory does not exist: {EnvironmentConstants.PrefabStorage}");
-			return;
 		}
 
-		var modAssets = GetPrefabsFromDirectoryRecursively(EnvironmentConstants.PrefabStorage, "CustomPrefabs");
+
+		CheckIncludedAssets();
+        var modAssets = GetPrefabsFromDirectoryRecursively(EnvironmentConstants.PrefabStorage, "CustomPrefabs");
 		_monoComponent.StartCoroutine(PrepareAssets(modAssets));
 	}
+
+	private void CheckIncludedAssets()
+	{
+		var includedAssetsPath = Path.Combine(EnvironmentConstants.ModPath, ".CtrlCAssets");
+		if (!Directory.Exists(includedAssetsPath)) return;
+		log.Info($"Checking for included assets in {includedAssetsPath}");
+
+
+        var dir = new DirectoryInfo(includedAssetsPath);
+
+        foreach (var subDir in dir.GetDirectories())
+        {
+            log.Info($"Subdir found: {subDir.Name}");
+
+            var destinationPath = Path.Combine(EnvironmentConstants.PrefabStorage, subDir.Name);
+
+            // Check if the directory already exists in the destination
+            if (Directory.Exists(destinationPath))
+            {
+                log.Info($"Directory {subDir.Name} already exists in {EnvironmentConstants.PrefabStorage}, skipping move.");
+                continue;
+            }
+
+            try
+            {
+                // Move the directory
+                Directory.Move(subDir.FullName, destinationPath);
+                log.Info($"Moved {subDir.Name} to {EnvironmentConstants.PrefabStorage}");
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Failed to move {subDir.Name}: {ex.Message}");
+            }
+        }
+    }
 
 	private IEnumerator PrepareAssets(Dictionary<string, List<FileInfo>> modAssets)
 	{
@@ -180,6 +215,8 @@ public partial class AssetLoadSystem : GameSystemBase
 		}
 	}
 
+
+
 	private static Dictionary<string, List<FileInfo>> GetPrefabsFromDirectoryRecursively(string directory, string modName)
 	{
 		Dictionary<string, List<FileInfo>> files = new();
@@ -196,7 +233,7 @@ public partial class AssetLoadSystem : GameSystemBase
 			}
 			else if (SupportedThumbnailExtensions.Contains(file.Extension))
 			{
-				
+
 			}
 		}
 
@@ -212,7 +249,7 @@ public partial class AssetLoadSystem : GameSystemBase
 			}
 		}
 
-		return files;
+        return files;
 	}
 
 

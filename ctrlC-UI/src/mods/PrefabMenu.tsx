@@ -9,7 +9,7 @@ import { getModule, ModuleRegistryExtend } from "cs2/modding";
 import { Theme } from "cs2/bindings";
 
 import closeIcon from "img/filterIcons/closeW.png"
-import backpackIcon from "img/school-bag.png"
+import backpackIcon from "img/C.png"
 import editIcon from "img/pen.png"
 import deleteIcon from "img/delete.png"
 const ToolBarButtonTheme: Theme | any = getModule(
