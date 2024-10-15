@@ -18,7 +18,7 @@ namespace ctrlC
     public partial class ModUISystem : UISystemBase
     {
         // Logger
-        private static readonly ILog Log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
+        private static readonly ILog Log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(ModUISystem)}").SetShowsErrorsInUI(false);
 
         // Tools and Systems
         private SelectionTool selectionTool;
@@ -54,11 +54,13 @@ namespace ctrlC
                 prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
                 ctrlCPrefabStorage.LoadAssetsToStorage();
                 AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_ENV, () => PrefabCategoriesString));
+                log.Info("created");
             }
         }
 
         protected override void OnCreate()
         {
+
             base.OnCreate();
             InitializeBindings();
             InitializeTools();
@@ -199,7 +201,10 @@ namespace ctrlC
 
         public void ToggleCircleSelection()
         {
-            CircleSelectionEnabled = !CircleSelectionEnabled;
+            log.Info($"Toggling the selectionMode..");
+            selectionTool.ToggleSelectionMode();
+            CircleSelectionEnabled = !selectionTool.standardToolMode;
+            log.Info($"CircleEnabled is {CircleSelectionEnabled}");
         }
 
         public void ToggleSelectAll()

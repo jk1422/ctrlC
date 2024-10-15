@@ -2023,7 +2023,6 @@ namespace ctrlC.Systems
 
         protected override bool GetAllowApply()
         {
-            return true;
             if (base.GetAllowApply())
             {
                 return !m_TempQuery.IsEmptyIgnoreFilter;

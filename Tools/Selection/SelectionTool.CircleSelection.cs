@@ -16,7 +16,7 @@ namespace ctrlC.Tools.Selection
         /// </summary>
         private void UpdateCircleSelection()
         {
-            if (_altModifier.IsPressed() || isSelecting || isDeselecting)
+            if (_altModifier.IsPressed() == standardToolMode || isSelecting || isDeselecting)
             {
                 // Update circle position if mouse is moved
                 UpdateCircleIdle();
@@ -43,7 +43,7 @@ namespace ctrlC.Tools.Selection
                 }
 
                 // Handle circle deselection input
-                if (_altModifier.IsPressed() && _SecondaryApplyAction.WasPressedThisFrame() && !isSelecting)
+                if (_altModifier.IsPressed() == standardToolMode && _SecondaryApplyAction.WasPressedThisFrame() && !isSelecting)
                 {
                     StartCircleDeselection();
                 }

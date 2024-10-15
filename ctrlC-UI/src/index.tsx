@@ -1,7 +1,6 @@
 import { ModRegistrar } from "cs2/modding";
-import { UIRoot } from "mods/NewUI"
-import { UIRoot as old } from 'mods/ModUI'
-import { PrefabMenu, PrefabMenuButton } from "mods/Utils/SavedPrefabMenu"
+import { UIRoot } from "mods/ModUI"
+import { PrefabMenu, PrefabMenuButton } from "mods/PrefabMenu"
 
 
 const register: ModRegistrar = (moduleRegistry) => {

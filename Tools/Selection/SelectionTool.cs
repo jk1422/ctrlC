@@ -73,6 +73,8 @@ namespace ctrlC.Tools.Selection
         public SelectableFilters activeFilters = SelectableFilters.None;
         private EntityQuery selectablesQuery;
 
+        internal bool standardToolMode = true; // This determines the default mode
+
         // This is called when the tool is created (Not the same as started)
         protected override void OnCreate()
 		{
@@ -91,7 +93,7 @@ namespace ctrlC.Tools.Selection
 				m_ToolSystem.selected = Entity.Null;
 				m_ToolSystem.activeTool = this;
 
-				//UIObjectHelper.FindPrefabsInGroup(EntityManager);
+                standardToolMode = true;
 			}
 			else if (!enable && m_ToolSystem.activeTool == this)
 			{
@@ -275,8 +277,11 @@ namespace ctrlC.Tools.Selection
                 m_ToolSystem.activeTool = m_DefaultToolSystem;
             }
         }
-
-		//TODO: Clean up this mess lazy ass 
+        internal void ToggleSelectionMode()
+        {
+            standardToolMode = !standardToolMode;
+        }
+        //TODO: Clean up this mess lazy ass 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
 		{
 			if (_copyAction.WasPressedThisFrame())
@@ -285,7 +290,7 @@ namespace ctrlC.Tools.Selection
 			}
 			if (_altModifier.WasPerformedThisFrame() && rayDefaultMode == true)
 			{
-                modUISystem.CircleSelectionEnabled = true;
+                modUISystem.CircleSelectionEnabled = standardToolMode;
 				toolRaycastSystem.typeMask = TypeMask.All;
 				toolRaycastSystem.collisionMask = (CollisionMask.OnGround | CollisionMask.Overground);
 				toolRaycastSystem.iconLayerMask = IconLayerMask.None;
@@ -305,22 +310,24 @@ namespace ctrlC.Tools.Selection
 			}
             else if (_altModifier.WasReleasedThisFrame())
             {
-                modUISystem.CircleSelectionEnabled = false;
+                modUISystem.CircleSelectionEnabled = !standardToolMode;
             }
-			if (!_altModifier.IsPressed() && EntityManager.HasComponent<CircleIdle>(circleEntity))
+			if (!_altModifier.IsPressed() == standardToolMode && EntityManager.HasComponent<CircleIdle>(circleEntity))
 			{
 				EntityManager.RemoveComponent<CircleIdle>(circleEntity);
 			}
 
-			if (!_altModifier.IsPressed() && _ApplyAction.IsPressed())
-			{
-				RaycastSelect();
-			}
+			
+            if (!_altModifier.IsPressed() == standardToolMode && _ApplyAction.IsPressed())
+            {
+                RaycastSelect();
+            }
+            
 
 			if (GetRaycastResult(out Entity e, out Game.Common.RaycastHit hit))
 			{
 				HandleHover(e, hit);
-				if (!_altModifier.IsPressed() && _SecondaryApplyAction.IsPressed())
+				if (!_altModifier.IsPressed() == standardToolMode && _SecondaryApplyAction.IsPressed())
 				{
 					if (SelectedBuildings.Contains(e))
 					{

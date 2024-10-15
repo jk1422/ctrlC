@@ -9,6 +9,7 @@ export const LEDSign: FC = () => {
     const [lights, setLights] = useState<boolean[][]>(Array(HEIGHT).fill(Array(SCROLLER_LENGTH).fill(false)));
     const [leftPointer, setLeftPointer] = useState(SCROLLER_LENGTH + 1);
 
+
     // Uppdaterad funktion för att konvertera text till LED-format
     const textToLED = (theWord: string): boolean[][] => {
         const theMessage: boolean[][] = [];

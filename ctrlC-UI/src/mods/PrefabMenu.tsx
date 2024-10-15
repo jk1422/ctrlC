@@ -1,10 +1,25 @@
-import React, { useState, useEffect, FC, useCallback} from 'react';
-import {  Panel } from "cs2/ui";
-import { bindValue, trigger } from 'cs2/api';
-import mod from "../../mod.json";
-import { UIBindingConstants } from "../helpers/Bindings";
-import styles from "./PrefabMenu.module.scss";
-import thumbnailPlaceholder from "img/prefabThumbnail.png";
+ï»¿import React, { useState, useEffect, FC, useCallback } from 'react';
+import mod from "mod.json";
+import { UIBindingConstants } from "helpers/Bindings"
+import { bindValue, trigger, useValue } from 'cs2/api';
+import style from "mods/Style/prefabMenu.module.scss";
+import { Icon, Button, FloatingButton, Panel } from "cs2/ui";
+import { getModule, ModuleRegistryExtend } from "cs2/modding";
+
+import { Theme } from "cs2/bindings";
+
+import closeIcon from "img/filterIcons/closeW.png"
+import backpackIcon from "img/school-bag.png"
+import editIcon from "img/pen.png"
+import deleteIcon from "img/delete.png"
+const ToolBarButtonTheme: Theme | any = getModule(
+    "game-ui/game/components/toolbar/components/feature-button/toolbar-feature-button.module.scss",
+    "classes"
+);
+// Getting the vanilla theme css for compatibility
+const ToolBarTheme: Theme | any = getModule("game-ui/game/components/toolbar/toolbar.module.scss", "classes");
+
+
 
 
 interface PrefabData {
@@ -15,29 +30,35 @@ interface PrefabData {
     category: string;
 }
 
-interface PrefabMenuProps {
-    refreshSignal: number;
-    onCategoryChange: (index: number) => void; // Lägg till prop för callback
-}
-
 const prefabs = bindValue<string[][]>(
     mod.id,
     UIBindingConstants.PREFABS_GET,
     []
 );
-
 const prefabCategories = bindValue<string>(
     mod.id,
     UIBindingConstants.PREFAB_ENV,
     "Category 1, Category 2, Category 3, Category 4"
 );
+const showPrefabMenu = bindValue<boolean>(
+    mod.id,
+    UIBindingConstants.SHOW_PREFABMENU,
+    false
+);
 
-export const PrefabMenu: FC<PrefabMenuProps> = ({ refreshSignal, onCategoryChange }) => {
+const refreshSignal = bindValue<number>(
+    mod.id,
+    "refreshSignal",
+    0
+)
+
+
+export const PrefabMenu: FC = () => {
     const [prefabID, getPrefabID] = useState('');
     const [prefabList, setPrefabList] = useState<PrefabData[]>([]);
-    const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0); // Sparar kategori som index
-    const [categories, setCategories] = useState<string[]>([]); 
-
+    const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
+    const [categories, setCategories] = useState<string[]>([]);
+    const refreshSignalValue = useValue(refreshSignal);
     // Uppdateringsfunktion
     const updatePrefabList = () => {
         try {
@@ -49,7 +70,7 @@ export const PrefabMenu: FC<PrefabMenuProps> = ({ refreshSignal, onCategoryChang
                             name: prefab[1],
                             description: prefab[2],
                             imagePath: prefab[3],
-                            category: prefab[4] // category är en sträng som representerar ett index
+                            category: prefab[4] // category Ã¤r en strÃ¤ng som representerar ett index
                         };
                     } else {
                         return null;
@@ -61,7 +82,6 @@ export const PrefabMenu: FC<PrefabMenuProps> = ({ refreshSignal, onCategoryChang
             console.error("Failed to update prefab list", error);
         }
     };
-    // Uppdatera kategorilistan baserat på prefabCategories när komponenten laddas eller vid förändring
     useEffect(() => {
         if (prefabCategories.value && prefabCategories.value.length > 0) {
             const categoriesArray = prefabCategories.value.split(", ");
@@ -71,62 +91,85 @@ export const PrefabMenu: FC<PrefabMenuProps> = ({ refreshSignal, onCategoryChang
         }
     }, [prefabCategories.value]);
 
-
-    // Uppdatera listan vid komponentmontering och varje gång refreshSignal ändras
     useEffect(() => {
         updatePrefabList();
-    }, [refreshSignal]);
+    }, [refreshSignalValue]);
 
-    // Hantera kategoriändring
     const handleCategoryChange = (index: number) => {
-        setSelectedCategoryIndex(index); // Uppdaterar valt kategoriindex
-        onCategoryChange(index); // Anropa callback för att meddela ModUI.tsx om ändringen
+        setSelectedCategoryIndex(index);
     };
-
     const handleClick = (id: string) => {
         trigger(mod.id, UIBindingConstants.PREFAB_INSTANCIATE, id);
     };
 
-    // Filtrera prefabs baserat på valt kategoriindex
-    const filteredPrefabList = prefabList.filter(prefab => parseInt(prefab.category) === selectedCategoryIndex);
+    const closeMenu = () => {
+        trigger(mod.id, UIBindingConstants.TOGGLE_PREFABMENU);
+    };
+    const filteredPrefabList = prefabList.filter(prefab => parseInt(prefab.category, 10) === selectedCategoryIndex);
+
+
+
+    const menuVisible = useValue(showPrefabMenu);
 
     return (
-        <Panel className={styles.MainPanel}>
-            <div className={styles.CategoryPanel}>
-                <div className={styles.CategoryButtons}>
-                    <img src={thumbnailPlaceholder} className={styles.Hidden} hidden></img>
-                    {categories.map((category, index) => (
-                        <button
-                            key={category}
-                            className={`${styles.CategoryButton} ${selectedCategoryIndex === index ? styles.CategoryButtonSelected : ''}`}
-                            onClick={() => handleCategoryChange(index)} // Använd index för att hålla reda på kategori
-                        >
-                            {category}
-                        </button>
-                    ))}
-                </div>
-            </div>
-            <div className={styles.Body}>
-                <div className={styles.ItemRow}>
-                    <div className={styles.ItemGrid}>
-                        {filteredPrefabList.map((prefab, index) => (
-                            <a id={prefab.id} key={index} className={styles.ItemBox} onClick={() => handleClick(prefab.id)}>
-                                <div className={styles.ImageHolder}>
-                                    <img src={prefab.imagePath} alt={prefab.name} className={styles.Thumbnail} />
-                                    
-                                </div>
-                                <div className={styles.ItemBoxInfo}>
-                                    <h5 className={styles.ItemTitle}>{prefab.name}</h5>
-                                </div>
-                            </a>
+        <>
+            {menuVisible && <div className={style.PrefabMenu}>
+                <div className={style.header}>
+                    <div className={style.headerRow}>
+                        <Button src={closeIcon} className={style.closeButton} onClick={closeMenu}>
+                        
+                        </Button>
+                    </div>
+                    <div className={style.categoryList}>
+                        {categories.map((category, index) => (
+                            <Button
+                                key={category}
+                                className={`${style.categoryButton} ${selectedCategoryIndex === index ? style.categoryBtnActive : ''}`}
+                                onClick={() => handleCategoryChange(index)} // AnvÃ¤nd index fÃ¶r att hÃ¥lla reda pÃ¥ kategori
+                            >
+                                {category}
+                            </Button>
                         ))}
                     </div>
                 </div>
-            </div>
-        </Panel>
+                <Panel className={style.body}>
+                    <div className={style.ItemRow}>
+                        <div className={style.ItemGrid}>
+                            {filteredPrefabList.map((prefab, index) => (
+                                <div >
+                                    <a id={prefab.id} key={index} className={style.ItemBox} onClick={() => handleClick(prefab.id)}>
+                                        <div className={style.ImageHolder}>
+                                            <img src={prefab.imagePath} alt={prefab.name} className={style.Thumbnail} />
+                                        </div>
+                                        <div className={style.ItemBoxInfo}>
+                                            <h5 className={style.ItemTitle}>{prefab.name}</h5>
+                                        </div>
+                                    </a>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Panel>
+            </div>}
+        </>
+
     );
 };
 
-export default PrefabMenu;
+export const PrefabMenuButton: ModuleRegistryExtend = (Component) => {
+    return (props) => {
+        const { children, ...otherProps } = props || {};
 
+        const handleClick = () => {
+            trigger(mod.id, UIBindingConstants.TOGGLE_PREFABMENU);
+        };
 
+        return (
+            <>
+                <Button src={backpackIcon} className={ToolBarButtonTheme.button} variant="round" onClick={handleClick}></Button>
+                <div className={ToolBarTheme.divider}></div>
+                <Component {...otherProps}></Component>
+            </>
+        );
+    }
+}

@@ -12,7 +12,7 @@ Whether you're copying a simple intersection or a complex city park, CtrlC provi
 
 ### Top priority:  <sup>(needs fix before publish)</sup>
 - **better explanation of the UI:** The UI isn't very clear to understand so adding tooltips on hovering might be useful
-- **make the toggle button work:** The toggle button for toggling between single and circle selection doesn't work yet. This needs to be fixed.  
+- ~~**make the toggle button work:** The toggle button for toggling between single and circle selection doesn't work yet. This needs to be fixed.~~  
 - **Make bulding extensions unselecteble/select whole building:** When selecting a extension of the building, we should instead select the parent building.
 - ~~**Copy without any selection:** Just check length of the selection lists before copying.~~
 
