@@ -74,8 +74,12 @@ namespace ctrlC.Tools.Selection
         {
             while (queue.TryDequeue(out Entity entity))
             {
-                selectionList.Add(entity);
-                entityManager.ChangeHighlighting_MainThread(entity, Highlighter.ChangeMode.AddHighlight);
+                if (selectionList.Contains(entity)) continue;
+                else
+                {
+                    selectionList.Add(entity);
+                    entityManager.ChangeHighlighting_MainThread(entity, Highlighter.ChangeMode.AddHighlight);
+                }
             }
         }
 
@@ -107,7 +111,6 @@ namespace ctrlC.Tools.Selection
         {
             // Initialize NativeArrays and NativeQueues with default values
             NativeArray<Entity> selectables = default;
-
             NativeQueue<Entity> roadsQueue = default;
             NativeQueue<Entity> buildingsQueue = default;
             NativeQueue<Entity> treesQueue = default;
