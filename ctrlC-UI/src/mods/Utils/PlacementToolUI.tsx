@@ -100,7 +100,7 @@ export const PlacementToolUI = () => {
         setShowMessage(prev => !prev);
         setRefreshSignal(prev => prev + 1); 
     }, [inputValue, selectedCategoryIndex]);
-
+    const click_placeTool_mirror = useCallback(() => { trigger(mod.id, UIBindingConstants.ACTION_PMT_MIRROR); }, []);
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.target.value);
     };
@@ -109,7 +109,7 @@ export const PlacementToolUI = () => {
         <>
             <div className={style.toolRack}>
                 <div className={style.toolButtonsRack}>
-                    <ToolButton icon={plc_mirror} />
+                    <ToolButton icon={plc_mirror} onClick={click_placeTool_mirror } />
                 </div>
             </div>
 
