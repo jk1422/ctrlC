@@ -63,7 +63,7 @@ namespace ctrlC
 
         [SettingsUITextInput]
         [SettingsUISection(kSection, kCategoryGroup)]
-        public string Category1Name { get; set; } = "Category 1";
+        public string Category1Name { get; set; } = "Featured";
         [SettingsUITextInput]
         [SettingsUISection(kSection, kCategoryGroup)]
         public string Category2Name { get; set; } = "Category 2";

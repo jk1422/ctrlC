@@ -12,6 +12,7 @@ import closeIcon from "img/filterIcons/closeW.png"
 import backpackIcon from "img/C.png"
 import editIcon from "img/pen.png"
 import deleteIcon from "img/delete.png"
+import logo from "img/LogoVar2.png"
 const ToolBarButtonTheme: Theme | any = getModule(
     "game-ui/game/components/toolbar/components/feature-button/toolbar-feature-button.module.scss",
     "classes"
@@ -116,6 +117,8 @@ export const PrefabMenu: FC = () => {
             {menuVisible && <div className={style.PrefabMenu}>
                 <div className={style.header}>
                     <div className={style.headerRow}>
+                        <Icon src={logo} className={style.prefabMenuLogo}></Icon>
+
                         <Button src={closeIcon} className={style.closeButton} onClick={closeMenu}>
                         
                         </Button>

@@ -88,7 +88,6 @@ namespace ctrlC
         private void StartMod()
         {
             m_ModUISystem.StartMod();
-            //TODO: Disable conflicting inputs, but how
         }
 
         public static void ReadCategoryNames(string cat1, string cat2, string cat3, string cat4)
