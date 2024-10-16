@@ -10,6 +10,7 @@ using Game.Input;
 using Game.Modding;
 using Game.SceneFlow;
 using Game.UI.Menu;
+using System;
 using Unity.Entities;
 using UnityEngine.InputSystem;
 
@@ -33,7 +34,7 @@ namespace ctrlC
         public const string kCopyActionName = "Copy Binding";
         public const string kMirrorActionName = "Mirror Binding";
 
-
+        public static bool AutoOpenPrefabMenu;
         public static string[] PrefabCategories = new string[4];
 
         public void OnLoad(UpdateSystem updateSystem)
@@ -50,7 +51,7 @@ namespace ctrlC
             m_Setting.RegisterInOptionsUI();
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
             m_Setting.RegisterKeyBindings();
-
+            
             AssetDatabase.global.LoadSettings(nameof(ctrlC), m_Setting, new Setting(this));
 
             m_ModUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ModUISystem>();
@@ -70,8 +71,9 @@ namespace ctrlC
             //
             //
             //   onClicked: OpenLink,
-            //   thumbnail: ""
+            //   thumbnail: "" 
             //);
+            //
         }
 
 
@@ -84,6 +86,8 @@ namespace ctrlC
 
             m_OpenModAction.shouldBeEnabled = true;
             m_OpenModAction.onInteraction += (_, phase) => StartMod();
+
+            AutoOpenPrefabMenu = m_Setting.AutoOpenPrefabMenu;
         }
         private void StartMod()
         {

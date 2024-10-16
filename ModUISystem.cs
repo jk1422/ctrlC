@@ -25,6 +25,7 @@ namespace ctrlC
         private SelectionTool selectionTool;
         private StampPlacementTool stampPlacementTool;
         private PrefabSystem prefabSystem;
+        private Setting m_Setting; 
 
         // Flags
         public bool SelectionToolEnabled { get; set; } = false;
@@ -224,8 +225,11 @@ namespace ctrlC
             {
                 if (!selectionTool.Enabled && !stampPlacementTool.Enabled)
                 {
+
+                    
                     selectionTool.ToggleTool(true);
                     SelectionToolEnabled = true;
+                    ShowPrefabMenu = Mod.AutoOpenPrefabMenu;
                 }
             }
             catch (Exception ex)
@@ -238,8 +242,10 @@ namespace ctrlC
         {
             try
             {
+                
                 SelectionToolEnabled = !selectionTool.Enabled;
                 selectionTool.ToggleTool(SelectionToolEnabled);
+                ShowPrefabMenu = SelectionToolEnabled && Mod.AutoOpenPrefabMenu;
             }
             catch (Exception ex)
             {

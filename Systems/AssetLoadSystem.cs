@@ -221,21 +221,33 @@ public partial class AssetLoadSystem : GameSystemBase
 	{
 		Dictionary<string, List<FileInfo>> files = new();
 		var dir = new DirectoryInfo(directory);
-
-		foreach (var file in dir.GetFiles())
+		bool skip = false;
+		foreach (var file2 in dir.GetFiles())
 		{
-			if (file.Extension == ".Prefab")
+			if(file2.Extension == ".Prefab" && !file2.Name.StartsWith("ctrlC"))
 			{
-				if (!files.ContainsKey(modName))
-					files.Add(modName, new List<FileInfo>());
-
-				files[modName].Add(file);
-			}
-			else if (SupportedThumbnailExtensions.Contains(file.Extension))
-			{
-
+				skip = true;
 			}
 		}
+		if (!skip)
+		{
+            foreach (var file in dir.GetFiles())
+            {
+                log.Info($"file name: {file.Name}");
+                if (file.Extension == ".Prefab" && file.Name.StartsWith("ctrlC"))
+                {
+                    if (!files.ContainsKey(modName))
+                        files.Add(modName, new List<FileInfo>());
+
+                    files[modName].Add(file);
+                }
+                else if (SupportedThumbnailExtensions.Contains(file.Extension))
+                {
+
+                }
+            }
+        }
+
 
 		foreach (var subDir in dir.GetDirectories())
 		{

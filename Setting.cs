@@ -74,6 +74,21 @@ namespace ctrlC
         [SettingsUISection(kSection, kCategoryGroup)]
         public string Category4Name { get; set; } = "Category 4";
 
+        [SettingsUISection(kSection, kCategoryGroup)]
+        public bool AutoOpenPrefabMenu
+        {
+            get => _autoOpenPrefabMenu;
+            set
+            {
+                if (_autoOpenPrefabMenu != value)
+                {
+                    _autoOpenPrefabMenu = value;
+                    Mod.AutoOpenPrefabMenu = value;  // Kalla på metoden som uppdaterar den statiska variabeln
+                }
+            }
+        }
+
+        private bool _autoOpenPrefabMenu = true;
 
         [SettingsUIButton]
         [SettingsUISection(kSection, kCategoryGroup)]
@@ -104,7 +119,7 @@ namespace ctrlC
         {
             set
             {
-                Mod.log.Info("Reset key bindings");
+                Mod.log.Info("Reset key bindingss");
                 ResetKeyBindings();
             }
         }
@@ -141,8 +156,8 @@ namespace ctrlC
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NavPatreon)), "Patreon"},
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.NavPatreon)), "Open the developers Patreon page."},
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NavX)), "X"},
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.NavX)), "Open the developers X page."},
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NavX)), "Twitter"},
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.NavX)), "Open the developers Twitter page."},
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SaveCatNames)), "Save Names" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.SaveCatNames)), $"Press this magic button to refresh the category names without the need to restart" },
@@ -158,6 +173,9 @@ namespace ctrlC
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.Category3Name)), $"Here you can adjust names of your categories" },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.Category4Name)), "Category 4 name:" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.Category4Name)), $"Here you can adjust names of your categories" },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.AutoOpenPrefabMenu)), $"Auto open prefab menu"},
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.AutoOpenPrefabMenu)), $"Automatically open prefab menu when opening the mod."},
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenModBinding)), "Mod Key" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenModBinding)), $"Keyboard binding for opening the mod" },

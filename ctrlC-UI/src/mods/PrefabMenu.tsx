@@ -3,7 +3,7 @@ import mod from "mod.json";
 import { UIBindingConstants } from "helpers/Bindings"
 import { bindValue, trigger, useValue } from 'cs2/api';
 import style from "mods/Style/prefabMenu.module.scss";
-import { Icon, Button, FloatingButton, Panel } from "cs2/ui";
+import { Icon, Button, FloatingButton, Panel, Tooltip } from "cs2/ui";
 import { getModule, ModuleRegistryExtend } from "cs2/modding";
 
 import { Theme } from "cs2/bindings";
