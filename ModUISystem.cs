@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Entities;
 using UnityEngine.InputSystem;
+using ctrlC.AssetManagement;
 
 namespace ctrlC
 {
@@ -163,7 +164,7 @@ namespace ctrlC
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_AREAS, () => ToggleSelectionOption(nameof(SelectAreas))));
 
                 // Update Bindings
-                AddUpdateBinding(new GetterValueBinding<List<List<string>>>(Mod.MOD_NAME, UIBindingConstants.PREFABS_GET, () => ctrlCPrefabStorage._prefabList, new StringListWriter()));
+                AddUpdateBinding(new GetterValueBinding<List<List<string>>>(Mod.MOD_NAME, UIBindingConstants.PREFABS_GET, () => ctrlCPrefabStorage.PrefabList, new StringListWriter()));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SHOW_PREFABMENU, () => ShowPrefabMenu));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.PLACEMENT_TOOL_ENABLED, () => PlacementToolEnabled));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.PREFABS_UPDATE, () => UpdatePrefabs));
@@ -192,7 +193,7 @@ namespace ctrlC
 
         public void InstantiatePrefab(string id)
         {
-            var prefab = ctrlCPrefabStorage._prefabDict[id];
+            var prefab = ctrlCPrefabStorage.PrefabDict[id];
             stampPlacementTool.ActivateTool(prefab as AssetStampPrefab, prefabSystem);
         }
 

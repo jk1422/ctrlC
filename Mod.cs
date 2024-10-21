@@ -1,5 +1,6 @@
 ﻿using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
+using ctrlC.AssetManagement;
 using ctrlC.Data;
 using ctrlC.Rendering;
 using ctrlC.Systems;
@@ -59,7 +60,7 @@ namespace ctrlC
             SetActions();
 
             OnCreateWorld(updateSystem);
-            
+            AssetLoadSystem.LoadCustomPrefabs();
             _notificationUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<NotificationUISystem>();
 
             //var apmNotLoadedNotification = _notificationUISystem.AddOrUpdateNotification(
@@ -75,7 +76,6 @@ namespace ctrlC
             //);
             //
         }
-
 
 
         public void SetActions()
@@ -107,9 +107,7 @@ namespace ctrlC
         {
             updateSystem.UpdateAt<ModUISystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAt<StampPlacementTool>(SystemUpdatePhase.ToolUpdate);
-            
             updateSystem.UpdateAt<SelectionTool>(SystemUpdatePhase.ToolUpdate);
-            updateSystem.UpdateAt<AssetLoadSystem>(SystemUpdatePhase.Modification1);
             updateSystem.UpdateAt<CircleOverlaySystem>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<CustomOTS>(SystemUpdatePhase.ApplyTool);
         }

@@ -1,4 +1,5 @@
-﻿using ctrlC.Systems;
+﻿using ctrlC.AssetManagement;
+using ctrlC.Systems;
 using ctrlC.Tools.Selection;
 using Game.Input;
 using Game.Prefabs;
@@ -126,8 +127,7 @@ namespace ctrlC.Tools
                 EnableInputActions(false);
             }
 
-            MarkPrefabAsObsolete(_OriginalPre);
-            MarkPrefabAsObsolete(this.prefab);
+
 
             UpdatePrefabSafe(_prefabSystem, this.prefab);
             UpdatePrefabSafe(_prefabSystem, _OriginalPre);
@@ -343,16 +343,7 @@ namespace ctrlC.Tools
 
         public void SavePrefab(string name, int category)
         {
-            SaveSystem.SavePrefab(EntityManager, _prefabSystem, this.assetStampPrefab, name, category);
-        }
-
-        public void LoadStamp()
-        {
-            ObjectPrefab old = this.prefab;
-            TrySetPrefab(_prefabSystem.DuplicatePrefab(_OriginalPre));
-            MarkPrefabAsObsolete(old);
-            UpdatePrefabSafe(_prefabSystem, old);
-            base.m_ForceUpdate = true;
+            AssetSaveSystem.SavePrefab(EntityManager, _prefabSystem, this.assetStampPrefab, name, category);
         }
 
         public void MirrorPrefab()
