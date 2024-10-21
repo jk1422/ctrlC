@@ -13,5 +13,5 @@ I'm currently working on cleaning up the code and keeping it well-commented and 
 The goal is to ensure it's accessible to those who want to learn how to build mods or for developers who wish to reuse parts of the code in their own projects. 
 
 ### Quick Links:
-### [How the saving and loading of prefabs works](AssetManagement/_README_AssetLoadAndSave.md)
-### [How the selection tool works](Tools/Selection/_README_SelectionTool.md)
+###  [ 📥 How the saving and loading of prefabs works](AssetManagement/_README_AssetLoadAndSave.md)
+###  [🟢👆 How the selection tool works](Tools/Selection/_README_SelectionTool.md)
