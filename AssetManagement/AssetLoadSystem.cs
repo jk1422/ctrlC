@@ -114,7 +114,7 @@ namespace ctrlC.AssetManagement
                 Directory.CreateDirectory(EnvironmentConstants.PrefabStorage);
             }
 
-            // Start the asynchronous loading process.
+            // Using the gameobject we created earlier to start the asynchronous loading process.
             _monoComponent.StartCoroutine(AsyncronousLoad());
         }
 
@@ -127,27 +127,20 @@ namespace ctrlC.AssetManagement
 
             log.Info("CheckAndMoveFeaturedAssets has completed. Proceeding...");
 
-            // Retrieve all prefabs from the prefab storage directory(/.ctrlC~).
+            // Retrieve all prefabs from the prefab storage directory(/.ctrlC~) and store them in this list.
             List<FileInfo> prefabs = GetPrefabs(EnvironmentConstants.PrefabStorage);
 
             log.Info("GetPrefabsFinished has completed. Proceeding...");
 
-            // Prepare the retrieved prefabs for use.
+            // Prepare the retrieved prefabs and adding them to the AssetDataBase before loading them to the prefab system
             yield return PrepareAssets(prefabs);
         }
 
-        // Retrieves all prefabs from a specified directory and its subdirectories.
-        // This method searches the given directory recursively for prefab files.
-        private static List<FileInfo> GetPrefabs(string directory)
-        {
-            return Directory.GetFiles(directory, "ctrlC_*.Prefab", SearchOption.AllDirectories)
-                            .Select(path => new FileInfo(path)).ToList();
-        }
-
-        // Checks for included assets and moves them to the .ctrlC~ folder
-        // This ensures that any featured assets are in the correct location for loading.
+        // Checks for included assets in the mods directory and moves them to the .ctrlC~ folder.
+        // This ensures that any included assets are in the correct location before loading.
         private static IEnumerator CheckAndMoveFeaturedAssets()
         {
+            // this is the mods location (\AppData\LocalLow\Colossal Order\Cities Skylines II\.cache\Mods\mods_subscribed\*ctrlC's ID and version*)
             string includedAssetsPath = Path.Combine(EnvironmentConstants.ModPath, ".CtrlCAssets");
 
             DirectoryInfo dir = new DirectoryInfo(includedAssetsPath);
@@ -188,8 +181,14 @@ namespace ctrlC.AssetManagement
             yield break;
         }
 
+        // This method searches the /.ctrlC~ folder for prefab files and returns them in a list.
+        private static List<FileInfo> GetPrefabs(string directory)
+        {
+            return Directory.GetFiles(directory, "ctrlC_*.Prefab", SearchOption.AllDirectories)
+                            .Select(path => new FileInfo(path)).ToList();
+        }
+
         // Prepares assets for loading by creating asset paths and adding them to the asset database.
-        // This method reads metadata and adds each asset to the asset database so it can be used by the game.
         private static IEnumerator PrepareAssets(List<FileInfo> modAssets)
         {
             foreach (var file in modAssets)
@@ -212,7 +211,7 @@ namespace ctrlC.AssetManagement
                         continue;
                     }
 
-                    // Read the CID (a unique identifier for the asset) and add the asset to the database.
+                    // Read the CID (a unique identifier for the asset) and add the asset to the AssetDatabase.
                     using (StreamReader sr = new StreamReader(cidFilename))
                     {
                         var CID = sr.ReadToEnd().Trim();
@@ -228,7 +227,6 @@ namespace ctrlC.AssetManagement
             yield return LoadAssets();
         }
 
-        // Loads all assets into the prefab system for use in the game.
         // This final step adds the prefabs to the prefabsystem and makes them available in the game
         private static IEnumerator LoadAssets()
         {
