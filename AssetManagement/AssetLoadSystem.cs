@@ -42,7 +42,7 @@ namespace ctrlC.AssetManagement
             PrefabList.Clear();
 
             // Get all prefabs whose names start with "ctrlC_" from the asset database.
-            // Filtering by prefix helps in managing only the relevant assets.
+            // Using the ctrlC_ prefix to ensure we are not trying to load anything else.
             var allPrefabs = AssetDatabase.user.GetAssets<PrefabAsset>().Where(prefab => prefab.name.StartsWith("ctrlC_")).ToList();
 
             foreach (var prefab in allPrefabs)
@@ -50,19 +50,17 @@ namespace ctrlC.AssetManagement
                 try
                 {
                     // Attempt to load the prefab as a PrefabBase type.
-                    // Casting the asset to PrefabBase ensures we only work with compatible prefabs.
                     if (prefab.Load() is PrefabBase p)
                     {
                         var comp = p.GetComponent<CtrlCPrefabComponent>();
 
                         if (comp != null)
                         {
-                            // Create the image path for the prefab.
-                            // The image path is used to store the visual representation of the prefab.
+                            // The image path to the thumbnail to help the UI system find the correct thumbnail
                             string imagePath = Path.Combine(EnvironmentConstants.PrefabStorage, prefab.name, prefab.name + ".png").Replace("\\", "/");
 
                             // Store metadata about the prefab.
-                            // This metadata is used for displaying information in the UI or for other purposes.
+                            // This metadata is later used by the UI System to get the correct name, thumbnail, category and so on. 
                             var prefabData = new List<string> { comp.c_id, comp.c_name, comp.c_description, imagePath, comp.c_category.ToString() };
 
                             // Add the prefab to the dictionary and metadata list if it doesn't already exist.
@@ -104,7 +102,7 @@ namespace ctrlC.AssetManagement
         // This function sets up necessary components and starts the asynchronous loading process.
         public static void LoadCustomPrefabs()
         {
-            // Get or create the PrefabSystem, which manages prefabs in the game.
+            // Get (or create) the PrefabSystem, which we will use later when adding prefabs.
             _prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
 
             // Create a new GameObject to manage coroutines and ensure it persists across scenes.
@@ -124,7 +122,7 @@ namespace ctrlC.AssetManagement
         // This coroutine runs asynchronously to prevent blockage of the game's and other mods loading processes
         private static IEnumerator AsyncronousLoad()
         {
-            // First, check for any featured assets that are included with the mod and move them to the /.ctrlC~ folder
+            // First, we check for any featured assets that are included with the mod and move them to the /.ctrlC~ folder
             yield return CheckAndMoveFeaturedAssets();
 
             log.Info("CheckAndMoveFeaturedAssets has completed. Proceeding...");
