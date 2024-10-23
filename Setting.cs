@@ -1,6 +1,6 @@
 ﻿using Colossal;
 using Colossal.IO.AssetDatabase;
-using ctrlC.Data;
+using ctrlC.Constants;
 using Game.Input;
 using Game.Modding;
 using Game.Settings;
@@ -36,7 +36,7 @@ namespace ctrlC
         {
             set
             {
-                Application.OpenURL(EnvironmentConstants.PatreonLink);
+                Application.OpenURL(PathConstants.PatreonLink);
             }
         }
         [SettingsUIButton]
@@ -46,7 +46,7 @@ namespace ctrlC
         {
             set
             {
-                Application.OpenURL(EnvironmentConstants.XLink);
+                Application.OpenURL(PathConstants.XLink);
             }
         }
 
@@ -57,7 +57,7 @@ namespace ctrlC
         {
             set
             {
-                Application.OpenURL(EnvironmentConstants.PrefabStorage);
+                Application.OpenURL(PathConstants.PrefabStorage);
             }
         }
 

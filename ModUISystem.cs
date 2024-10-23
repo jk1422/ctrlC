@@ -1,7 +1,8 @@
 ﻿using Colossal.Logging;
 using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
-using ctrlC.Data;
+using ctrlC.Constants;
+using ctrlC.Systems.AssetManagement;
 using ctrlC.Tools;
 using ctrlC.Tools.Selection;
 using ctrlC.Utils;
@@ -13,24 +14,26 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Entities;
 using UnityEngine.InputSystem;
-using ctrlC.AssetManagement;
-using Game.Objects;
-using Game.Tools;
 
 namespace ctrlC
 {
     public partial class ModUISystem : UISystemBase
     {
-        // Logger
+        #region Logger
+
         private static readonly ILog Log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(ModUISystem)}").SetShowsErrorsInUI(false);
+
+        #endregion Logger
 
         // Tools and Systems
         private SelectionTool selectionTool;
+
         private PlacementTool placementTool;
         private PrefabSystem prefabSystem;
 
         // Flags
         public bool SelectionToolEnabled { get; set; } = false;
+
         public bool PlacementToolEnabled { get; set; } = false;
         public bool CircleSelectionEnabled { get; set; } = false;
 
@@ -44,7 +47,7 @@ namespace ctrlC
 
         // Prefabs and Environment
         public List<PrefabBase> Prefabs { get; set; }
-        public string EnvironmentString { get; set; } = EnvironmentConstants.PrefabStorage;
+        public string EnvironmentString { get; set; } = PathConstants.PrefabStorage;
         public bool UpdatePrefabs { get; set; } = false;
         public string PrefabCategoriesString = "";
 
@@ -64,6 +67,7 @@ namespace ctrlC
                 Log.Info("created");
             }
         }
+
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
@@ -75,7 +79,8 @@ namespace ctrlC
                 _CBtn.Enable();
             }
         }
-        void CheckBindingsForCKey()
+
+        private void CheckBindingsForCKey()
         {
             var inputActions = InputSystem.ListEnabledActions(); // Get all enabled actions
             conflictingInputs.Clear();
@@ -83,10 +88,9 @@ namespace ctrlC
             {
                 foreach (var binding in action.bindings)
                 {
-                    
                     if (binding.effectivePath.Contains("<Keyboard>/c"))  // Check if "C" is bound
                     {
-                        if(action.name != "Open Mod Binding" && action.name != "cbtn")
+                        if (action.name != "Open Mod Binding" && action.name != "cbtn")
                         {
                             conflictingInputs.Add(action);
                         }
@@ -105,6 +109,7 @@ namespace ctrlC
                 }
             }
         }
+
         private void EnableConflictingInputs()
         {
             foreach (var input in conflictingInputs)
@@ -115,10 +120,11 @@ namespace ctrlC
                 }
             }
         }
+
         protected override void OnUpdate()
         {
             base.OnUpdate();
-            if(selectionTool.Enabled || placementTool.Enabled)
+            if (selectionTool.Enabled || placementTool.Enabled)
             {
                 if (_CBtn.WasPerformedThisFrame())
                 {
@@ -131,12 +137,10 @@ namespace ctrlC
                     EnableConflictingInputs();
                 }
             }
-
         }
 
         protected override void OnCreate()
         {
-
             base.OnCreate();
             InitializeBindings();
             InitializeTools();
@@ -196,8 +200,6 @@ namespace ctrlC
         {
             var prefab = ctrlCPrefabStorage.PrefabDict[id];
             placementTool.ActivateTool(prefab as AssetStampPrefab);
-            //ToolSystem toolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
-            //toolSystem.ActivatePrefabTool(prefab as AssetStampPrefab);
         }
 
         public void ConfirmUpdate()
@@ -212,7 +214,7 @@ namespace ctrlC
                 placementTool.SavePrefab(name, category);
                 ctrlCPrefabStorage.LoadAssetsToStorage();
                 UpdatePrefabs = true;
-                ++refreshSignal; 
+                ++refreshSignal;
             }
             catch (Exception ex)
             {
@@ -221,16 +223,12 @@ namespace ctrlC
             }
         }
 
-
-
         internal void StartMod()
         {
             try
             {
                 if (!selectionTool.Enabled && !placementTool.Enabled)
                 {
-
-                    
                     selectionTool.ToggleTool(true);
                     SelectionToolEnabled = true;
                     ShowPrefabMenu = Mod.AutoOpenPrefabMenu;
@@ -246,7 +244,6 @@ namespace ctrlC
         {
             try
             {
-                
                 SelectionToolEnabled = !selectionTool.Enabled;
                 selectionTool.ToggleTool(SelectionToolEnabled);
                 ShowPrefabMenu = SelectionToolEnabled && Mod.AutoOpenPrefabMenu;

@@ -1,4 +1,4 @@
-﻿namespace ctrlC.Data
+﻿namespace ctrlC.Constants
 {
 	public class UIBindingConstants
 	{

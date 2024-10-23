@@ -8,10 +8,10 @@ using UnityEngine;
 
 namespace ctrlC.Systems
 {
-    // Before my little break I was rebuilding the CopySystem from scratch. The idea was to split each type of entity for better and cleaner structure, 
-    // and to be able to make custom copy-logic for each different type, such as the trees age or the buildings seed etc. 
+    // Before my little break I was rebuilding the CopySystem from scratch. The idea was to split each type of entity for better and cleaner structure,
+    // and to be able to make custom copy-logic for each different type, such as the trees age or the buildings seed etc.
     //
-    // However, since my little break made me forget where I was, I decided to quickly assemble the Copy System to just make it work. 
+    // However, since my little break made me forget where I was, I decided to quickly assemble the Copy System to just make it work.
     // So the code is pretty dirty and there is some changes needed here in order to make it work as intended.
 
     // Also in order to optimize this code, I will 'burstify' it when I have the time
@@ -26,6 +26,7 @@ namespace ctrlC.Systems
         private static PrefabSystem _prefabSystem;
 
         private static List<ObjectSubObjectInfo> subObjectInfos = new List<ObjectSubObjectInfo>();
+
         public static AssetStampPrefab CopyItems(EntityManager entityManager, PrefabSystem prefabSystem, List<Entity> buildings, List<Entity> roads, List<Entity> props, List<Entity> trees, List<Entity> areas)
         {
             log.Info($"Will copy: {buildings.Count} buildings,{roads.Count} roads, {props.Count} props, {trees.Count} trees and more.");
@@ -72,7 +73,6 @@ namespace ctrlC.Systems
             if (props.Count > 0)
             {
                 CopyProps(props, entityManager, prefabSystem, subObjectInfos);
-
             }
             if (trees.Count > 0)
             {
@@ -89,18 +89,17 @@ namespace ctrlC.Systems
             objectSubNets.m_SubNets = subNetInfos.ToArray();
             assetStamp.components.Add(objectSubNets);
 
-
             objectSubAreas.m_SubAreas = objectSubAreaInfos.ToArray();
             assetStamp.components.Add(objectSubAreas);
 
             ctrlCSubAreas.m_SubAreas = ctrlCSubAreaInfos.ToArray();
             assetStamp.components.Add(ctrlCSubAreas);
 
-
             // Add the duplicate prefab to the prefab system
             AddPrefabToSystem(prefabSystem, assetStamp);
             return assetStamp;
         }
+
         private static void InitializeVariables(PrefabSystem ps)
         {
             baseHeight = float.MaxValue;
@@ -109,6 +108,7 @@ namespace ctrlC.Systems
             subObjectInfos = new List<ObjectSubObjectInfo>();
             _prefabSystem = ps;
         }
+
         private static AssetStampPrefab CreateAssetStampPrefab()
         {
             AssetStampPrefab assetStamp = new AssetStampPrefab
@@ -124,6 +124,5 @@ namespace ctrlC.Systems
             };
             return assetStamp;
         }
-
     }
 }

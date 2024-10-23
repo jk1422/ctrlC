@@ -1,5 +1,5 @@
 ﻿using Colossal.Logging;
-using ctrlC.AssetManagement;
+using ctrlC.Systems.AssetManagement;
 using Game.Input;
 using Game.Prefabs;
 using Game.Tools;
@@ -12,15 +12,17 @@ namespace ctrlC.Tools
     public partial class PlacementTool : ObjectToolSystem
     {
         public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(PlacementTool)}").SetShowsErrorsInUI(false);
-        ModUISystem _modUISystem;
+
         public ProxyAction mirrorAction;
+        private ModUISystem _modUISystem;
+
         protected override void OnCreate()
         {
             base.OnCreate();
             Enabled = false;
             _modUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
-            
         }
+
         public void ActivateTool(AssetStampPrefab stampPrefab)
         {
             Enabled = true;
@@ -36,22 +38,26 @@ namespace ctrlC.Tools
                 Enabled = false;
             }
         }
+
         public void SavePrefab(string name, int category)
         {
             AssetSaveSystem.SavePrefab(EntityManager, m_PrefabSystem, this.GetPrefab() as AssetStampPrefab, name, category);
         }
+
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            if(mirrorAction != Mod.m_MirrorAction) mirrorAction = Mod.m_MirrorAction;
+            if (mirrorAction != Mod.m_MirrorAction) mirrorAction = Mod.m_MirrorAction;
             mirrorAction.shouldBeEnabled = true;
         }
+
         protected override void OnStopRunning()
         {
             base.OnStopRunning();
             mirrorAction.shouldBeEnabled = false;
             _modUISystem.PlacementToolEnabled = false;
         }
+
         public void MirrorPrefab()
         {
             foreach (var subnet in this.prefab.GetComponent<ObjectSubNets>().m_SubNets)
@@ -71,6 +77,7 @@ namespace ctrlC.Tools
             UpdatePrefabSafe(this.prefab);
             base.m_ForceUpdate = true;
         }
+
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             if (mirrorAction.WasPerformedThisFrame()) MirrorPrefab();
@@ -81,6 +88,7 @@ namespace ctrlC.Tools
         {
             return original * -1;
         }
+
         private void UpdatePrefabSafe(PrefabBase prefab)
         {
             try
@@ -89,7 +97,7 @@ namespace ctrlC.Tools
             }
             catch (Exception)
             {
-                // Handle error if needed
+                // Handle error
             }
         }
     }

@@ -86,22 +86,17 @@
 	<ItemGroup>
 		<None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
 		<None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
+		<None Include=".BuildContent\Images\C.png" />
 	</ItemGroup>
 	<ItemGroup>
-		<Content Include=".CtrlCAssets\**\*">
+		<Content Include=".BuildContent\.CtrlCAssets\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-		<Content Include="images\*">
+		<Content Include=".BuildContent\Images\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-	</ItemGroup>
-	<ItemGroup>
-	  <Content Include=".Data\data.json" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include=".CtrlCAssets\" />
 	</ItemGroup>
 
 	<Target Name="BuildUI" AfterTargets="AfterBuild">

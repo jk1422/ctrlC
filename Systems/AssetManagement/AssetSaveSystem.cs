@@ -1,13 +1,13 @@
 ﻿using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using ctrlC.Components.Prefabs;
-using ctrlC.Data;
+using ctrlC.Constants;
 using Game.Prefabs;
 using System;
 using System.IO;
 using Unity.Entities;
 
-namespace ctrlC.AssetManagement
+namespace ctrlC.Systems.AssetManagement
 {
     [Serializable]
     public class CtrlCPrefabData
@@ -39,11 +39,11 @@ namespace ctrlC.AssetManagement
             // Ensure the name is unique by appending a number if a prefab with the same name already exists.
             int count = 1;
             string originalName = name;
-            string prefabDirectory = Path.Combine(EnvironmentConstants.PrefabStorage, $"ctrlC_{name}");
+            string prefabDirectory = Path.Combine(PathConstants.PrefabStorage, $"ctrlC_{name}");
             while (Directory.Exists(prefabDirectory))
             {
                 name = $"{originalName} ({count++})";
-                prefabDirectory = Path.Combine(EnvironmentConstants.PrefabStorage, $"ctrlC_{name}");
+                prefabDirectory = Path.Combine(PathConstants.PrefabStorage, $"ctrlC_{name}");
             }
 
             // Ensure that the prefab has a components list before adding components to it.
@@ -78,20 +78,20 @@ namespace ctrlC.AssetManagement
 
             // Adding the ctrlC_ prefix to the name for consistency 
             prefab.name = $"ctrlC_{name}";
-            string relativePath = Uri.EscapeUriString(EnvironmentConstants.RelativePath.Replace("\\", "/")) + "/";
+            string relativePath = Uri.EscapeUriString(PathConstants.RelativePath.Replace("\\", "/")) + "/";
 
             // Create an asset path for saving the prefab and save it to the AssetDatabase.
             AssetDataPath path = AssetDataPath.Create(relativePath + prefab.name, prefab.name);
             (prefab.asset ?? AssetDatabase.user.AddAsset(path, prefab)).Save();
 
             // Create a thumbnail for the saved prefab to visually represent it in the UI.
-            CreateThumbnail(prefab, Path.Combine(EnvironmentConstants.PrefabStorage, prefab.name).Replace("\\", "/") + "/");
+            CreateThumbnail(prefab, Path.Combine(PathConstants.PrefabStorage, prefab.name).Replace("\\", "/") + "/");
         }
 
         // Method for creating a thumbnail for the prefab.
         private static void CreateThumbnail(AssetStampPrefab prefab, string modPath)
         {
-            string defaultThumbnailPath = Path.Combine(EnvironmentConstants.ModPath, "images", "prefabThumbnail.png").Replace("\\", "/");
+            string defaultThumbnailPath = Path.Combine(PathConstants.ModPath, "images", "prefabThumbnail.png").Replace("\\", "/");
             string newThumbnailPath = Path.Combine(modPath, prefab.name + ".png").Replace("\\", "/");
 
             try

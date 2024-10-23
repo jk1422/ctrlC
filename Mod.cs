@@ -1,10 +1,9 @@
 ﻿using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Colossal.PSI.Common;
-using ctrlC.AssetManagement;
-using ctrlC.Data;
+using ctrlC.Constants;
 using ctrlC.Rendering;
-using ctrlC.Systems;
+using ctrlC.Systems.AssetManagement;
 using ctrlC.Tools;
 using ctrlC.Tools.Selection;
 using Game;
@@ -12,49 +11,73 @@ using Game.Input;
 using Game.Modding;
 using Game.SceneFlow;
 using Game.UI.Menu;
-using System;
 using Unity.Entities;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace ctrlC
 {
     public class Mod : IMod
     {
-        public const string MOD_NAME = nameof(ctrlC);
-        
-        private static NotificationUISystem _notificationUISystem;
+        #region Logger
+
         public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
-        internal Setting m_Setting;
-        internal ModUISystem m_ModUISystem;
 
-        public static ProxyAction m_OpenModAction;
-        public static ProxyAction m_CopyAction;
-        public static ProxyAction m_MirrorAction;
+        #endregion Logger
 
-
-        public const string kOpenModActionName = "Open Mod Binding";
         public const string kCopyActionName = "Copy Binding";
         public const string kMirrorActionName = "Mirror Binding";
+        public const string kOpenModActionName = "Open Mod Binding";
+        public const string MOD_NAME = nameof(ctrlC);
 
         public static bool AutoOpenPrefabMenu;
+        public static ProxyAction m_CopyAction;
+        public static ProxyAction m_MirrorAction;
+        public static ProxyAction m_OpenModAction;
         public static string[] PrefabCategories = new string[4];
 
+        internal static NotificationUISystem _NotificationUISystem;
+        internal static ModUISystem m_ModUISystem;
+        internal static Setting m_Setting;
+
         private const string compatibleGameVersion = "1.1.10f1";
-        private const bool devMode=false;
+        private const bool devMode = false;
+
+
+        public static void ReadCategoryNames(string cat1, string cat2, string cat3, string cat4)
+        {
+            PrefabCategories[0] = cat1;
+            PrefabCategories[1] = cat2;
+            PrefabCategories[2] = cat3;
+            PrefabCategories[3] = cat4;
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ModUISystem>().PrefabCategoriesString = string.Join(", ", PrefabCategories);
+        }
+
+        public void OnCreateWorld(UpdateSystem updateSystem)
+        {
+            updateSystem.UpdateAt<ModUISystem>(SystemUpdatePhase.UIUpdate);
+            updateSystem.UpdateAt<PlacementTool>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<SelectionTool>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<OverlayCircleRenderer>(SystemUpdatePhase.ToolUpdate);
+        }
+
+        public void OnDispose()
+        {
+            log.Info(nameof(OnDispose));
+            m_Setting?.UnregisterInOptionsUI();
+            m_Setting = null;
+        }
 
         public void OnLoad(UpdateSystem updateSystem)
         {
             log.Info(nameof(OnLoad));
-            _notificationUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<NotificationUISystem>();
+            _NotificationUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<NotificationUISystem>();
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
             {
-                EnvironmentConstants.ModPath = asset.path.Replace("ctrlC.dll", "");
-                log.Info($"Environment ModPath set to: {EnvironmentConstants.ModPath}");
+                PathConstants.ModPath = asset.path.Replace("ctrlC.dll", "");
+                log.Info($"Environment ModPath set to: {PathConstants.ModPath}");
             }
 
-            var currentGameVersion = Game.Version.current.shortVersion;
-           
+            string currentGameVersion = Game.Version.current.shortVersion;
 
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
@@ -73,70 +96,46 @@ namespace ctrlC
             else
             {
                 log.Warn($"CtrlC is outdated! Current version of ctrlC is only compatible with game version '{compatibleGameVersion}' and the current game version is '{currentGameVersion}'");
-                log.Info($"For more info, visit {EnvironmentConstants.XLink}");
+                log.Info($"For more info, visit {PathConstants.XLink}");
                 HandleOutdatedMod();
             }
         }
 
-        void HandleOutdatedMod()
+
+        private void HandleOutdatedMod()
         {
-            var apmNotLoadedNotification = _notificationUISystem.AddOrUpdateNotification(
-               $"ctrlCOutDated",
-               title: "CtrlC is outdated! ",
-               text: "I will work on updating ctrlC ASAP. For mor info, click on me",
-               progressState: ProgressState.None,
-               progress: 0,
-               onClicked: OpenLink,
-               thumbnail: EnvironmentConstants.ModPath + "/images/C.png"
+            _NotificationUISystem.AddOrUpdateNotification(
+                "ctrlCOutDated",
+                title: "CtrlC is outdated! ",
+                text: "I will work on updating ctrlC ASAP. For more info, click on me",
+                progressState: ProgressState.None,
+                progress: 0,
+                onClicked: OpenLink,
+                thumbnail: PathConstants.ModPath + "/.BuildContent/Images/C.png"
             );
         }
 
-        void OpenLink()
+        private void OpenLink()
         {
-            Application.OpenURL(EnvironmentConstants.XLink);
+            Application.OpenURL(PathConstants.XLink);
         }
 
-        public void SetActions()
+        private void SetActions()
         {
             m_OpenModAction = m_Setting.GetAction(kOpenModActionName);
             m_CopyAction = m_Setting.GetAction(kCopyActionName);
             m_MirrorAction = m_Setting.GetAction(kMirrorActionName);
 
             m_OpenModAction.shouldBeEnabled = true;
-            m_OpenModAction.onInteraction += (_, phase) => StartMod();
+            m_OpenModAction.onInteraction += (_, _) => StartMod();
 
             AutoOpenPrefabMenu = m_Setting.AutoOpenPrefabMenu;
         }
+
         private void StartMod()
         {
             m_ModUISystem.StartMod();
         }
 
-        public static void ReadCategoryNames(string cat1, string cat2, string cat3, string cat4)
-        {
-            PrefabCategories[0] = cat1;
-            PrefabCategories[1] = cat2;
-            PrefabCategories[2] = cat3;
-            PrefabCategories[3] = cat4;
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ModUISystem>().PrefabCategoriesString = string.Join(", ", PrefabCategories);
-        }
-
-        public void OnCreateWorld(UpdateSystem updateSystem)
-        {
-            updateSystem.UpdateAt<ModUISystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<PlacementTool>(SystemUpdatePhase.ToolUpdate);
-            updateSystem.UpdateAt<SelectionTool>(SystemUpdatePhase.ToolUpdate);
-            updateSystem.UpdateAt<CircleOverlaySystem>(SystemUpdatePhase.ToolUpdate);
-        }
-
-        public void OnDispose()
-        {
-            log.Info(nameof(OnDispose));
-            if (m_Setting != null)
-            {
-                m_Setting.UnregisterInOptionsUI();
-                m_Setting = null;
-            }
-        }
     }
 }
