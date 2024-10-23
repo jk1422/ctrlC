@@ -28,6 +28,7 @@ namespace ctrlC.Systems
         private static List<ObjectSubObjectInfo> subObjectInfos = new List<ObjectSubObjectInfo>();
         public static AssetStampPrefab CopyItems(EntityManager entityManager, PrefabSystem prefabSystem, List<Entity> buildings, List<Entity> roads, List<Entity> props, List<Entity> trees, List<Entity> areas)
         {
+            log.Info($"Will copy: {buildings.Count} buildings,{roads.Count} roads, {props.Count} props, {trees.Count} trees and more.");
             InitializeVariables(prefabSystem);
             AssetStampPrefab assetStamp = CreateAssetStampPrefab();
             _entityManager = entityManager;

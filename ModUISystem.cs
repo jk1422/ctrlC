@@ -14,6 +14,8 @@ using System.Linq;
 using Unity.Entities;
 using UnityEngine.InputSystem;
 using ctrlC.AssetManagement;
+using Game.Objects;
+using Game.Tools;
 
 namespace ctrlC
 {
@@ -24,9 +26,8 @@ namespace ctrlC
 
         // Tools and Systems
         private SelectionTool selectionTool;
-        private StampPlacementTool stampPlacementTool;
+        private PlacementTool placementTool;
         private PrefabSystem prefabSystem;
-        private Setting m_Setting; 
 
         // Flags
         public bool SelectionToolEnabled { get; set; } = false;
@@ -117,7 +118,7 @@ namespace ctrlC
         protected override void OnUpdate()
         {
             base.OnUpdate();
-            if(selectionTool.Enabled || stampPlacementTool.Enabled)
+            if(selectionTool.Enabled || placementTool.Enabled)
             {
                 if (_CBtn.WasPerformedThisFrame())
                 {
@@ -188,13 +189,15 @@ namespace ctrlC
         private void InitializeTools()
         {
             selectionTool = World.GetOrCreateSystemManaged<SelectionTool>();
-            stampPlacementTool = World.GetOrCreateSystemManaged<StampPlacementTool>();
+            placementTool = World.GetOrCreateSystemManaged<PlacementTool>();
         }
 
         public void InstantiatePrefab(string id)
         {
             var prefab = ctrlCPrefabStorage.PrefabDict[id];
-            stampPlacementTool.ActivateTool(prefab as AssetStampPrefab, prefabSystem);
+            placementTool.ActivateTool(prefab as AssetStampPrefab);
+            //ToolSystem toolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+            //toolSystem.ActivatePrefabTool(prefab as AssetStampPrefab);
         }
 
         public void ConfirmUpdate()
@@ -206,7 +209,7 @@ namespace ctrlC
         {
             try
             {
-                stampPlacementTool.SavePrefab(name, category);
+                placementTool.SavePrefab(name, category);
                 ctrlCPrefabStorage.LoadAssetsToStorage();
                 UpdatePrefabs = true;
                 ++refreshSignal; 
@@ -224,7 +227,7 @@ namespace ctrlC
         {
             try
             {
-                if (!selectionTool.Enabled && !stampPlacementTool.Enabled)
+                if (!selectionTool.Enabled && !placementTool.Enabled)
                 {
 
                     
@@ -276,7 +279,7 @@ namespace ctrlC
 
         public void MirrorPrefab()
         {
-            stampPlacementTool.MirrorPrefab();
+            placementTool.MirrorPrefab();
         }
 
         public void ToggleCircleSelection()

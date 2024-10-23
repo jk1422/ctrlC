@@ -1,5 +1,6 @@
 ﻿using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
+using Colossal.PSI.Common;
 using ctrlC.AssetManagement;
 using ctrlC.Data;
 using ctrlC.Rendering;
@@ -13,6 +14,7 @@ using Game.SceneFlow;
 using Game.UI.Menu;
 using System;
 using Unity.Entities;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace ctrlC
@@ -20,7 +22,7 @@ namespace ctrlC
     public class Mod : IMod
     {
         public const string MOD_NAME = nameof(ctrlC);
-
+        
         private static NotificationUISystem _notificationUISystem;
         public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
         internal Setting m_Setting;
@@ -38,45 +40,61 @@ namespace ctrlC
         public static bool AutoOpenPrefabMenu;
         public static string[] PrefabCategories = new string[4];
 
+        private const string compatibleGameVersion = "1.1.10f1";
+        private const bool devMode=false;
+
         public void OnLoad(UpdateSystem updateSystem)
         {
             log.Info(nameof(OnLoad));
-
+            _notificationUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<NotificationUISystem>();
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
             {
                 EnvironmentConstants.ModPath = asset.path.Replace("ctrlC.dll", "");
                 log.Info($"Environment ModPath set to: {EnvironmentConstants.ModPath}");
             }
 
+            var currentGameVersion = Game.Version.current.shortVersion;
+           
+
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
             m_Setting.RegisterKeyBindings();
-            
             AssetDatabase.global.LoadSettings(nameof(ctrlC), m_Setting, new Setting(this));
 
-            m_ModUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ModUISystem>();
-            ReadCategoryNames(m_Setting.Category1Name, m_Setting.Category2Name, m_Setting.Category3Name, m_Setting.Category4Name);
-            SetActions();
-
-            OnCreateWorld(updateSystem);
-            AssetLoadSystem.LoadCustomPrefabs();
-            _notificationUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<NotificationUISystem>();
-
-            //var apmNotLoadedNotification = _notificationUISystem.AddOrUpdateNotification(
-            //   $"ctrlCOutDated",
-            //   title: "ctrlC: New update available!",
-            //   text: "Click here to get latest update",
-            //   progressState: ProgressState.None,
-            //   progress: 0,
-            //
-            //
-            //   onClicked: OpenLink,
-            //   thumbnail: "" 
-            //);
-            //
+            if (currentGameVersion == compatibleGameVersion || devMode)
+            {
+                m_ModUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ModUISystem>();
+                ReadCategoryNames(m_Setting.Category1Name, m_Setting.Category2Name, m_Setting.Category3Name, m_Setting.Category4Name);
+                SetActions();
+                OnCreateWorld(updateSystem);
+                AssetLoadSystem.LoadCustomPrefabs();
+            }
+            else
+            {
+                log.Warn($"CtrlC is outdated! Current version of ctrlC is only compatible with game version '{compatibleGameVersion}' and the current game version is '{currentGameVersion}'");
+                log.Info($"For more info, visit {EnvironmentConstants.XLink}");
+                HandleOutdatedMod();
+            }
         }
 
+        void HandleOutdatedMod()
+        {
+            var apmNotLoadedNotification = _notificationUISystem.AddOrUpdateNotification(
+               $"ctrlCOutDated",
+               title: "CtrlC is outdated! ",
+               text: "I will work on updating ctrlC ASAP. For mor info, click on me",
+               progressState: ProgressState.None,
+               progress: 0,
+               onClicked: OpenLink,
+               thumbnail: EnvironmentConstants.ModPath + "/images/C.png"
+            );
+        }
+
+        void OpenLink()
+        {
+            Application.OpenURL(EnvironmentConstants.XLink);
+        }
 
         public void SetActions()
         {
@@ -106,10 +124,9 @@ namespace ctrlC
         public void OnCreateWorld(UpdateSystem updateSystem)
         {
             updateSystem.UpdateAt<ModUISystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<StampPlacementTool>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<PlacementTool>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<SelectionTool>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<CircleOverlaySystem>(SystemUpdatePhase.ToolUpdate);
-            updateSystem.UpdateAt<CustomOTS>(SystemUpdatePhase.ApplyTool);
         }
 
         public void OnDispose()

@@ -11,6 +11,7 @@ using Game.Notifications;
 using Game.Objects;
 using Game.Prefabs;
 using Game.Tools;
+using Game.UI.InGame;
 using Game.Vehicles;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.Windows;
+using static Colossal.AssetPipeline.Diagnostic.Report;
 
 namespace ctrlC.Tools.Selection
 {
@@ -32,9 +34,9 @@ namespace ctrlC.Tools.Selection
 
         // Systems and EntityManager
         private EntityManager entityManager;
-        private ModUISystem modUISystem;
-        private StampPlacementTool stampPlacementTool;
-        private ToolRaycastSystem toolRaycastSystem;
+        private ModUISystem _ModUISystem;
+        private PlacementTool _PlacementTool;
+        private ToolRaycastSystem _ToolRaycastSystem;
 
         // Selection lists
         public List<Entity> SelectedRoads = new List<Entity>();
@@ -119,7 +121,7 @@ namespace ctrlC.Tools.Selection
             EnableActions(true);
 
             // Notify the UI that this tool is now active
-            modUISystem.SelectionToolEnabled = true;
+            _ModUISystem.SelectionToolEnabled = true;
         }
 
         protected override void OnStopRunning()
@@ -128,7 +130,7 @@ namespace ctrlC.Tools.Selection
             base.OnStopRunning();
 
             // Notify the UI that this tool is now disabled
-            modUISystem.SelectionToolEnabled = false;
+            _ModUISystem.SelectionToolEnabled = false;
 
             // Disable input actions to prevent further user interactions
             EnableActions(false);
@@ -212,6 +214,22 @@ namespace ctrlC.Tools.Selection
                     entityManager.ChangeHighlighting_MainThread(entity, Highlighter.ChangeMode.RemoveHighlight);
                 }
             }
+            try
+            {
+                entityManager.ChangeHighlighting_MainThread(HoveredEntity, Highlighter.ChangeMode.RemoveHighlight);
+            }
+            catch (Exception)
+            {
+
+            }
+            try
+            {
+                entityManager.ChangeHighlighting_MainThread(prev, Highlighter.ChangeMode.RemoveHighlight);
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         // Cleans up the tool's resources and resets its state to prevent any residual data
@@ -242,9 +260,9 @@ namespace ctrlC.Tools.Selection
         private void InitializeToolContext()
 		{
 			entityManager = World.EntityManager;
-			modUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
-            stampPlacementTool = World.GetOrCreateSystemManaged<StampPlacementTool>();
-            toolRaycastSystem = World.GetOrCreateSystemManaged<ToolRaycastSystem>();
+			_ModUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
+            _PlacementTool = World.GetOrCreateSystemManaged<PlacementTool>();
+            _ToolRaycastSystem = World.GetOrCreateSystemManaged<ToolRaycastSystem>();
 
             selectablesQuery = GetEntityQuery( ComponentType.ReadOnly<Game.Objects.Transform>());
 
@@ -263,14 +281,27 @@ namespace ctrlC.Tools.Selection
             try
             {
                 // To ensure we can't copy and create an empty assetStamp, we fisrt check so we have objects selected.
-                if(SelectedAreas.Count > 0 || SelectedBuildings.Count > 0 || SelectedProps.Count >0 || SelectedRoads.Count > 0 || SelectedTrees.Count > 0)
+                if (SelectedAreas.Count > 0 || SelectedBuildings.Count > 0 || SelectedProps.Count > 0 || SelectedRoads.Count > 0 || SelectedTrees.Count > 0)
                 {
+                    log.Info($"Copying with {SelectedAreas.Count} areas, {SelectedBuildings.Count} buildings, {SelectedProps.Count} props, {SelectedRoads.Count} roads and {SelectedTrees.Count}");
                     // Calling the CopySystem to run some magic copy-logic and store the copied Prefab in our assetStamp
                     assetStamp = CopySystem.CopyItems(entityManager, m_PrefabSystem, SelectedBuildings, SelectedRoads, SelectedProps, SelectedTrees, SelectedAreas);
 
+                    log.Info($"Assetstamp created.. ");
+                    ToggleTool(false);
+                    _PlacementTool.ActivateTool(assetStamp);
+
+                    //ToolSystem toolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
+                    //ToggleTool(false);
+                    //toolSystem.ActivatePrefabTool(assetStamp);
+                    //log.Info($"Active tool: {toolSystem.activeTool}");
+                    
+                    //objectToolSystem.TrySetPrefab(assetStamp);
+
+
                     // When the copying is done, we call StampPlacementTool to be able to place our newly copied prefab
-                    stampPlacementTool.ActivateTool(assetStamp, this.m_PrefabSystem);
-                    assetStamp = null;
+                    //  stampPlacementTool.ActivateTool(assetStamp, this.m_PrefabSystem);
+                    //  assetStamp = null;
                 }
             }
             catch (Exception ex)
@@ -301,27 +332,27 @@ namespace ctrlC.Tools.Selection
 
 			if (_altModifier.WasPerformedThisFrame() && rayDefaultMode == true)
 			{
-                modUISystem.CircleSelectionEnabled = standardToolMode;
-				toolRaycastSystem.typeMask = TypeMask.All;
-				toolRaycastSystem.collisionMask = (CollisionMask.OnGround | CollisionMask.Overground);
-				toolRaycastSystem.iconLayerMask = IconLayerMask.None;
-				toolRaycastSystem.utilityTypeMask = UtilityTypes.None;
+                _ModUISystem.CircleSelectionEnabled = standardToolMode;
+				_ToolRaycastSystem.typeMask = TypeMask.All;
+				_ToolRaycastSystem.collisionMask = (CollisionMask.OnGround | CollisionMask.Overground);
+				_ToolRaycastSystem.iconLayerMask = IconLayerMask.None;
+				_ToolRaycastSystem.utilityTypeMask = UtilityTypes.None;
 				rayDefaultMode = false;
 			}
-			else if (!_altModifier.WasReleasedThisFrame() && rayDefaultMode == false &&toolRaycastSystem != null)
+			else if (!_altModifier.WasReleasedThisFrame() && rayDefaultMode == false &&_ToolRaycastSystem != null)
 			{
                 
-                toolRaycastSystem.typeMask = TypeMask.All;
-				toolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
-				toolRaycastSystem.netLayerMask = Layer.Road | Layer.Pathway | Layer.TramTrack | Layer.TrainTrack;
-				toolRaycastSystem.iconLayerMask = IconLayerMask.Default;
-				toolRaycastSystem.utilityTypeMask = UtilityTypes.Fence;
-				toolRaycastSystem.raycastFlags = RaycastFlags.SubElements | RaycastFlags.Cargo | RaycastFlags.Passenger | RaycastFlags.EditorContainers | RaycastFlags.Decals;
+                _ToolRaycastSystem.typeMask = TypeMask.All;
+				_ToolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
+				_ToolRaycastSystem.netLayerMask = Layer.Road | Layer.Pathway | Layer.TramTrack | Layer.TrainTrack;
+				_ToolRaycastSystem.iconLayerMask = IconLayerMask.Default;
+				_ToolRaycastSystem.utilityTypeMask = UtilityTypes.Fence;
+				_ToolRaycastSystem.raycastFlags = RaycastFlags.SubElements | RaycastFlags.Cargo | RaycastFlags.Passenger | RaycastFlags.EditorContainers | RaycastFlags.Decals;
 				rayDefaultMode = true;
 			}
             else if (_altModifier.WasReleasedThisFrame())
             {
-                modUISystem.CircleSelectionEnabled = !standardToolMode;
+                _ModUISystem.CircleSelectionEnabled = !standardToolMode;
             }
 			if (!_altModifier.IsPressed() == standardToolMode && EntityManager.HasComponent<CircleIdle>(circleEntity))
 			{
@@ -381,14 +412,14 @@ namespace ctrlC.Tools.Selection
 			try
 			{
 				base.InitializeRaycast();
-				toolRaycastSystem = World.GetOrCreateSystemManaged<ToolRaycastSystem>();
+				_ToolRaycastSystem = World.GetOrCreateSystemManaged<ToolRaycastSystem>();
 
-				toolRaycastSystem.typeMask = TypeMask.All;
-				toolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
-				toolRaycastSystem.netLayerMask = Layer.Road | Layer.Pathway | Layer.TramTrack | Layer.TrainTrack;
-				toolRaycastSystem.iconLayerMask = IconLayerMask.Default;
-				toolRaycastSystem.utilityTypeMask = UtilityTypes.None;
-				toolRaycastSystem.raycastFlags = RaycastFlags.SubElements | RaycastFlags.Cargo | RaycastFlags.Passenger | RaycastFlags.EditorContainers | RaycastFlags.Decals;
+				_ToolRaycastSystem.typeMask = TypeMask.All;
+				_ToolRaycastSystem.collisionMask = CollisionMask.OnGround | CollisionMask.Overground;
+				_ToolRaycastSystem.netLayerMask = Layer.Road | Layer.Pathway | Layer.TramTrack | Layer.TrainTrack;
+				_ToolRaycastSystem.iconLayerMask = IconLayerMask.Default;
+				_ToolRaycastSystem.utilityTypeMask = UtilityTypes.None;
+				_ToolRaycastSystem.raycastFlags = RaycastFlags.SubElements | RaycastFlags.Cargo | RaycastFlags.Passenger | RaycastFlags.EditorContainers | RaycastFlags.Decals;
 				rayDefaultMode = true;
 			}
 			catch (Exception ex)
@@ -423,23 +454,23 @@ namespace ctrlC.Tools.Selection
 		{
 			SelectableFilters filters = SelectableFilters.None;
 
-			if (modUISystem.SelectRoads)
+			if (_ModUISystem.SelectRoads)
 			{
 				filters |= SelectableFilters.Road;
 			}
-			if (modUISystem.SelectBuildings)
+			if (_ModUISystem.SelectBuildings)
 			{
 				filters |= SelectableFilters.Building;
 			}
-			if (modUISystem.SelectTrees)
+			if (_ModUISystem.SelectTrees)
 			{
 				filters |= SelectableFilters.Tree;
 			}
-			if (modUISystem.SelectProps)
+			if (_ModUISystem.SelectProps)
 			{
 				filters |= SelectableFilters.Prop;
 			}
-			if (modUISystem.SelectAreas)
+			if (_ModUISystem.SelectAreas)
 			{
 				filters |= SelectableFilters.Area;
 			}

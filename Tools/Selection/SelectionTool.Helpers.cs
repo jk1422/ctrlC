@@ -60,9 +60,9 @@ namespace ctrlC.Tools.Selection
         // Helper method to reset system references and queries
         private void ResetSystemReferences()
         {
-            modUISystem = null;
-            stampPlacementTool = null;
-            toolRaycastSystem = null;
+            _ModUISystem = null;
+            _PlacementTool = null;
+            _ToolRaycastSystem = null;
             selectablesQuery = default;
             circleEntity = Entity.Null;
             deselectCircleEntity = Entity.Null;

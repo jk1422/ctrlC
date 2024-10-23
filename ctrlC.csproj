@@ -21,22 +21,25 @@
 		<Reference Include="Colossal.Collections">
 			<Private>false</Private>
 		</Reference>
-		<Reference Include="Colossal.OdinSerializer">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.PSI.Common">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Game">
-			<Private>false</Private>
-		</Reference>
 		<Reference Include="Colossal.Core">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.IO.AssetDatabase">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.Localization">
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Colossal.Logging">
 			<Private>false</Private>
 		</Reference>
-		<Reference Include="Colossal.IO.AssetDatabase">
+		<Reference Include="Colossal.Mathematics">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.OdinSerializer">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.PSI.Common">
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Colossal.UI">
@@ -45,10 +48,7 @@
 		<Reference Include="Colossal.UI.Binding">
 			<Private>false</Private>
 		</Reference>
-		<Reference Include="Colossal.Localization">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.Mathematics">
+		<Reference Include="Game">
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Unity.InputSystem">
@@ -89,6 +89,11 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Content Include=".CtrlCAssets\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="images\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
