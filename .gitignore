@@ -373,3 +373,6 @@ Properties
 /Tools/StampPlacementTool.PrepareCamera.cs
 /Properties/PublishConfiguration.xml
 /CodeMaid.config
+/Utils/MessageUtils/Discord.cs
+/Utils/MessageUtils/LedSignUtils.cs
+/Utils/MessageUtils/MsgConstants.cs
