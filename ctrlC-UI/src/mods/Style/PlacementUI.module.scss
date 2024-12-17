@@ -1,0 +1,140 @@
+﻿@import 'theme.module.scss';
+@import 'main.module.scss';
+
+.ModuleHolder {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding: 5rem;
+    width: 100%;
+}
+
+.Module {
+    background-color: $background-color;
+    padding: 8rem 6rem;
+    border-radius: 2rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.LCDScreen {
+    width: 80%;
+    height: 155rem;
+    padding: 4rem;
+    border-radius: 1.5rem;
+    background: rgba(36, 71, 235, 0.8);
+    display: flex;
+    flex-direction: column;
+}
+
+.LCDMenuItem {
+    width: 100%;
+    height: 20rem;
+    font-family: 'LCDdot', sans-serif;
+    font-size: 30rem;
+    margin-bottom: 3rem;
+    padding: 2rem 4rem;
+    color: rgb(106, 158, 171);
+    border: none;
+    text-shadow: 0 0 10rem rgba(106, 158, 171, 0.5), 0 0 20rem rgba(106, 158, 171, 0.4);
+}
+
+.LCDMenuItem:hover {
+    color: rgba(0, 0, 0, 1);
+    background: rgb(106, 158, 171);
+}
+
+.LCDDialog {
+    width: 100%;
+    margin-bottom: 6rem;
+}
+.LCDDialogLabel {
+    font-family: 'LCDdot', sans-serif;
+    font-size: 30rem;
+    color: rgb(106, 158, 171);
+    text-shadow: 0 0 10rem rgba(106, 158, 171, 0.5), 0 0 20rem rgba(106, 158, 171, 0.4);
+    text-align: center;
+}
+
+
+.ButtonRack {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    align-items: stretch;
+}
+
+.ButtonFrame {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: auto; 
+}
+.ButtonLabel {
+    font-family: 'Share Tech Mono';
+    font-size: 14rem;
+    padding: 2rem;
+    color: dimgray;
+    opacity: 0.6;
+}
+.Button {
+    background-color: rgb(25, 25, 25);
+    border-left-color: rgb(45, 45, 45);
+    border-right-color: rgb(15, 15, 15);
+    border-top-color: rgb(45, 45, 45);
+    border-bottom-color: rgb(15, 15, 15);
+    margin-right: 2rem;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.Button:hover {
+    border-left-color: rgb(35, 35, 35);
+    border-right-color: rgb(10, 10, 10);
+    border-top-color: rgb(35, 35, 35);
+    border-bottom-color: rgb(10, 10, 10);
+}
+
+.Button:active {
+    transition: none;
+    border-left-color: rgb(30, 30, 30);
+    border-right-color: rgb(8, 8, 8);
+    border-top-color: rgb(30, 30, 30);
+    border-bottom-color: rgb(8, 8, 8);
+}
+
+.NavigationGroup {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: auto;
+}
+
+.parentContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+    height: 100%; 
+}
+
+.statusHolder {
+    display: flex;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 3rem;
+    height: 20rem;
+}
+
+.statusLabel, .statusMessage {
+    font-family: 'LCDdot', sans-serif;
+    font-size: 19rem;
+    color: rgb(106, 158, 171);
+    text-shadow: 0 0 10rem rgba(106, 158, 171, 0.5), 0 0 20rem rgba(106, 158, 171, 0.4);
+}
+
+.statusMessage {
+    margin: 0; 
+    text-align:center;
+}

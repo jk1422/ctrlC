@@ -14,6 +14,8 @@ using Game.UI.Menu;
 using System.Linq;
 using Unity.Entities;
 using UnityEngine;
+using ctrlC.Utils.MessageUtils;
+using System;
 
 namespace ctrlC
 {
@@ -40,7 +42,7 @@ namespace ctrlC
         internal static ModUISystem m_ModUISystem;
         internal static Setting m_Setting;
 
-        private static readonly string[] compatibleGameVersions = { "1.1.10f1", "1.1.11f1" };
+        private static readonly string[] compatibleGameVersions = { "1.2.0f1", };
         private const bool devMode = false;
 
 
@@ -100,6 +102,19 @@ namespace ctrlC
                 log.Info($"For more info, visit {PathConstants.XLink}");
                 HandleOutdatedMod();
             }
+
+            Discord.GetSpecificMessages(MsgConstants.MESSAGE_TYPATRON, (retrievedMessage, success) =>
+            {
+                if (success && retrievedMessage != null)
+                {
+                    LedSignUtils.message = retrievedMessage.Content + " < |";
+                }
+                else
+                {
+                    LedSignUtils.message = "< |";
+                }
+            });
+            
         }
 
 
@@ -108,7 +123,7 @@ namespace ctrlC
             _NotificationUISystem.AddOrUpdateNotification(
                 "ctrlCOutDated",
                 title: "CtrlC is outdated! ",
-                text: "I will work on updating ctrlC ASAP. For more info, click on me",
+                text: "I will work on updating ctrlC A$AP. For more info, click on me",
                 progressState: ProgressState.None,
                 progress: 0,
                 onClicked: OpenLink,

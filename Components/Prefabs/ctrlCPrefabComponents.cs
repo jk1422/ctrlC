@@ -8,6 +8,21 @@ using UnityEngine;
 
 namespace ctrlC.Components.Prefabs
 {
+    public class CtrlCRemovalComponent : ComponentBase
+    {
+        public string c_id;
+        public bool ShouldDelete = true;
+        public override void GetPrefabComponents(HashSet<ComponentType> components)
+        {
+
+            components.Add(ComponentType.ReadWrite<CtrlCRemoval>());
+
+        }
+
+        public override void GetArchetypeComponents(HashSet<ComponentType> components)
+        {
+        }
+    }
     public class CtrlCPrefabComponent : ComponentBase
     {
         public string c_name;

@@ -11,4 +11,8 @@ namespace ctrlC.Components.Entities
     {
         public int m_Priority;
     }
+
+    public struct CtrlCRemoval : IComponentData
+    {
+    }
 }

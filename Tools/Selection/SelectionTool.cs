@@ -289,7 +289,7 @@ namespace ctrlC.Tools.Selection
 
                     log.Info($"Assetstamp created.. ");
                     ToggleTool(false);
-                    _PlacementTool.ActivateTool(assetStamp);
+                    _PlacementTool.ActivateTool(assetStamp, false);
 
                     //ToolSystem toolSystem = World.GetOrCreateSystemManaged<ToolSystem>();
                     //ToggleTool(false);

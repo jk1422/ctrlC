@@ -16,21 +16,35 @@ namespace ctrlC.Tools
         public ProxyAction mirrorAction;
         private ModUISystem _modUISystem;
 
+
+
         protected override void OnCreate()
         {
             base.OnCreate();
             Enabled = false;
             _modUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
         }
-
-        public void ActivateTool(AssetStampPrefab stampPrefab)
+        
+        public void DeactivateTool()
+        {
+            this.Enabled = false;
+            log.Info("Tool deactivated");
+        }
+        public void ActivateTool(AssetStampPrefab stampPrefab, bool isSavedPrefab)
         {
             Enabled = true;
+            log.Info($"Activating tool and isSavedPrefab == {isSavedPrefab}");
             if (TrySetPrefab(stampPrefab))
             {
                 _modUISystem.PlacementToolEnabled = true;
                 m_ToolSystem.activeTool = this;
                 base.mode = Mode.Stamp;
+                _modUISystem.IsSavedPrefab = isSavedPrefab;
+
+                if (!isSavedPrefab)
+                {
+                    _modUISystem.SetSelectedPrefab();
+                }
             }
             else
             {
@@ -39,9 +53,15 @@ namespace ctrlC.Tools
             }
         }
 
-        public void SavePrefab(string name, int category)
+        public bool SavePrefab(string name, int category, out string id)
         {
-            AssetSaveSystem.SavePrefab(EntityManager, m_PrefabSystem, this.GetPrefab() as AssetStampPrefab, name, category);
+            id = "";
+            if(AssetSaveSystem.SavePrefab(EntityManager, m_PrefabSystem, this.GetPrefab() as AssetStampPrefab, name, category,out string _id))
+            {
+                id = _id;
+                return true;
+            }
+            return false;
         }
 
         protected override void OnStartRunning()

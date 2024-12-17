@@ -1,6 +1,13 @@
 ﻿import React, { useState, useEffect, FC, useCallback } from 'react';
 import style from "mods/Style/main.module.scss"
 import { ValueBinding } from 'cs2/api';
+import { bindValue, useValue, trigger } from 'cs2/api';
+import mod from "mod.json";
+
+const msg = bindValue<string>(mod.id,
+    "Message",
+    "error"
+);
 
 export const LEDSign: FC = () => {
     const SCROLLER_LENGTH = 120;
@@ -368,7 +375,7 @@ export const LEDSign: FC = () => {
     };
 
     useEffect(() => {
-        const message = textToLED('< |');
+        const message = textToLED(msg.value);
         const furthestLeftPoint = 0 - message.length;
 
         const interval = setInterval(() => {

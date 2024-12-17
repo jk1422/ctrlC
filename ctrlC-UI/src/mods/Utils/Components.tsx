@@ -4,7 +4,7 @@ import React, { FC } from 'react';
 import { Button, Icon } from 'cs2/ui';
 
 import { SelectionToolUI as ImportedSelectionToolUI } from 'mods/Utils/SelectionToolUI';
-import { PlacementToolUI as ImportedPlacementToolUI } from 'mods/Utils/PlacementToolUI';
+import { PlacementToolUI as ImportedPlacementToolUI } from 'mods/Utils/PlacementToolUI2';
 import { LEDSignSmall as ImportedLEDSignSmall, LEDSign as ImportedLEDSign } from 'mods/Utils/LEDSign';
 import { LogoText as ImportedLogo, SelectionToolBG as ImportedSelectionToolBG} from 'mods/Utils/vector';
 

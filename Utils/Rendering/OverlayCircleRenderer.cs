@@ -1,4 +1,6 @@
-﻿using Game.Rendering;
+﻿using Colossal.Entities;
+using Game.Rendering;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using UnityEngine;
@@ -34,24 +36,28 @@ namespace ctrlC.Rendering
         {
             // Få buffer och beroenden från overlayRenderSystem
             var buffer = _overlayRenderSystem.GetBuffer(out JobHandle dependencies);
-            dependencies.Complete();
+
             // Idle circle
-            Entities.WithAll<CircleIdle>().ForEach((ref CircleIdle circleIdle) =>
+            var circleOverlayDesc = new EntityQueryDesc()
             {
-                DrawCircle(ref buffer, circleIdle.center, circleIdle.radius * 2, idleColor);
-            }).WithoutBurst().Run();
+                Any = new ComponentType[] { typeof(CircleIdle), typeof(CircleOverlay), typeof(DeselectCircleOverlay) }
+            };
+            var overlayArray = GetEntityQuery(circleOverlayDesc).ToEntityArray(allocator: Allocator.Temp);
 
-            // Draw the selection circle
-            Entities.WithAll<CircleOverlay>().ForEach((ref CircleOverlay circleOverlay) =>
+            foreach (var circleEntity in overlayArray)
             {
-                DrawCircle(ref buffer, circleOverlay.center, circleOverlay.radius * 2, selectColor);
-            }).WithoutBurst().Run();
-
-            // Draw the deselection circle
-            Entities.WithAll<DeselectCircleOverlay>().ForEach((ref DeselectCircleOverlay deselectCircleOverlay) =>
-            {
-                DrawCircle(ref buffer, deselectCircleOverlay.center, deselectCircleOverlay.radius * 2, deSelectColor);
-            }).WithoutBurst().Run();
+                if (EntityManager.TryGetComponent<CircleIdle>(circleEntity, out CircleIdle component1))
+                {
+                    buffer.DrawCircle(idleColor, component1.center, component1.radius * 2);
+                }
+                else if (EntityManager.TryGetComponent<CircleOverlay>(circleEntity, out CircleOverlay component2))
+                {
+                    buffer.DrawCircle(selectColor, component2.center, component2.radius * 2);
+                }else if (EntityManager.TryGetComponent<DeselectCircleOverlay>(circleEntity, out DeselectCircleOverlay component3))
+                {
+                    buffer.DrawCircle(deSelectColor, component3.center, component3.radius * 2);
+                }
+            }
 
             // Lägg till buffer till render systemet
             _overlayRenderSystem.AddBufferWriter(dependencies);

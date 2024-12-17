@@ -10,7 +10,9 @@ using System.IO;
 using System.Linq;
 using Unity.Entities;
 using UnityEngine;
-
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 namespace ctrlC.Systems.AssetManagement
 {
     public class MonoComponent : MonoBehaviour
@@ -26,6 +28,8 @@ namespace ctrlC.Systems.AssetManagement
         // Dictionary that stores loaded prefabs, indexed by a unique string ID.
         // This allows us to quickly look up prefabs by their unique ID.
         public static Dictionary<string, PrefabBase> PrefabDict { get; private set; } = new Dictionary<string, PrefabBase>();
+
+        public static Dictionary<string, Colossal.Hash128> PrefabHashKVP = new Dictionary<string, Colossal.Hash128>();
 
         // List that stores metadata about each prefab, including ID, name, description, image path, and category.
         // The metadata is useful for displaying information about the prefabs in the UI or for categorization.
@@ -54,7 +58,7 @@ namespace ctrlC.Systems.AssetManagement
                     {
                         var comp = p.GetComponent<CtrlCPrefabComponent>();
 
-                        if (comp != null)
+                        if (comp != null && !p.TryGet<CtrlCRemovalComponent>(out CtrlCRemovalComponent removalComponent))
                         {
                             // The image path to the thumbnail to help the UI system find the correct thumbnail
                             string imagePath = Path.Combine(PathConstants.PrefabStorage, prefab.name, prefab.name + ".png").Replace("\\", "/");
@@ -77,7 +81,7 @@ namespace ctrlC.Systems.AssetManagement
                         }
                         else
                         {
-                            log.Warn($"Prefab '{prefab.name}' does not contain the required CtrlCPrefabComponent. Skipping prefab.");
+                            log.Info($"Prefab '{prefab.name}' is flagged for removal.");
                         }
                     }
                     else
@@ -91,12 +95,117 @@ namespace ctrlC.Systems.AssetManagement
                 }
             }
         }
+
+        public static void RemovePrefab(string id)
+        {
+            if(PrefabDict.TryGetValue(id, out var prefab))
+            {
+                string prefabPath = Path.Combine(PathConstants.PrefabStorage, prefab.name);
+
+                var removalComponent = prefab.AddOrGetComponent<CtrlCRemovalComponent>();
+
+                removalComponent.c_id = id;
+                removalComponent.ShouldDelete = true;
+
+                LoadAssetsToStorage();
+
+                AssetLoadSystem.RemovePrefab(prefab);
+            }
+        }
     }
     public static class AssetLoadSystem
     {
         public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(AssetLoadSystem)}").SetShowsErrorsInUI(false);
         private static MonoComponent _monoComponent;
         private static PrefabSystem _prefabSystem;
+
+        public static void RemovePrefab(PrefabBase prefab)
+        {
+            if (_prefabSystem == null) _prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
+            if (!Directory.Exists(PathConstants.PrefabStorage)) return;
+
+            var compName = prefab.name;
+
+
+            var cidPath = Path.Combine(PathConstants.PrefabStorage, compName, compName + ".Prefab.cid");
+            var prefabFolder = Path.Combine(PathConstants.PrefabStorage, compName);
+
+            if (!File.Exists(cidPath))
+            {
+                log.Warn($"Prefab file for '{compName}' not found. Cannot delete.");
+                return;
+            }
+
+            // Läs CID
+            string CID;
+            using (StreamReader sr = new StreamReader(cidPath))
+            {
+                CID = sr.ReadToEnd().Trim();
+            }
+
+            if (Colossal.Hash128.TryParse(CID, out Colossal.Hash128 hash))
+            {
+                var asset = AssetDatabase.user.GetAsset(hash);
+
+                if (asset != null)
+                {
+                    asset.Unload(true);
+
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+
+                    try
+                    {
+                        AssetDatabase.user.DeleteAsset(hash);
+                        log.Info($"Successfully deleted asset with hash: {hash}");
+                    }
+                    catch (IOException ex)
+                    {
+                        log.Error($"Failed to delete asset. File might still be in use: {ex.Message}");
+                    }
+
+                    // Ta bort filer i mappen
+                    if (Directory.Exists(prefabFolder))
+                    {
+                        foreach (var file in Directory.GetFiles(prefabFolder))
+                        {
+                            try
+                            {
+                                File.Delete(file);
+                                log.Info($"Deleted file: {file}");
+                            }
+                            catch (IOException ex)
+                            {
+                                log.Warn($"Failed to delete file '{file}': {ex.Message}");
+                            }
+                        }
+
+                        // Ta bort själva mappen
+                        try
+                        {
+                            Directory.Delete(prefabFolder, true);
+                            log.Info($"Successfully deleted prefab folder: {prefabFolder}");
+                        }
+                        catch (IOException ex)
+                        {
+                            log.Error($"Failed to delete prefab folder '{prefabFolder}': {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        log.Warn($"Prefab folder '{prefabFolder}' does not exist.");
+                    }
+                }
+                else
+                {
+                    log.Warn($"No asset found with hash: {hash}");
+                }
+            }
+            else
+            {
+                log.Error($"Could not convert CID to Hash128.");
+            }
+        }
 
         // Initializes and loads custom prefabs into the system.
         // This function sets up necessary components and starts the asynchronous loading process.
@@ -204,6 +313,7 @@ namespace ctrlC.Systems.AssetManagement
                     var path = AssetDataPath.Create(relativePath, fileName);
                     var cidFilename = Path.Combine(PathConstants.PrefabStorage, fileName, fileName + ".Prefab.cid");
 
+                    
                     // Check if the CID file exists before proceeding.
                     if (!File.Exists(cidFilename))
                     {
@@ -214,8 +324,15 @@ namespace ctrlC.Systems.AssetManagement
                     // Read the CID (a unique identifier for the asset) and add the asset to the AssetDatabase.
                     using (StreamReader sr = new StreamReader(cidFilename))
                     {
-                        var CID = sr.ReadToEnd().Trim();
-                        AssetDatabase.user.AddAsset<PrefabAsset>(path, CID);
+                        string CID = sr.ReadToEnd().Trim();
+                        if(Colossal.Hash128.TryParse(CID, out Colossal.Hash128 hash))
+                        {
+                            AssetDatabase.user.AddAsset<PrefabAsset>(path, hash);
+                        }
+                        else
+                        {
+                            log.Error($"Couldnt convert CID to hash128");
+                        }
                     }
                 }
                 catch (Exception e)
@@ -239,6 +356,8 @@ namespace ctrlC.Systems.AssetManagement
                     if (prefabAsset.Load() is PrefabBase prefabBase)
                     {
                         _prefabSystem.AddPrefab(prefabBase, null, null, null);
+
+                        
                     }
                 }
                 catch (Exception e)

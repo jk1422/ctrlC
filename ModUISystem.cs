@@ -1,6 +1,7 @@
 ﻿using Colossal.Logging;
 using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
+using ctrlC.Components.Prefabs;
 using ctrlC.Constants;
 using ctrlC.Systems.AssetManagement;
 using ctrlC.Tools;
@@ -44,6 +45,13 @@ namespace ctrlC
         public bool SelectTrees { get; set; } = true;
         public bool SelectProps { get; set; } = true;
         public bool SelectAreas { get; set; } = true;
+
+        // selected prefab
+        public bool IsSavedPrefab { get; set; } = false;
+        public string sp_ID { get; set; }
+        public string sp_Name { get; set; }
+        public int sp_Category { get; set; }
+
 
         // Prefabs and Environment
         public List<PrefabBase> Prefabs { get; set; }
@@ -157,6 +165,7 @@ namespace ctrlC
                 AddBinding(new TriggerBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_INSTANCIATE, InstantiatePrefab));
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.ACTION_PMT_RESET, ResetPrefab));
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.ACTION_PMT_MIRROR, MirrorPrefab));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, "Delete Prefab", DeleteSelectedPrefab));
 
                 // Selection Tool Actions
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.SELECTION_TOOL_TOGGLE, ToggleSelectionTool));
@@ -183,6 +192,10 @@ namespace ctrlC
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_AREAS, () => SelectAreas));
 
                 AddUpdateBinding(new GetterValueBinding<int>(Mod.MOD_NAME, "refreshSignal", () => refreshSignal));
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, "IsSavedPrefab", () => IsSavedPrefab));
+                AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, "Selected ID", () => sp_ID));
+                AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, "Selected Name", () => sp_Name));
+                AddUpdateBinding(new GetterValueBinding<int>(Mod.MOD_NAME, "Selected Category", () => sp_Category));
             }
             catch (Exception ex)
             {
@@ -199,7 +212,49 @@ namespace ctrlC
         public void InstantiatePrefab(string id)
         {
             var prefab = ctrlCPrefabStorage.PrefabDict[id];
-            placementTool.ActivateTool(prefab as AssetStampPrefab);
+            if (prefab != null)
+            {
+
+                SetSelectedPrefab(prefab.GetComponent<CtrlCPrefabComponent>().c_id, prefab.GetComponent<CtrlCPrefabComponent>().c_name, prefab.GetComponent<CtrlCPrefabComponent>().c_category);
+
+                placementTool.ActivateTool(prefab as AssetStampPrefab, true);
+            }
+        }
+
+        public void DeleteSelectedPrefab()
+        {
+            Log.Info($"Trying to delete selected prefab with id {sp_ID} and name {sp_Name}");
+            if (!string.IsNullOrEmpty(sp_ID))
+            {
+                Log.Info("string is not null or empty");
+                ctrlCPrefabStorage.RemovePrefab(sp_ID);
+                
+                placementTool.DeactivateTool();
+                selectionTool.ToggleTool(true);
+
+                UpdatePrefabs = true;
+                ++refreshSignal;
+            }
+
+
+        }
+
+        public void SetSelectedPrefab()
+        {
+            sp_ID = "";
+            sp_Name = "";
+            sp_Category = 0;
+
+            IsSavedPrefab = false;
+        }
+
+        public void SetSelectedPrefab(string ID, string Name, int Category)
+        {
+            sp_ID = ID;
+            sp_Name = Name;
+            sp_Category = Category;
+
+            IsSavedPrefab = true;
         }
 
         public void ConfirmUpdate()
@@ -211,10 +266,15 @@ namespace ctrlC
         {
             try
             {
-                placementTool.SavePrefab(name, category);
-                ctrlCPrefabStorage.LoadAssetsToStorage();
-                UpdatePrefabs = true;
-                ++refreshSignal;
+                if(placementTool.SavePrefab(name, category, out string _id))
+                {
+                    ctrlCPrefabStorage.LoadAssetsToStorage();
+                    UpdatePrefabs = true;
+                    ++refreshSignal;
+
+                    SetSelectedPrefab(_id, name, category);
+                }
+
             }
             catch (Exception ex)
             {
@@ -222,7 +282,7 @@ namespace ctrlC
                 throw;
             }
         }
-
+        
         internal void StartMod()
         {
             try
@@ -264,7 +324,7 @@ namespace ctrlC
             SelectionToolEnabled = enabled;
         }
 
-        public void ResetPrefab()
+        public void ResetPrefab() 
         {
             Entity entity = selectionTool.SelectedBuildings.FirstOrDefault();
             if (entity != null)
