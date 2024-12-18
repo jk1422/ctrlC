@@ -76,7 +76,7 @@ namespace ctrlC.Systems.AssetManagement
 
             StoredPrefabs = LoadPrefabs(foldersToLoad);
             stopwatch.Stop();
-            log.Info($"Loaded saved prefabs to storage in {stopwatch.ElapsedMilliseconds}ms");
+            log.Info($"Loaded {StoredPrefabs.Count} saved prefabs to storage in {stopwatch.ElapsedMilliseconds}ms");
 
 
             return true;

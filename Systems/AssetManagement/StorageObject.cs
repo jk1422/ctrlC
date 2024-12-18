@@ -24,7 +24,7 @@ namespace ctrlC.Systems.AssetManagement
         public AssetStampPrefab Prefab { get; set; }
         public string ID { get; set; }
         public string Name { get; set; }
-        public string PrefixedName => $"ctrlC_{Name}";
+        public string PrefixedName => $"ctrlC_{ID}";
         public int Category { get; set; }
         public CtrlCPrefabComponent CtrlCComponent { get; set; }
         private  Colossal.Hash128 _CID;
@@ -58,17 +58,17 @@ namespace ctrlC.Systems.AssetManagement
         /// <summary>
         /// Path to the .prefab file
         /// </summary>
-        public string PrefabPath => Path.Combine(PrefabFolderPath, $"ctrlC_{Name}.prefab").Replace("\\", "/");
+        public string PrefabPath => Path.Combine(PrefabFolderPath, $"{PrefixedName}.prefab").Replace("\\", "/");
 
         /// <summary>
         /// Path to the thumbnail
         /// </summary>
-        public string ThumbnailPath => Path.Combine(PrefabFolderPath, $"ctrlC_{Name}.png").Replace("\\", "/");
+        public string ThumbnailPath => Path.Combine(PrefabFolderPath, $"{PrefixedName}.png").Replace("\\", "/");
 
         /// <summary>
         /// Path to the .prefab.cid file
         /// </summary>
-        public string CIDPath => Path.Combine(PrefabFolderPath, $"ctrlC_{Name}.Prefab.cid").Replace("\\", "/");
+        public string CIDPath => Path.Combine(PrefabFolderPath, $"{PrefixedName}.Prefab.cid").Replace("\\", "/");
 
         /// <summary>
         /// Path to the meta file
@@ -128,7 +128,7 @@ namespace ctrlC.Systems.AssetManagement
 
             if (!File.Exists(metaFile))
             {
-                PrefabStorageSystem.log.Warn($"Meta file did not exist. This indicates the prefab you are trying to load are created with an older version of ctrlC.");
+                PrefabStorageSystem.log.Info($"This prefab is outdated.");
                 return false;
             }
 
@@ -170,7 +170,7 @@ namespace ctrlC.Systems.AssetManagement
                 try
                 {
                     AssetDatabase.user.DeleteAsset(GetCID());
-                    PrefabStorageSystem.log.Info($"Successfully deleted asset with CID: {GetCID()}");
+                    PrefabStorageSystem.log.Info($"Successfully deleted prefab: {PrefixedName}");
 
 
                     if (Directory.Exists(PrefabFolderPath))
