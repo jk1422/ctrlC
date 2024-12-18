@@ -30,7 +30,7 @@ namespace ctrlC
         private SelectionTool selectionTool;
 
         private PlacementTool placementTool;
-        private PrefabSystem prefabSystem;
+        private Game.Prefabs.PrefabSystem prefabSystem;
 
         // Flags
         public bool SelectionToolEnabled { get; set; } = false;
@@ -55,7 +55,7 @@ namespace ctrlC
 
         // Prefabs and Environment
         public List<PrefabBase> Prefabs { get; set; }
-        public string EnvironmentString { get; set; } = PathConstants.PrefabStorage;
+        public string EnvironmentString { get; set; } = PathConstants.PrefabStoragePath;
         public bool UpdatePrefabs { get; set; } = false;
         public string PrefabCategoriesString = "";
 
@@ -69,7 +69,7 @@ namespace ctrlC
         {
             if (mode == GameMode.Game || mode == GameMode.Editor)
             {
-                prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+                prefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
                 ctrlCPrefabStorage.LoadAssetsToStorage();
                 AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_ENV, () => PrefabCategoriesString));
                 Log.Info("created");
@@ -160,7 +160,7 @@ namespace ctrlC
             {
                 // General Actions
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_PREFABMENU, TogglePrefabMenu));
-                AddBinding(new TriggerBinding<string, int>(Mod.MOD_NAME, UIBindingConstants.ACTION_SAVE, Save));
+                AddBinding(new TriggerBinding<string, string, int>(Mod.MOD_NAME, UIBindingConstants.ACTION_SAVE, Save));
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.PREFABS_UPDATE_CALLBACK, ConfirmUpdate));
                 AddBinding(new TriggerBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_INSTANCIATE, InstantiatePrefab));
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.ACTION_PMT_RESET, ResetPrefab));
@@ -227,7 +227,7 @@ namespace ctrlC
             if (!string.IsNullOrEmpty(sp_ID))
             {
                 Log.Info("string is not null or empty");
-                ctrlCPrefabStorage.RemovePrefab(sp_ID);
+                ctrlCPrefabStorage.RemovePrefab(sp_ID, true);
                 
                 placementTool.DeactivateTool();
                 selectionTool.ToggleTool(true);
@@ -262,25 +262,31 @@ namespace ctrlC
             UpdatePrefabs = false;
         }
 
-        public void Save(string name, int category)
+        public void Save(string id, string name, int category)
         {
-            try
+            Log.Info($"Saving with id: {id}");
+
+            if (string.IsNullOrEmpty(id))
             {
-                if(placementTool.SavePrefab(name, category, out string _id))
+                Log.Info($"Id was null or empty");
+                try
                 {
-                    ctrlCPrefabStorage.LoadAssetsToStorage();
-                    UpdatePrefabs = true;
-                    ++refreshSignal;
-
-                    SetSelectedPrefab(_id, name, category);
+                    if (placementTool.SavePrefab(name, category, out string _id))
+                    {
+                        SetSelectedPrefab(_id, name, category);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error when trying to save: {ex.Message}");
+                    throw;
+                }
+            }
+            else
+            {
 
             }
-            catch (Exception ex)
-            {
-                Log.Error($"Error when trying to save: {ex.Message}");
-                throw;
-            }
+
         }
         
         internal void StartMod()

@@ -197,7 +197,7 @@ export const PlacementToolUI = () => {
     ];
 
     const click_save = useCallback(() => {
-        trigger(mod.id, UIBindingConstants.ACTION_SAVE, inputValue, selectedCategoryIndex);
+        trigger(mod.id, UIBindingConstants.ACTION_SAVE, selected_ID.value, inputValue, selectedCategoryIndex);
         
         setShowMessage(true);
         setRefreshSignal((prev) => prev + 1);

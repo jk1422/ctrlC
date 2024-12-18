@@ -57,7 +57,7 @@ namespace ctrlC
         {
             set
             {
-                Application.OpenURL(PathConstants.PrefabStorage);
+                Application.OpenURL(PathConstants.PrefabStoragePath);
             }
         }
 

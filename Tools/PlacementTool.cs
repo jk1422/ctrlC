@@ -55,9 +55,11 @@ namespace ctrlC.Tools
 
         public bool SavePrefab(string name, int category, out string id)
         {
+            log.Info($"Will try to save prefab");
             id = "";
-            if(AssetSaveSystem.SavePrefab(EntityManager, m_PrefabSystem, this.GetPrefab() as AssetStampPrefab, name, category,out string _id))
+            if(PrefabStorageSystem.TrySaveNewPrefab(this.GetPrefab() as AssetStampPrefab, name, category, out string _id))
             {
+                log.Info($"SaveNewPrefab returned true. Id of new prefab: {_id}");
                 id = _id;
                 return true;
             }

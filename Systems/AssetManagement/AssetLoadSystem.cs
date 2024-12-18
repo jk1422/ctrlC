@@ -61,7 +61,7 @@ namespace ctrlC.Systems.AssetManagement
                         if (comp != null && !p.TryGet<CtrlCRemovalComponent>(out CtrlCRemovalComponent removalComponent))
                         {
                             // The image path to the thumbnail to help the UI system find the correct thumbnail
-                            string imagePath = Path.Combine(PathConstants.PrefabStorage, prefab.name, prefab.name + ".png").Replace("\\", "/");
+                            string imagePath = Path.Combine(PathConstants.PrefabStoragePath, prefab.name, prefab.name + ".png").Replace("\\", "/");
 
                             // Store metadata about the prefab.
                             // This metadata is later used by the UI System to get the correct name, thumbnail, category and so on. 
@@ -96,18 +96,27 @@ namespace ctrlC.Systems.AssetManagement
             }
         }
 
-        public static void RemovePrefab(string id)
+        public static void RemovePrefab(string id, bool update)
         {
+            log.Info($"Removing prefab: {id}");
             if(PrefabDict.TryGetValue(id, out var prefab))
             {
-                string prefabPath = Path.Combine(PathConstants.PrefabStorage, prefab.name);
+                string prefabPath = Path.Combine(PathConstants.PrefabStoragePath, prefab.name);
 
                 var removalComponent = prefab.AddOrGetComponent<CtrlCRemovalComponent>();
 
                 removalComponent.c_id = id;
                 removalComponent.ShouldDelete = true;
-
-                LoadAssetsToStorage();
+                if (update)
+                {
+                    log.Info($"Updating storage");
+                    LoadAssetsToStorage();
+                }
+                else
+                {
+                    log.Info($"Skipped updating storage");
+                }
+                
 
                 AssetLoadSystem.RemovePrefab(prefab);
             }
@@ -117,18 +126,18 @@ namespace ctrlC.Systems.AssetManagement
     {
         public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(AssetLoadSystem)}").SetShowsErrorsInUI(false);
         private static MonoComponent _monoComponent;
-        private static PrefabSystem _prefabSystem;
+        private static Game.Prefabs.PrefabSystem _prefabSystem;
 
         public static void RemovePrefab(PrefabBase prefab)
         {
-            if (_prefabSystem == null) _prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
-            if (!Directory.Exists(PathConstants.PrefabStorage)) return;
+            if (_prefabSystem == null) _prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
+            if (!Directory.Exists(PathConstants.PrefabStoragePath)) return;
 
             var compName = prefab.name;
 
 
-            var cidPath = Path.Combine(PathConstants.PrefabStorage, compName, compName + ".Prefab.cid");
-            var prefabFolder = Path.Combine(PathConstants.PrefabStorage, compName);
+            var cidPath = Path.Combine(PathConstants.PrefabStoragePath, compName, compName + ".Prefab.cid");
+            var prefabFolder = Path.Combine(PathConstants.PrefabStoragePath, compName);
 
             if (!File.Exists(cidPath))
             {
@@ -212,15 +221,15 @@ namespace ctrlC.Systems.AssetManagement
         public static void LoadCustomPrefabs()
         {
             // Get (or create) the PrefabSystem, which we will use later when adding prefabs.
-            _prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
+            _prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
 
             // Create a new GameObject to manage coroutines and ensure it persists across scenes.
             _monoComponent = new GameObject("ctrlC-AssetLoadSystem").AddComponent<MonoComponent>();
 
             // Create the prefab storage directory(/.ctrlC~) if it does not exist.
-            if (!Directory.Exists(PathConstants.PrefabStorage))
+            if (!Directory.Exists(PathConstants.PrefabStoragePath))
             {
-                Directory.CreateDirectory(PathConstants.PrefabStorage);
+                Directory.CreateDirectory(PathConstants.PrefabStoragePath);
             }
 
             // Using the gameobject we created earlier to start the asynchronous loading process.
@@ -237,7 +246,7 @@ namespace ctrlC.Systems.AssetManagement
             log.Info("CheckAndMoveFeaturedAssets has completed. Proceeding...");
 
             // Retrieve all prefabs from the prefab storage directory(/.ctrlC~) and store them in this list.
-            List<FileInfo> prefabs = GetPrefabs(PathConstants.PrefabStorage);
+            List<FileInfo> prefabs = GetPrefabs(PathConstants.PrefabStoragePath);
 
             log.Info("GetPrefabsFinished has completed. Proceeding...");
 
@@ -261,11 +270,11 @@ namespace ctrlC.Systems.AssetManagement
                 {
                     log.Info($"Found included asset directory: '{subDir.Name}'");
 
-                    string destinationPath = Path.Combine(PathConstants.PrefabStorage, subDir.Name);
+                    string destinationPath = Path.Combine(PathConstants.PrefabStoragePath, subDir.Name);
 
                     if (Directory.Exists(destinationPath))
                     {
-                        log.Info($"Asset '{subDir.Name}' already exists in '{PathConstants.PrefabStorage}'. Removing the asset.");
+                        log.Info($"Asset '{subDir.Name}' already exists in '{PathConstants.PrefabStoragePath}'. Removing the asset.");
                         Directory.Delete(subDir.FullName, true);
                         continue;
                     }
@@ -274,7 +283,7 @@ namespace ctrlC.Systems.AssetManagement
                     {
                         // Move the asset directory to the prefab storage location.
                         Directory.Move(subDir.FullName, destinationPath);
-                        log.Info($"Successfully moved asset '{subDir.Name}' to '{PathConstants.PrefabStorage}'");
+                        log.Info($"Successfully moved asset '{subDir.Name}' to '{PathConstants.PrefabStoragePath}'");
                     }
                     catch (Exception ex)
                     {
@@ -306,12 +315,12 @@ namespace ctrlC.Systems.AssetManagement
                 {
                     // Extract the file name without extension and create the relative path.
                     var fileName = Path.GetFileNameWithoutExtension(file.Name);
-                    var relativePath = Path.Combine(PathConstants.RelativePath, fileName).Replace("\\", "/");
+                    var relativePath = Path.Combine(PathConstants.PrefabStoragePath, fileName).Replace("\\", "/");
                     relativePath = Uri.UnescapeDataString(relativePath);
 
                     // Create the path object that represents where the asset should be in the database.
                     var path = AssetDataPath.Create(relativePath, fileName);
-                    var cidFilename = Path.Combine(PathConstants.PrefabStorage, fileName, fileName + ".Prefab.cid");
+                    var cidFilename = Path.Combine(PathConstants.PrefabStoragePath, fileName, fileName + ".Prefab.cid");
 
                     
                     // Check if the CID file exists before proceeding.

@@ -29,7 +29,7 @@ namespace ctrlC.Components.Prefabs
         public string c_description;
         public string c_imagePath;
         public int c_category;
-        public string c_id = Guid.NewGuid().ToString();
+        public string c_id;
 
         public override void GetPrefabComponents(HashSet<ComponentType> components)
         {

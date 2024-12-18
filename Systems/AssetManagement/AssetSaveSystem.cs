@@ -21,96 +21,100 @@ namespace ctrlC.Systems.AssetManagement
     public static class AssetSaveSystem
     {
         // Logger used for logging events and errors in the SaveSystem.
-        public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(AssetSaveSystem)}").SetShowsErrorsInUI(false);
-
-        // Method for saving an AssetStampPrefab to the database.
-        public static bool SavePrefab(EntityManager entityManager, PrefabSystem prefabSystem, AssetStampPrefab prefab, string inputName, int category, out string newId)
-        {
-            newId = "";
-            // Check if the prefab is null to prevent further operations on a non-existing object.
-            if (prefab == null)
-            {
-                log.Error("Prefab object is null. Cannot proceed with saving.");
-                return false;
-            }
-
-            // Set the name of the prefab. If no name is provided, use the default "Saved Object".
-            string name = string.IsNullOrEmpty(inputName) ? "Saved Object" : inputName;
-
-            // Ensure the name is unique by appending a number if a prefab with the same name already exists.
-            int count = 1;
-            string originalName = name;
-            string prefabDirectory = Path.Combine(PathConstants.PrefabStorage, $"ctrlC_{name}");
-            while (Directory.Exists(prefabDirectory))
-            {
-                name = $"{originalName} ({count++})";
-                prefabDirectory = Path.Combine(PathConstants.PrefabStorage, $"ctrlC_{name}");
-            }
-
-            // Ensure that the prefab has a components list before adding components to it.
-            if (prefab.components == null)
-            {
-                log.Error("Prefab components list is null. Cannot add ctrlCObject or UIObject.");
-                return false;
-            }
-
-            try
-            {
-                // Add a custom component to the prefab that contains metadata such as name and category.
-                var ctrlCComp = new CtrlCPrefabComponent
-                {
-                    c_name = name,
-                    c_description = "",
-                    c_imagePath = $"/ctrlC_{name}.png",
-                    c_category = category
-                };
-
-                prefab.components.Add(ctrlCComp);
-                // Add a UIObject component to the prefab for user interface purposes.
-                prefab.components.Add(new UIObject
-                {
-                    m_Priority = 10000,
-                    name = "ctrlC"
-                });
-
-                newId = ctrlCComp.c_id;
-            }
-            catch (Exception ex)
-            {
-                log.Error($"Error when adding components to prefab: {ex}");
-                return false;
-            }
-
-
-            // Adding the ctrlC_ prefix to the name for consistency 
-            prefab.name = $"ctrlC_{name}";
-            string relativePath = Uri.EscapeUriString(PathConstants.RelativePath.Replace("\\", "/")) + "/";
-
-            // Create an asset path for saving the prefab and save it to the AssetDatabase.
-            AssetDataPath path = AssetDataPath.Create(relativePath + prefab.name, prefab.name);
-            (prefab.asset ?? AssetDatabase.user.AddAsset(path, prefab)).Save();
-
-            // Create a thumbnail for the saved prefab to visually represent it in the UI.
-            CreateThumbnail(prefab, Path.Combine(PathConstants.PrefabStorage, prefab.name).Replace("\\", "/") + "/");
-
-            return true;
-        }
-
-        // Method for creating a thumbnail for the prefab.
-        private static void CreateThumbnail(AssetStampPrefab prefab, string modPath)
-        {
-            string defaultThumbnailPath = Path.Combine(PathConstants.ModPath, ".BuildContent" ,"Images", "prefabThumbnail.png").Replace("\\", "/");
-            string newThumbnailPath = Path.Combine(modPath, prefab.name + ".png").Replace("\\", "/");
-
-            try
-            {
-                // Copy the default thumbnail image to the new location for the prefab.
-                File.Copy(defaultThumbnailPath, newThumbnailPath, true);
-            }
-            catch (Exception ex)
-            {
-                log.Error($"Failed to copy thumbnail image: {ex}");
-            }
-        }
+        //public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(AssetSaveSystem)}").SetShowsErrorsInUI(false);
+        //
+        //// Method for saving an AssetStampPrefab to the database.
+        //public static bool SavePrefab(EntityManager entityManager, PrefabSystem prefabSystem, AssetStampPrefab prefab, string inputName, int category, string id, out string newId)
+        //{
+        //    newId = "";
+        //    // Check if the prefab is null to prevent further operations on a non-existing object.
+        //    if (prefab == null)
+        //    {
+        //        log.Error("Prefab object is null. Cannot proceed with saving.");
+        //        return false;
+        //    }
+        //
+        //    // Set the name of the prefab. If no name is provided, use the default "Saved Object".
+        //    string name = string.IsNullOrEmpty(inputName) ? "Saved Object" : inputName;
+        //
+        //    // Ensure the name is unique by appending a number if a prefab with the same name already exists.
+        //    int count = 1;
+        //    string originalName = name;
+        //    string prefabDirectory = Path.Combine(PathConstants.PrefabStoragePath, $"ctrlC_{name}");
+        //    while (Directory.Exists(prefabDirectory))
+        //    {
+        //        name = $"{originalName} ({count++})";
+        //        prefabDirectory = Path.Combine(PathConstants.PrefabStoragePath, $"ctrlC_{name}");
+        //    }
+        //
+        //    // Ensure that the prefab has a components list before adding components to it.
+        //    if (prefab.components == null)
+        //    {
+        //        log.Error("Prefab components list is null. Cannot add ctrlCObject or UIObject.");
+        //        return false;
+        //    }
+        //
+        //    try
+        //    {
+        //        // Add a custom component to the prefab that contains metadata such as name and category.
+        //        var ctrlCComp = new CtrlCPrefabComponent
+        //        {
+        //            c_name = name,
+        //            c_description = "",
+        //            c_imagePath = $"/ctrlC_{name}.png",
+        //            c_category = category
+        //        };
+        //        if(!string.IsNullOrEmpty(id)) ctrlCComp.c_id = id;
+        //        prefab.components.Add(ctrlCComp);
+        //        // Add a UIObject component to the prefab for user interface purposes.
+        //        prefab.components.Add(new UIObject
+        //        {
+        //            m_Priority = 10000,
+        //            name = "ctrlC"
+        //        });
+        //
+        //        newId = ctrlCComp.c_id;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        log.Error($"Error when adding components to prefab: {ex}");
+        //        return false;
+        //    }
+        //
+        //
+        //    // Adding the ctrlC_ prefix to the name for consistency 
+        //    prefab.name = $"ctrlC_{name}";
+        //    string relativePath = Uri.EscapeUriString(PathConstants.RelativePath.Replace("\\", "/")) + "/";
+        //
+        //    // Create an asset path for saving the prefab and save it to the AssetDatabase.
+        //    AssetDataPath path = AssetDataPath.Create(relativePath + prefab.name, prefab.name);
+        //    (prefab.asset ?? AssetDatabase.user.AddAsset(path, prefab)).Save();
+        //
+        //    // Create a thumbnail for the saved prefab to visually represent it in the UI.
+        //    CreateThumbnail(prefab, Path.Combine(PathConstants.PrefabStoragePath, prefab.name).Replace("\\", "/") + "/");
+        //
+        //    return true;
+        //}
+        //
+        //// Method for creating a thumbnail for the prefab.
+        //private static void CreateThumbnail(AssetStampPrefab prefab, string modPath)
+        //{
+        //    string defaultThumbnailPath = Path.Combine(PathConstants.ModPath, ".BuildContent" ,"Images", "prefabThumbnail.png").Replace("\\", "/");
+        //    if (!Directory.Exists(modPath))
+        //    {
+        //        Directory.CreateDirectory(modPath);
+        //    }
+        //    string newThumbnailPath = Path.Combine(modPath, prefab.name + ".png").Replace("\\", "/");
+        //
+        //    try
+        //    {
+        //        // Copy the default thumbnail image to the new location for the prefab.
+        //        File.Copy(defaultThumbnailPath, newThumbnailPath, true);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        log.Error($"Failed to copy thumbnail image: {ex}");
+        //    }
+        //}
     }
 }

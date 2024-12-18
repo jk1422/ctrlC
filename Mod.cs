@@ -94,7 +94,8 @@ namespace ctrlC
                 ReadCategoryNames(m_Setting.Category1Name, m_Setting.Category2Name, m_Setting.Category3Name, m_Setting.Category4Name);
                 SetActions();
                 OnCreateWorld(updateSystem);
-                AssetLoadSystem.LoadCustomPrefabs();
+                //AssetLoadSystem.LoadCustomPrefabs();
+                PrefabStorageSystem.TryLoadPrefabs();
             }
             else
             {
