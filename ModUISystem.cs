@@ -10,6 +10,7 @@ using ctrlC.Utils;
 using Game;
 using Game.Prefabs;
 using Game.UI;
+using Game.UI.Widgets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,29 +49,67 @@ namespace ctrlC
 
         // selected prefab
         public bool IsSavedPrefab { get; set; } = false;
-        public string sp_ID { get; set; }
-        public string sp_Name { get; set; }
-        public int sp_Category { get; set; }
 
 
         // Prefabs and Environment
-        public List<PrefabBase> Prefabs { get; set; }
         public string EnvironmentString { get; set; } = PathConstants.PrefabStoragePath;
+
         public bool UpdatePrefabs { get; set; } = false;
+
         public string PrefabCategoriesString = "";
 
+
         public bool ShowPrefabMenu { get; set; } = false;
-        public int refreshSignal { get; set; } = 0;
+
 
         public static List<InputAction> conflictingInputs = new List<InputAction>();
         private InputAction _CBtn;
 
+        public List<List<string>> StringifiedPrefabs { get; set; } = new List<List<string>>();
+        public int PrefabListRefreshSignal { get; set; } = 0;
+
+        public StorageObject SelectedPrefab { get; set; }
+        public List<string> SelectedPrefabStringified { get; set; } = new List<string>() { "0", "standard", "", ""};
+        public int SelectedPrefabRefreshSignal { get; set; } = 0;
+
+        void UpdatePrefabList()
+        {
+            Log.Info($"Updating prefab list: {StringifiedPrefabs.Count}");
+            StringifiedPrefabs.Clear();
+
+            StringifiedPrefabs.AddRange(PrefabStorageSystem.GetStringifiedPrefabs());
+
+            foreach (var prefab in StringifiedPrefabs)
+            {
+                Log.Info($"prefab: {string.Join(", ", prefab)}");
+            }
+
+            Log.Info($"Prefab list updated, new count: {StringifiedPrefabs.Count}");
+            PrefabListRefreshSignal++;
+        }
+        public void SetSelectedPrefab(StorageObject prefab)
+        {
+            SelectedPrefab = prefab;
+            SelectedPrefabStringified.Clear();
+            SelectedPrefabStringified.AddRange(SelectedPrefab.GetStringified());
+            Log.Info($"prefab is set to {SelectedPrefab.Name}");
+            Log.Info($"prefab string: {string.Join(",", SelectedPrefabStringified)}");
+            SelectedPrefabRefreshSignal++;
+        }
+        public void ResetSelectedPrefab()
+        {
+            SelectedPrefab = null;
+            SelectedPrefabStringified.Clear();
+            SelectedPrefabStringified.AddRange(new List<string> { "0", "", "", "" });
+
+            SelectedPrefabRefreshSignal++;
+        }
         protected override void OnGamePreload(Purpose purpose, GameMode mode)
         {
             if (mode == GameMode.Game || mode == GameMode.Editor)
             {
                 prefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
-                ctrlCPrefabStorage.LoadAssetsToStorage();
+                UpdatePrefabList();
                 AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, UIBindingConstants.PREFAB_ENV, () => PrefabCategoriesString));
                 Log.Info("created");
             }
@@ -178,7 +217,8 @@ namespace ctrlC
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.TOGGLE_SCT_AREAS, () => ToggleSelectionOption(nameof(SelectAreas))));
 
                 // Update Bindings
-                AddUpdateBinding(new GetterValueBinding<List<List<string>>>(Mod.MOD_NAME, UIBindingConstants.PREFABS_GET, () => ctrlCPrefabStorage.PrefabList, new StringListWriter()));
+                AddUpdateBinding(new GetterValueBinding<List<List<string>>>(Mod.MOD_NAME, UIBindingConstants.PREFABS_GET, () => StringifiedPrefabs, new ListListStringWriter()));
+                AddUpdateBinding(new GetterValueBinding<List<string>>(Mod.MOD_NAME, "Get Selected Prefab", () => SelectedPrefabStringified, new ListStringWriter()));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SHOW_PREFABMENU, () => ShowPrefabMenu));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.PLACEMENT_TOOL_ENABLED, () => PlacementToolEnabled));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.PREFABS_UPDATE, () => UpdatePrefabs));
@@ -191,11 +231,9 @@ namespace ctrlC
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_PROPS, () => SelectProps));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SCT_AREAS, () => SelectAreas));
 
-                AddUpdateBinding(new GetterValueBinding<int>(Mod.MOD_NAME, "refreshSignal", () => refreshSignal));
-                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, "IsSavedPrefab", () => IsSavedPrefab));
-                AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, "Selected ID", () => sp_ID));
-                AddUpdateBinding(new GetterValueBinding<string>(Mod.MOD_NAME, "Selected Name", () => sp_Name));
-                AddUpdateBinding(new GetterValueBinding<int>(Mod.MOD_NAME, "Selected Category", () => sp_Category));
+                AddUpdateBinding(new GetterValueBinding<int>(Mod.MOD_NAME, "refreshSignal", () => PrefabListRefreshSignal));
+                AddUpdateBinding(new GetterValueBinding<int>(Mod.MOD_NAME, "Selected refreshSignal", () => SelectedPrefabRefreshSignal));
+
             }
             catch (Exception ex)
             {
@@ -211,50 +249,34 @@ namespace ctrlC
 
         public void InstantiatePrefab(string id)
         {
-            var prefab = ctrlCPrefabStorage.PrefabDict[id];
-            if (prefab != null)
+            if (PrefabStorageSystem.TryGetPrefab(id, out StorageObject result))
             {
-
-                SetSelectedPrefab(prefab.GetComponent<CtrlCPrefabComponent>().c_id, prefab.GetComponent<CtrlCPrefabComponent>().c_name, prefab.GetComponent<CtrlCPrefabComponent>().c_category);
-
-                placementTool.ActivateTool(prefab as AssetStampPrefab, true);
+                Log.Info($"we got prefab and are now setting selected prefab to: {result.Name}");
+                SetSelectedPrefab(result);
+                placementTool.ActivateTool(result.Prefab as AssetStampPrefab, true);
             }
         }
 
         public void DeleteSelectedPrefab()
         {
-            Log.Info($"Trying to delete selected prefab with id {sp_ID} and name {sp_Name}");
-            if (!string.IsNullOrEmpty(sp_ID))
+            if(SelectedPrefab != null)
             {
-                Log.Info("string is not null or empty");
-                ctrlCPrefabStorage.RemovePrefab(sp_ID, true);
-                
-                placementTool.DeactivateTool();
-                selectionTool.ToggleTool(true);
+                Log.Info($"Trying to delete prefab: {SelectedPrefab.Name}");
 
-                UpdatePrefabs = true;
-                ++refreshSignal;
+                if (PrefabStorageSystem.TryRemovePrefab(SelectedPrefab))
+                {
+                    Log.Info($"Succesfully deleted the prefab");
+                    ResetSelectedPrefab();
+                    UpdatePrefabList();
+
+                    placementTool.DeactivateTool();
+                    selectionTool.ToggleTool(true);
+                }
             }
-
-
-        }
-
-        public void SetSelectedPrefab()
-        {
-            sp_ID = "";
-            sp_Name = "";
-            sp_Category = 0;
-
-            IsSavedPrefab = false;
-        }
-
-        public void SetSelectedPrefab(string ID, string Name, int Category)
-        {
-            sp_ID = ID;
-            sp_Name = Name;
-            sp_Category = Category;
-
-            IsSavedPrefab = true;
+            else
+            {
+                Log.Info("Cannot delete a non-existing prefab lol");
+            }
         }
 
         public void ConfirmUpdate()
@@ -266,14 +288,15 @@ namespace ctrlC
         {
             Log.Info($"Saving with id: {id}");
 
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id) ||id == "0")
             {
                 Log.Info($"Id was null or empty");
                 try
                 {
-                    if (placementTool.SavePrefab(name, category, out string _id))
+                    if (placementTool.SavePrefab(name, category, out StorageObject result))
                     {
-                        SetSelectedPrefab(_id, name, category);
+                        SetSelectedPrefab(result);
+                        UpdatePrefabList();
                     }
                 }
                 catch (Exception ex)
@@ -284,9 +307,16 @@ namespace ctrlC
             }
             else
             {
-
+                string newName = name;
+                if (string.IsNullOrEmpty(name))
+                {
+                    newName = SelectedPrefab.Name;
+                }
+                if(PrefabStorageSystem.TryUpdatePrefab(id, newName, category))
+                {
+                    UpdatePrefabList();
+                }
             }
-
         }
         
         internal void StartMod()

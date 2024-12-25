@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ctrlC.Utils
 {
-    public class StringListWriter : IWriter<List<List<string>>>
+    public class ListListStringWriter : IWriter<List<List<string>>>
     {
         public void Write(IJsonWriter writer, List<List<string>> value)
         {
@@ -20,6 +20,19 @@ namespace ctrlC.Utils
                     writer.Write(item);
                 }
                 writer.ArrayEnd();
+            }
+            writer.ArrayEnd();
+        }
+    }
+
+    public class ListStringWriter : IWriter<List<string>>
+    {
+        public void Write(IJsonWriter writer, List<string> value)
+        {
+            writer.ArrayBegin(value.Count);
+            foreach (var item in value)
+            {
+                writer.Write(item);
             }
             writer.ArrayEnd();
         }

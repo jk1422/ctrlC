@@ -17,9 +17,23 @@ namespace ctrlC.Systems.AssetManagement
 
         public static List<StorageObject> StoredPrefabs = new List<StorageObject>();
 
-        internal static bool TrySaveNewPrefab(AssetStampPrefab prefab, string name, int category, out string id)
+        public static List<List<string>> GetStringifiedPrefabs()
         {
-            id = "";
+            return StoredPrefabs
+                .Select(prefab => prefab.GetStringified())
+                .ToList();
+        }
+
+        public static bool TryGetPrefab(string id, out StorageObject result)
+        {
+            result = StoredPrefabs.FirstOrDefault(p => p.ID == id);
+
+            return result != null;
+        }
+
+        internal static bool TrySaveNewPrefab(AssetStampPrefab prefab, string name, int category, out StorageObject result)
+        {
+            result = null;
             log.Info($"Will attempt to save prefab: {name}");
             try
             {
@@ -31,7 +45,7 @@ namespace ctrlC.Systems.AssetManagement
                 log.Info($"Category: {newStorageObject.Category}");
 
                 StoredPrefabs.Add(newStorageObject);
-                id = newStorageObject.ID;
+                result = newStorageObject;
 
                 return true;
             }
@@ -55,9 +69,32 @@ namespace ctrlC.Systems.AssetManagement
             }
             return false;
         }
-        internal static bool TryUpdatePrefab()
+
+        internal static bool TryRemovePrefab(StorageObject obj)
         {
-            throw new NotImplementedException();
+            if (obj != null && StoredPrefabs.Contains(obj))
+            {
+                if (obj.TryRemove())
+                {
+                    StoredPrefabs.Remove(obj);
+                    return true;
+                }
+            }
+            return false;
+        }
+        internal static bool TryUpdatePrefab(string id, string name, int category)
+        {
+            var obj = StoredPrefabs.FirstOrDefault(p => p.ID == id);
+
+            if (obj != null)
+            {
+                if(obj.TryUpdate(name, category))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         internal static bool TryLoadPrefabs()

@@ -13,17 +13,24 @@ const prefabCategories = bindValue<string>(
     "Category 1, Category 2, Category 3, Category 4"
 );
 
-const isSavedPrefab = bindValue<boolean>(mod.id, "IsSavedPrefab", false);
-const selected_ID = bindValue<string>(mod.id, "Selected ID", "");
-const selected_Name = bindValue<string>(mod.id, "Selected Name", "Error lol");
-const selected_Category = bindValue<number>(mod.id, "Selected Category", -1);
-
-interface Prefab {
-    ID: string;
-    Name: string;
-    Category: number;
-    isSaved: boolean;
+interface PrefabData {
+    name: string;
+    id: string;
+    category: string;
+    imagePath: string;
 }
+
+const getSelectedPrefab = bindValue<string[]>(
+    mod.id,
+    "Get Selected Prefab",
+    ["0", "", "", ""]
+);
+
+const selectedPrefabRefreshSignal = bindValue<number>(
+    mod.id,
+    "Selected refreshSignal",
+    0
+);
 
 interface MenuItem {
     id: number;
@@ -33,7 +40,6 @@ interface MenuItem {
 }
 
 interface LCDMenuInterface {
-    SelectedPrefab: Prefab;
     SubMenu: MenuItem;
     StatusMessage: string;
     setStatusMessage: React.Dispatch<React.SetStateAction<string>>;
@@ -44,82 +50,86 @@ interface LCDDeleteInterface {
     currentMenuIndex: number;
     setMenuIndex: React.Dispatch<React.SetStateAction<number>>;
 }
+
 interface LCDMainInterface {
     currentMenuIndex: number;
     setMenuIndex: React.Dispatch<React.SetStateAction<number>>;
 }
+
 interface LCDCategoryInterface {
     selectedCategoryIndex: number;
     setSelectedCategoryIndex: React.Dispatch<React.SetStateAction<number>>;
     setStatusMessage: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export const LCDView: React.FC<LCDMenuInterface> = ({ SelectedPrefab, SubMenu, setInputValue, StatusMessage, setStatusMessage }) => {
+export const LCDView: React.FC<LCDMenuInterface> = ({ SubMenu, setInputValue, StatusMessage, setStatusMessage }) => {
     const [name, setName] = useState<string>("");
+    const [selectedPrefab, setSelectedPrefab] = useState<PrefabData>();
 
     useEffect(() => {
-        setName(selected_Name.value);
-    }, [useValue(selected_ID)]);
+        const prefabArray = getSelectedPrefab.value;
+
+        const formattedPrefab: PrefabData = {
+            id: prefabArray[0],
+            name: prefabArray[1],
+            category: prefabArray[2],
+            imagePath: prefabArray[3],
+        };
+
+        setSelectedPrefab(formattedPrefab);
+        setName(prefabArray[1]);
+    }, [useValue(selectedPrefabRefreshSignal)]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setName(event.target.value);
         setInputValue(event.target.value);
-
         setStatusMessage("Unsaved changes");
     };
 
     return (
-        <>
-            <div className={style.parentContainer}>
-                <div>
-                    <div className={style.LCDInputGroup}>
-                        <input
-                            className={style.LCDTextInput}
-                            value={name}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-
-                    <div>{SubMenu.element}</div>
+        <div className={style.parentContainer}>
+            <div>
+                <div className={style.LCDInputGroup}>
+                    <input
+                        className={style.LCDTextInput}
+                        value={name}
+                        onChange={handleInputChange}
+                    />
                 </div>
-
-
-                <div className={style.statusHolder}>
-                    <p className={style.statusMessage}>{ StatusMessage}</p>
-                </div>
+                <div>{SubMenu.element}</div>
             </div>
-        </>
+            <div className={style.statusHolder}>
+                <p className={style.statusMessage}>{StatusMessage}</p>
+            </div>
+        </div>
     );
 };
 
 export const SubMenu_DeleteConfirm: React.FC<LCDDeleteInterface> = ({ setMenuIndex }) => {
-
     const deletePrefab = useCallback(() => {
         trigger(mod.id, "Delete Prefab");
     }, []);
+
     const handleClick = (ShouldDelete: boolean) => {
         if (ShouldDelete) {
             deletePrefab();
-        }
-        else {
+        } else {
             setMenuIndex(0);
         }
-    }
+    };
 
     return (
         <>
             <div className={style.LCDDialog}>
                 <label className={style.LCDDialogLabel}>Are you sure?</label>
             </div>
-
-
             <button className={style.LCDMenuItem} onClick={() => handleClick(true)}>Yes</button>
             <button className={style.LCDMenuItem} onClick={() => handleClick(false)}>No</button>
         </>
     );
 };
 
-export const SubMenu_Main: React.FC<LCDMainInterface> = ({ currentMenuIndex, setMenuIndex}) => {
+export const SubMenu_Main: React.FC<LCDMainInterface> = ({ currentMenuIndex, setMenuIndex }) => {
     const switchMenu = (target: number) => {
         setMenuIndex(target);
     };
@@ -127,9 +137,7 @@ export const SubMenu_Main: React.FC<LCDMainInterface> = ({ currentMenuIndex, set
     return (
         <>
             <button className={style.LCDMenuItem}>Thumbnail Camera</button>
-            <button className={style.LCDMenuItem} onClick={() => switchMenu(1)}>
-                Change Category
-            </button>
+            <button className={style.LCDMenuItem} onClick={() => switchMenu(1)}>Change Category</button>
             <button className={style.LCDMenuItem} onClick={() => switchMenu(2)}>Delete</button>
         </>
     );
@@ -138,7 +146,7 @@ export const SubMenu_Main: React.FC<LCDMainInterface> = ({ currentMenuIndex, set
 export const SubMenu_Category: React.FC<LCDCategoryInterface> = ({
     selectedCategoryIndex,
     setSelectedCategoryIndex,
-    setStatusMessage
+    setStatusMessage,
 }) => {
     const [categories, setCategories] = useState<string[]>([]);
 
@@ -146,17 +154,18 @@ export const SubMenu_Category: React.FC<LCDCategoryInterface> = ({
         const value = prefabCategories.value;
         setCategories(value?.split(", ") || ["error 1", "error 2", "error 3", "error 4"]);
     }, [prefabCategories.value]);
+
     const handleChange = (index: number) => {
-        setSelectedCategoryIndex(index)
+        setSelectedCategoryIndex(index);
         setStatusMessage("Unsaved changes");
-    }
+    };
+
     return (
         <>
             {categories.map((category, index) => (
                 <button
                     key={category}
-                    className={`${style.LCDCategoryInput} ${selectedCategoryIndex === index ? style.LCDCategoryInputSelected : ""
-                        }`}
+                    className={`${style.LCDCategoryInput} ${selectedCategoryIndex === index ? style.LCDCategoryInputSelected : ""}`}
                     onClick={() => handleChange(index)}
                 >
                     {category}
@@ -170,17 +179,26 @@ export const PlacementToolUI = () => {
     const [showMessage, setShowMessage] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const [refreshSignal, setRefreshSignal] = useState(0);
-    const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
+    const [selectedCategoryIndex, setSelectedCategoryIndex] = useState<number>(parseInt(getSelectedPrefab.value[2], 10));
     const [subMenuIndex, setSubMenuIndex] = useState(0);
-
     const [statusMessage, setStatusMessage] = useState('');
 
     useEffect(() => {
-        setSubMenuIndex(isSavedPrefab.value ? 0 : 1);
-    }, [isSavedPrefab.value]); 
+        if (getSelectedPrefab.value[0] === "0") {
+            setSubMenuIndex(1);
+        } else {
+            setSubMenuIndex(0);
+            setSelectedCategoryIndex(parseInt(getSelectedPrefab.value[2], 10));
+        }
+    }, [useValue(selectedPrefabRefreshSignal)]);
 
-    const subMenus = [
-        { id: 0, name: "Main Menu", element: <SubMenu_Main currentMenuIndex={subMenuIndex} setMenuIndex={ setSubMenuIndex } />, SetSubMenuIndex: setSubMenuIndex },
+    const subMenus: MenuItem[] = [
+        {
+            id: 0,
+            name: "Main Menu",
+            element: <SubMenu_Main currentMenuIndex={subMenuIndex} setMenuIndex={setSubMenuIndex} />,
+            SetSubMenuIndex: setSubMenuIndex,
+        },
         {
             id: 1,
             name: "Category Menu",
@@ -188,17 +206,21 @@ export const PlacementToolUI = () => {
                 <SubMenu_Category
                     selectedCategoryIndex={selectedCategoryIndex}
                     setSelectedCategoryIndex={setSelectedCategoryIndex}
-                    setStatusMessage={ setStatusMessage}
+                    setStatusMessage={setStatusMessage}
                 />
             ),
             SetSubMenuIndex: setSubMenuIndex,
         },
-        { id: 2, name: "Delete Confirmation", element: <SubMenu_DeleteConfirm currentMenuIndex={subMenuIndex} setMenuIndex={setSubMenuIndex} />, SetSubMenuIndex: setSubMenuIndex }
+        {
+            id: 2,
+            name: "Delete Confirmation",
+            element: <SubMenu_DeleteConfirm currentMenuIndex={subMenuIndex} setMenuIndex={setSubMenuIndex} />,
+            SetSubMenuIndex: setSubMenuIndex,
+        },
     ];
 
     const click_save = useCallback(() => {
-        trigger(mod.id, UIBindingConstants.ACTION_SAVE, selected_ID.value, inputValue, selectedCategoryIndex);
-        
+        trigger(mod.id, UIBindingConstants.ACTION_SAVE, getSelectedPrefab.value[0], inputValue, selectedCategoryIndex);
         setShowMessage(true);
         setRefreshSignal((prev) => prev + 1);
         setStatusMessage('Prefab Saved');
@@ -219,14 +241,8 @@ export const PlacementToolUI = () => {
             <div className={style.Module}>
                 <div className={style.LCDScreen}>
                     <LCDView
-                        SelectedPrefab={{
-                            ID: "",
-                            Name: inputValue,
-                            Category: selectedCategoryIndex,
-                            isSaved: false,
-                        }}
                         StatusMessage={statusMessage}
-                        setStatusMessage={ setStatusMessage}
+                        setStatusMessage={setStatusMessage}
                         SubMenu={subMenus[subMenuIndex]}
                         setInputValue={setInputValue}
                     />

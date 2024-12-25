@@ -26,9 +26,8 @@ const ToolBarTheme: Theme | any = getModule("game-ui/game/components/toolbar/too
 interface PrefabData {
     name: string;
     id: string;
-    description: string;
-    imagePath: string;
     category: string;
+    imagePath: string;
 }
 
 const prefabs = bindValue<string[][]>(
@@ -65,13 +64,12 @@ export const PrefabMenu: FC = () => {
         try {
             if (prefabs) {
                 const formattedPrefabs = prefabs.value.map((prefab) => {
-                    if (prefab && prefab.length >= 5) {
+                    if (prefab && prefab.length >= 4) {
                         return {
                             id: prefab[0],
                             name: prefab[1],
-                            description: prefab[2],
-                            imagePath: prefab[3],
-                            category: prefab[4] // category är en sträng som representerar ett index
+                            category: prefab[2],
+                            imagePath: prefab[3]
                         };
                     } else {
                         return null;
@@ -88,11 +86,14 @@ export const PrefabMenu: FC = () => {
             const categoriesArray = prefabCategories.value.split(", ");
             setCategories(categoriesArray);
         } else {
-            setCategories(["error 1", "error 2", "error 3", "error 4"]); // Fallback om inga kategorier finns
+            setCategories(["error 1", "error 2", "error 3", "error 4"]); 
         }
     }, [prefabCategories.value]);
 
     useEffect(() => {
+        console.log("Refresh signal recieved");
+        console.log(`prefab count: ${prefabs.value.length}`);
+        console.log(`prefab id: ${prefabs.value[0][0]}`);
         updatePrefabList();
     }, [refreshSignalValue]);
 

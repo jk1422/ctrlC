@@ -43,7 +43,7 @@ namespace ctrlC.Tools
 
                 if (!isSavedPrefab)
                 {
-                    _modUISystem.SetSelectedPrefab();
+                    _modUISystem.ResetSelectedPrefab();
                 }
             }
             else
@@ -53,14 +53,14 @@ namespace ctrlC.Tools
             }
         }
 
-        public bool SavePrefab(string name, int category, out string id)
+        public bool SavePrefab(string name, int category, out StorageObject result)
         {
             log.Info($"Will try to save prefab");
-            id = "";
-            if(PrefabStorageSystem.TrySaveNewPrefab(this.GetPrefab() as AssetStampPrefab, name, category, out string _id))
+            result = null;
+            if(PrefabStorageSystem.TrySaveNewPrefab(this.GetPrefab() as AssetStampPrefab, name, category, out StorageObject _result))
             {
-                log.Info($"SaveNewPrefab returned true. Id of new prefab: {_id}");
-                id = _id;
+                log.Info($"SaveNewPrefab returned true. Id of new prefab: {_result.ID}");
+                result = _result;
                 return true;
             }
             return false;

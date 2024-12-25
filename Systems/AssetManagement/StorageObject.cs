@@ -3,6 +3,7 @@ using ctrlC.Components.Prefabs;
 using ctrlC.Constants;
 using Game.Prefabs;
 using System;
+using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Security.Policy;
@@ -74,6 +75,12 @@ namespace ctrlC.Systems.AssetManagement
         /// Path to the meta file
         /// </summary>
         public string MetaFilePath => Path.Combine(PrefabFolderPath, $"meta.json").Replace("\\", "/");
+
+
+        public List<string> GetStringified()
+        {
+            return new List<string> { ID, Name, Category.ToString(), ThumbnailPath };
+        }
 
         public static bool TryCreateNew(AssetStampPrefab prefab, string name, int category, out StorageObject result)
         {
@@ -217,10 +224,20 @@ namespace ctrlC.Systems.AssetManagement
             return false;
         }
 
-        public bool TryUpdate()
+        public bool TryUpdate(string name, int category)
         {
-            // Update logic
-            return false;
+            try
+            {
+                Name = name;
+                Category = category;
+
+                CreateMetaFile();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
 
