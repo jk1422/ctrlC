@@ -134,9 +134,13 @@ export const SubMenu_Main: React.FC<LCDMainInterface> = ({ currentMenuIndex, set
         setMenuIndex(target);
     };
 
+    const EnableThumbnailCamera = () => {
+        trigger(mod.id, "Enable Thumbnail Camera");
+    };
+
     return (
         <>
-            <button className={style.LCDMenuItem}>Thumbnail Camera</button>
+            <button className={style.LCDMenuItem} onClick={() => EnableThumbnailCamera() }>Thumbnail Camera</button>
             <button className={style.LCDMenuItem} onClick={() => switchMenu(1)}>Change Category</button>
             <button className={style.LCDMenuItem} onClick={() => switchMenu(2)}>Delete</button>
         </>

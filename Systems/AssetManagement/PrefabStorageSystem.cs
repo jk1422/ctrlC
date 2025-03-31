@@ -2,12 +2,10 @@
 using ctrlC.Constants;
 using Game.Prefabs;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using UnityEngine;
 
 namespace ctrlC.Systems.AssetManagement
 {
@@ -137,6 +135,10 @@ namespace ctrlC.Systems.AssetManagement
 
         private static List<string> GetPrefabFolders(string directory)
         {
+            if (!Directory.Exists(PathConstants.PrefabStoragePath))
+            {
+                Directory.CreateDirectory(PathConstants.PrefabStoragePath);
+            }
             return Directory.GetDirectories(directory).ToList();
         }
 

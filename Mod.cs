@@ -6,16 +6,17 @@ using ctrlC.Rendering;
 using ctrlC.Systems.AssetManagement;
 using ctrlC.Tools;
 using ctrlC.Tools.Selection;
+using ctrlC.Utils.MessageUtils;
 using Game;
 using Game.Input;
 using Game.Modding;
 using Game.SceneFlow;
 using Game.UI.Menu;
+using System;
+using System.IO;
 using System.Linq;
 using Unity.Entities;
 using UnityEngine;
-using ctrlC.Utils.MessageUtils;
-using System;
 
 namespace ctrlC
 {
@@ -28,12 +29,14 @@ namespace ctrlC
         #endregion Logger
 
         public const string kCopyActionName = "Copy Binding";
+        public const string kPhotoActionName = "Take Thumbnail Photo";
         public const string kMirrorActionName = "Mirror Binding";
         public const string kOpenModActionName = "Open Mod Binding";
         public const string MOD_NAME = nameof(ctrlC);
 
         public static bool AutoOpenPrefabMenu;
         public static ProxyAction m_CopyAction;
+        public static ProxyAction m_PhotoAction;
         public static ProxyAction m_MirrorAction;
         public static ProxyAction m_OpenModAction;
         public static string[] PrefabCategories = new string[4];
@@ -42,9 +45,12 @@ namespace ctrlC
         internal static ModUISystem m_ModUISystem;
         internal static Setting m_Setting;
 
-        private static readonly string[] compatibleGameVersions = { "1.2.0f1", };
-        private const bool devMode = false;
+        private static readonly string[] compatibleGameVersions = { "1.2.5f1", };
+        private bool devMode = false;
 
+        SystemUpdatePhase OverlayRendererUpdatePhase;
+        SystemUpdatePhase SelectionToolUpdatePhase;
+        SystemUpdatePhase PlacementToolUpdatePhase;
 
         public static void ReadCategoryNames(string cat1, string cat2, string cat3, string cat4)
         {
@@ -57,10 +63,19 @@ namespace ctrlC
 
         public void OnCreateWorld(UpdateSystem updateSystem)
         {
+            
             updateSystem.UpdateAt<ModUISystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<PlacementTool>(SystemUpdatePhase.ToolUpdate);
-            updateSystem.UpdateAt<SelectionTool>(SystemUpdatePhase.ToolUpdate);
-            updateSystem.UpdateAt<OverlayCircleRenderer>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<PlacementTool>(PlacementToolUpdatePhase);
+            updateSystem.UpdateAt<SelectionTool>(SelectionToolUpdatePhase);
+            updateSystem.UpdateAt<OverlayCircleRenderer>(OverlayRendererUpdatePhase);
+            updateSystem.UpdateAt<ThumbnailCameraTool>(SystemUpdatePhase.ToolUpdate);
+            log.Info($"--- Tools created ---");
+            log.Info($"");
+            log.Info($"Update phases set to");
+            log.Info($"PlacementTool: {PlacementToolUpdatePhase}");
+            log.Info($"SelectionTool: {SelectionToolUpdatePhase}");
+            log.Info($"OverlayRenderer: {OverlayRendererUpdatePhase}");
+            log.Info($"----- ------");
         }
 
         public void OnDispose()
@@ -79,7 +94,10 @@ namespace ctrlC
                 PathConstants.ModPath = asset.path.Replace("ctrlC.dll", "");
                 log.Info($"Environment ModPath set to: {PathConstants.ModPath}");
             }
-
+            if (!Directory.Exists(PathConstants.GetCouiThumbnailPath()))
+            {
+                Directory.CreateDirectory(PathConstants.GetCouiThumbnailPath());
+            }
             string currentGameVersion = Game.Version.current.shortVersion;
 
             m_Setting = new Setting(this);
@@ -87,6 +105,11 @@ namespace ctrlC
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
             m_Setting.RegisterKeyBindings();
             AssetDatabase.global.LoadSettings(nameof(ctrlC), m_Setting, new Setting(this));
+            
+            devMode = m_Setting.DevMode;
+            PlacementToolUpdatePhase = m_Setting.PlacementToolUpdatePhase;
+            SelectionToolUpdatePhase = m_Setting.SelectionToolUpdatePhase;
+            OverlayRendererUpdatePhase = m_Setting.OverlayRendererUpdatePhase;
 
             if (compatibleGameVersions.Contains(currentGameVersion) || devMode)
             {
@@ -94,7 +117,7 @@ namespace ctrlC
                 ReadCategoryNames(m_Setting.Category1Name, m_Setting.Category2Name, m_Setting.Category3Name, m_Setting.Category4Name);
                 SetActions();
                 OnCreateWorld(updateSystem);
-                //AssetLoadSystem.LoadCustomPrefabs();
+        
                 PrefabStorageSystem.TryLoadPrefabs();
             }
             else
@@ -132,6 +155,46 @@ namespace ctrlC
             );
         }
 
+        private void SendPrefabUpdateMessage()
+        {
+            _NotificationUISystem.AddOrUpdateNotification(
+            "ctrlCPrefabUpdater",
+            title: "Prefab updater!",
+            text: "Your old prefabs needs to be updated. For more info, click on me",
+            progressState: ProgressState.None,
+            progress: 0,
+            onClicked: OpenPrefabUpdaterLink,
+            thumbnail: PathConstants.ModPath + "/.BuildContent/Images/C.png"
+            );
+            
+
+        }
+
+        private void OpenPrefabUpdaterLink()
+        {
+            Application.OpenURL("https://www.patreon.com/posts/120696673");
+
+            string confirmationFilePath = Path.Combine(PathConstants.ModPath, "confirmed.file");
+
+            try
+            {
+                if (!File.Exists(confirmationFilePath))
+                {
+                    File.Create(confirmationFilePath).Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating confirmation file: {ex.Message}");
+            }
+        }
+
+        private bool HasSeenPrefabUpdateMessage()
+        {
+            string confirmationFilePath = Path.Combine(PathConstants.ModPath, "confirmed.file");
+            return File.Exists(confirmationFilePath);
+        }
+
         private void OpenLink()
         {
             Application.OpenURL(PathConstants.XLink);
@@ -141,6 +204,7 @@ namespace ctrlC
         {
             m_OpenModAction = m_Setting.GetAction(kOpenModActionName);
             m_CopyAction = m_Setting.GetAction(kCopyActionName);
+            m_PhotoAction = m_Setting.GetAction(kPhotoActionName);
             m_MirrorAction = m_Setting.GetAction(kMirrorActionName);
 
             m_OpenModAction.shouldBeEnabled = true;

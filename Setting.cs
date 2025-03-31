@@ -1,6 +1,7 @@
 ﻿using Colossal;
 using Colossal.IO.AssetDatabase;
 using ctrlC.Constants;
+using Game;
 using Game.Input;
 using Game.Modding;
 using Game.Settings;
@@ -18,6 +19,9 @@ namespace ctrlC
     public class Setting : ModSetting
     {
         public const string kSection = "Main";
+
+        public const string kDevGroup = "Development tools";
+        public const string kDevSection = "Dev Tools";
 
         public const string kSupportGroup = "Button";
         public const string kCategoryGroup = "Toggle";
@@ -60,6 +64,7 @@ namespace ctrlC
                 Application.OpenURL(PathConstants.PrefabStoragePath);
             }
         }
+
 
         [SettingsUITextInput]
         [SettingsUISection(kSection, kCategoryGroup)]
@@ -114,6 +119,10 @@ namespace ctrlC
         [SettingsUISection(kSection, kKeybindingGroup)]
         public ProxyBinding MirrorBinding { get; set; }
 
+        [SettingsUIKeyboardBinding(BindingKeyboard.Space, Mod.kPhotoActionName, ctrl: true)]
+        [SettingsUISection(kSection, kKeybindingGroup)]
+        public ProxyBinding PhotoBinding { get; set; }
+
         [SettingsUISection(kSection, kKeybindingGroup)]
         public bool ResetBindings
         {
@@ -125,6 +134,18 @@ namespace ctrlC
         }
 
 
+
+        [SettingsUISection(kDevSection, kDevGroup)]
+        public bool DevMode { get; set; }
+        [SettingsUIAdvanced]
+        [SettingsUISection(kDevSection, kDevGroup)]
+        public SystemUpdatePhase PlacementToolUpdatePhase { get; set; } = SystemUpdatePhase.ToolUpdate;
+        [SettingsUIAdvanced]
+        [SettingsUISection(kDevSection, kDevGroup)]
+        public SystemUpdatePhase SelectionToolUpdatePhase { get; set; } = SystemUpdatePhase.ToolUpdate;
+        [SettingsUIAdvanced]
+        [SettingsUISection(kDevSection, kDevGroup)]
+        public SystemUpdatePhase OverlayRendererUpdatePhase { get; set; } = SystemUpdatePhase.ToolUpdate;
 
         public override void SetDefaults()
         {
@@ -144,6 +165,17 @@ namespace ctrlC
         {
             return new Dictionary<string, string>
             {
+                { m_Setting.GetOptionTabLocaleID(Setting.kDevSection), "Dev" },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DevMode)), "Dev Mode" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.DevMode)), $"This will override the version saftey control and let the mod load even if outdated" },
+
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.PlacementToolUpdatePhase)), "Placement Tool Update Phase" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SelectionToolUpdatePhase)), "Selection Tool Update Phase" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OverlayRendererUpdatePhase)), "Overlay renderer Update Phase" },
+
+
                 { m_Setting.GetSettingsLocaleID(), "ctrlC" },
                 { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Main" },
 

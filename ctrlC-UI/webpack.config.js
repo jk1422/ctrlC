@@ -73,8 +73,16 @@ module.exports = {
         type: "asset/resource",
         generator: {
           filename: "images/[name][ext][query]",
-        },
-      },
+          },
+
+          },
+          {
+              test: /ctrlC_thumbnails\/.*\.(png|jpe?g|gif|svg)$/i, // Matchar bilder i "thumbnails"-mappen
+              type: "asset/resource",
+              generator: {
+                  filename: "ctrlC_thumbnails/[name][ext][query]", // Placerar thumbnails i en separat mapp
+              },
+          },
     ],
   },
   resolve: {

@@ -103,6 +103,8 @@ namespace ctrlC.Tools
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             if (mirrorAction.WasPerformedThisFrame()) MirrorPrefab();
+
+
             return base.OnUpdate(inputDeps);
         }
 

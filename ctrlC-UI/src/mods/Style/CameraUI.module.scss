@@ -1,0 +1,67 @@
+﻿
+.CameraViewContainer {
+    position: absolute;
+    width: 100%;
+    height: 88.6%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.CameraViewContentContainer {
+    width: 99.7%;
+    height: 99%;
+    border: solid 4rem rgb(220,220,220);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    pointer-events: none;
+}
+
+.CameraButtonRack {
+    background-color: rgb(220,220,220);
+    width: 150rem;
+    height: 100rem;
+    border-radius: 20rem 20rem 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+}
+
+.CameraButton {
+    border: solid 4rem black;
+    width: 75rem;
+    height: 75rem;
+    padding: 10rem;
+    border-radius: 50%;
+    box-shadow: 3rem 3rem 10rem rgba(0, 0, 0, 0.5);
+    position: relative;
+    z-index: 9999;
+    pointer-events: auto;
+    transition: width 0.05s ease, height 0.05s ease, box-shadow 0.05s ease;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.CameraButton:hover {
+    width: 73rem;
+    height: 73rem;
+    box-shadow: 2rem 2rem 10rem rgba(0, 0, 0, 0.5);
+}
+
+.CameraButton:active {
+    width: 71rem;
+    height: 71rem;
+    box-shadow: 1rem 1rem 10rem rgba(0, 0, 0, 0.5);
+    background-color: #eee;
+}
+
+.cameraIcon{
+    width: 80%;
+    height: 80%;
+}

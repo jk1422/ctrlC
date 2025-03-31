@@ -6,7 +6,7 @@ import mod from "mod.json";
 
 const msg = bindValue<string>(mod.id,
     "Message",
-    "error"
+    "The World is yours."
 );
 
 export const LEDSign: FC = () => {

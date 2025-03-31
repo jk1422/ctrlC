@@ -13,14 +13,15 @@ import backpackIcon from "img/C.png"
 import editIcon from "img/pen.png"
 import deleteIcon from "img/delete.png"
 import logo from "img/LogoVar2.png"
+
+
+
 const ToolBarButtonTheme: Theme | any = getModule(
     "game-ui/game/components/toolbar/components/feature-button/toolbar-feature-button.module.scss",
     "classes"
 );
 // Getting the vanilla theme css for compatibility
 const ToolBarTheme: Theme | any = getModule("game-ui/game/components/toolbar/toolbar.module.scss", "classes");
-
-
 
 
 interface PrefabData {
@@ -91,9 +92,6 @@ export const PrefabMenu: FC = () => {
     }, [prefabCategories.value]);
 
     useEffect(() => {
-        console.log("Refresh signal recieved");
-        console.log(`prefab count: ${prefabs.value.length}`);
-        console.log(`prefab id: ${prefabs.value[0][0]}`);
         updatePrefabList();
     }, [refreshSignalValue]);
 
@@ -143,7 +141,7 @@ export const PrefabMenu: FC = () => {
                                 <div >
                                     <a id={prefab.id} key={index} className={style.ItemBox} onClick={() => handleClick(prefab.id)}>
                                         <div className={style.ImageHolder}>
-                                            <img src={prefab.imagePath} alt={prefab.name} className={style.Thumbnail} />
+                                            <img src={`coui://ui-mods/ctrlC_thumbnails/ctrlC_${prefab.id}.png`} alt={prefab.name} className={style.Thumbnail} />
                                         </div>
                                         <div className={style.ItemBoxInfo}>
                                             <h5 className={style.ItemTitle}>{prefab.name}</h5>

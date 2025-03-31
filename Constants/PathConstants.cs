@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ctrlC.Constants
 {
@@ -11,11 +7,16 @@ namespace ctrlC.Constants
 	{
 		public static string EnviromentPath { get; private set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "LocalLow", "Colossal Order", "Cities Skylines II");
 
-		public static string PrefabStoragePathShort { get; private set; } = ".ctrlC~";
+		public static string PrefabStoragePathShort { get; private set; } = "~ctrlC~"; // No dot
 
         public static string PrefabStoragePath { get; private set; } = Path.Combine(EnviromentPath, PrefabStoragePathShort);
 		
 		public static string ModPath { get; internal set; } = ""; // this is set from Mod.cs
+
+        public static string GetCouiThumbnailPath()
+        {
+            return Path.Combine(ModPath, "ctrlC_thumbnails");
+        }
 
         public static string GetIncludedAssetsFolder()
         {

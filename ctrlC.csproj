@@ -5,11 +5,11 @@
 		<TargetFramework>net472</TargetFramework>
 		<LangVersion>9.0</LangVersion>
 		<Configurations>Debug;Release</Configurations>
-		
+
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
 	</PropertyGroup>
-	
+
 	<!--Imports must be after PropertyGroup block-->
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
@@ -40,68 +40,81 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
+	<ItemGroup>
+		<Content Include="ctrlC_thumbnails\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
 	<ItemGroup>
-	  <Reference Include="Colossal.AssetPipeline">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Colossal.Collections">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Colossal.Core">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Colossal.IO.AssetDatabase">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Colossal.Localization">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Colossal.Logging">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Colossal.Mathematics">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Colossal.OdinSerializer">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Colossal.PSI.Common">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Colossal.UI">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Colossal.UI.Binding">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Game">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Unity.Burst">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Unity.Collections">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Unity.Entities">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Unity.InputSystem">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="Unity.Mathematics">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="UnityEngine.CoreModule">
-		  <Private>false</Private>
-	  </Reference>
-	  <Reference Include="UnityEngine.JSONSerializeModule">
-	    <HintPath>..\..\..\..\..\XboxGames\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityWebRequestModule">
-		  <Private>false</Private>
-	  </Reference>
+		<Folder Include="ctrlC-UI\src\thumbnails\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="Colossal.AssetPipeline">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.Collections">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.Core">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.IO.AssetDatabase">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.Localization">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.Logging">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.Mathematics">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.OdinSerializer">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.PSI.Common">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.UI">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.UI.Binding">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Game">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Unity.Burst">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Unity.Collections">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Unity.Entities">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Unity.InputSystem">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Unity.Mathematics">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="UnityEngine.CoreModule">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="UnityEngine.ImageConversionModule">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="UnityEngine.JSONSerializeModule">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="UnityEngine.UnityWebRequestModule">
+			<Private>false</Private>
+		</Reference>
+
 	</ItemGroup>
 
 	<Target Name="BuildUI" AfterTargets="AfterBuild">

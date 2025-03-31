@@ -1,7 +1,6 @@
 ﻿using Colossal.Logging;
 using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
-using ctrlC.Components.Prefabs;
 using ctrlC.Constants;
 using ctrlC.Systems.AssetManagement;
 using ctrlC.Tools;
@@ -10,7 +9,6 @@ using ctrlC.Utils;
 using Game;
 using Game.Prefabs;
 using Game.UI;
-using Game.UI.Widgets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +29,9 @@ namespace ctrlC
         private SelectionTool selectionTool;
 
         private PlacementTool placementTool;
+
+        private ThumbnailCameraTool thumbnailCamera;
+
         private Game.Prefabs.PrefabSystem prefabSystem;
 
         // Flags
@@ -61,6 +62,8 @@ namespace ctrlC
 
         public bool ShowPrefabMenu { get; set; } = false;
 
+        public bool ShowCameraUI { get; set; } = false;
+
 
         public static List<InputAction> conflictingInputs = new List<InputAction>();
         private InputAction _CBtn;
@@ -72,7 +75,7 @@ namespace ctrlC
         public List<string> SelectedPrefabStringified { get; set; } = new List<string>() { "0", "standard", "", ""};
         public int SelectedPrefabRefreshSignal { get; set; } = 0;
 
-        void UpdatePrefabList()
+        internal void UpdatePrefabList()
         {
             Log.Info($"Updating prefab list: {StringifiedPrefabs.Count}");
             StringifiedPrefabs.Clear();
@@ -205,6 +208,8 @@ namespace ctrlC
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.ACTION_PMT_RESET, ResetPrefab));
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.ACTION_PMT_MIRROR, MirrorPrefab));
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, "Delete Prefab", DeleteSelectedPrefab));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, "Enable Thumbnail Camera", EnableThumbnailCamera));
+                AddBinding(new TriggerBinding(Mod.MOD_NAME, "Take picture", TakePicture));
 
                 // Selection Tool Actions
                 AddBinding(new TriggerBinding(Mod.MOD_NAME, UIBindingConstants.SELECTION_TOOL_TOGGLE, ToggleSelectionTool));
@@ -220,6 +225,7 @@ namespace ctrlC
                 AddUpdateBinding(new GetterValueBinding<List<List<string>>>(Mod.MOD_NAME, UIBindingConstants.PREFABS_GET, () => StringifiedPrefabs, new ListListStringWriter()));
                 AddUpdateBinding(new GetterValueBinding<List<string>>(Mod.MOD_NAME, "Get Selected Prefab", () => SelectedPrefabStringified, new ListStringWriter()));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SHOW_PREFABMENU, () => ShowPrefabMenu));
+                AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, "Show Camera UI", () => ShowCameraUI));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.PLACEMENT_TOOL_ENABLED, () => PlacementToolEnabled));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.PREFABS_UPDATE, () => UpdatePrefabs));
                 AddUpdateBinding(new GetterValueBinding<bool>(Mod.MOD_NAME, UIBindingConstants.SELECTION_CIRCLE_ENABLED, () => CircleSelectionEnabled));
@@ -245,6 +251,7 @@ namespace ctrlC
         {
             selectionTool = World.GetOrCreateSystemManaged<SelectionTool>();
             placementTool = World.GetOrCreateSystemManaged<PlacementTool>();
+            thumbnailCamera = World.GetOrCreateSystemManaged<ThumbnailCameraTool>();
         }
 
         public void InstantiatePrefab(string id)
@@ -256,7 +263,16 @@ namespace ctrlC
                 placementTool.ActivateTool(result.Prefab as AssetStampPrefab, true);
             }
         }
+        public void EnableThumbnailCamera()
+        {
+            thumbnailCamera.Enable(SelectedPrefab);
+        }
 
+        public void TakePicture()
+        {
+            Log.Info("Taking picture");
+            thumbnailCamera.TakePhoto();
+        }
         public void DeleteSelectedPrefab()
         {
             if(SelectedPrefab != null)

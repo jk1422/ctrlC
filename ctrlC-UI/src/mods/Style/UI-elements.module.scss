@@ -15,19 +15,18 @@
     background-image: radial-gradient( circle at center, rgba(245, 120, 90, 0.9) 0%, /* Ljusaste delen i mitten */
     rgba(255, 100, 100, 0.6) 70% /* Ljus rödtonad glöd närmast mitten */
     );
-    background-blend-mode: luminosity;
     box-shadow: inset 0rem 0rem 4rem rgba(255, 100, 100, 0.8), /* Ljusglans runt lampan */
     0rem 0rem 15rem 1rem rgba(255, 20, 20, 0.4); /* Yttre röd ljusglans */
     padding: 3rem;
     min-height: 26rem;
     min-width: 26rem;
-    width: fit-content;
-    height: fit-content;
+    //width: fit-content;
+    //height: fit-content;
     display: flex;
     justify-content: center;
     align-items: center; /* Centrerar ikonen */
     transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
-    border: inset solid 60rem;
+    border: 60rem solid;
     border-image: linear-gradient(-45deg, rgba(200, 0, 0, 0.5), rgba(155, 0, 0, 0.5)) 1; /* Gradient för ramen */
     border-radius: 0rem;
     border-width: 3rem;
@@ -39,8 +38,8 @@
     padding: 3rem;
     min-height: 26rem;
     min-width: 26rem;
-    width: fit-content;
-    height: fit-content;
+   //width: fit-content;
+   //height: fit-content;
     display: flex;
     justify-content: center;
     align-items: center; /* Centrerar ikonen */
@@ -52,7 +51,7 @@
 
 
 .icon {
-    position: center;
+    //position: center;
     width: 16rem;
     height: 16rem;
     opacity: 0.6;
@@ -70,8 +69,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: fit-content;
-    width: fit-content;
+    //height: fit-content;
+    //width: fit-content;
     border-radius: 3rem;
     padding: 5rem;
     background-color: $background-color;
@@ -89,7 +88,7 @@
     margin: auto;
     margin-top: 5rem;
     border-radius: 5rem 5rem 0rem 0rem;
-    width: fit-content;
+    //width: fit-content;
     max-width: 60rem;
 }
 
@@ -100,7 +99,6 @@
     color: #fff;
     padding: 10rem 10rem;
     border: none;
-    outline: none;
     cursor: pointer;
     transition: background-color 0.2s, box-shadow 0.2s;
     text-transform: uppercase;
@@ -206,7 +204,7 @@
 }
 
 .LCDTextInput {
-    width: 75%;
+    width: 100%;
     font-size: 25rem;
     padding: 2rem;
     color: rgb(106, 158, 171);

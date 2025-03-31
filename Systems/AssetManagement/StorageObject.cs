@@ -4,9 +4,7 @@ using ctrlC.Constants;
 using Game.Prefabs;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Security.Policy;
 using Unity.Entities;
 using UnityEngine;
 
@@ -31,12 +29,12 @@ namespace ctrlC.Systems.AssetManagement
         private  Colossal.Hash128 _CID;
         public Colossal.Hash128 GetCID()
         {
-            if (_CID == Colossal.Hash128.empty)
+            if (_CID == Colossal.Hash128.Empty)
             {
                 if (!File.Exists(CIDPath))
                 {
                     PrefabStorageSystem.log.Error($"CID file not found at: {CIDPath}");
-                    return Colossal.Hash128.empty;
+                    return Colossal.Hash128.Empty;
                 }
 
                 using (StreamReader sr = new StreamReader(CIDPath))
@@ -65,6 +63,10 @@ namespace ctrlC.Systems.AssetManagement
         /// Path to the thumbnail
         /// </summary>
         public string ThumbnailPath => Path.Combine(PrefabFolderPath, $"{PrefixedName}.png").Replace("\\", "/");
+        /// <summary>
+        /// Path to the coui thumbnail
+        /// </summary>
+        public string CouiThumbnailPath => Path.Combine(PathConstants.GetCouiThumbnailPath(), $"{PrefixedName}.png").Replace("\\", "/"); //ctrlC_thumbnails
 
         /// <summary>
         /// Path to the .prefab.cid file
@@ -149,18 +151,29 @@ namespace ctrlC.Systems.AssetManagement
 
             var prefabFolderShort = Path.Combine(PathConstants.PrefabStoragePathShort, result.PrefixedName).Replace("\\", "/");
 
-            var assetPath = AssetDataPath.Create(prefabFolderShort, result.PrefixedName);
+            var assetPath = AssetDataPath.Create(prefabFolderShort, result.PrefixedName, EscapeStrategy.None);
 
             if (AssetDatabase.user.AddAsset<PrefabAsset>(assetPath, result.GetCID()).Load() is PrefabBase prefabBase)
             {
                 PrefabSystem prefabSystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<PrefabSystem>();
                 prefabSystem.AddPrefab(prefabBase);
                 result.Prefab = prefabBase as AssetStampPrefab;
-            
+                result.CopyThumbnailToCoui();
                 return true;
             }
 
             return false;
+        }
+
+        public void CopyThumbnailToCoui()
+        {
+            string sourcePath = ThumbnailPath; //where the thumbnail is located inclusive file name 
+            string destination = CouiThumbnailPath; //the coui folder inclusive file name
+
+            if (File.Exists(sourcePath))
+            {
+                File.Copy(sourcePath, destination, overwrite: true);
+            }
         }
 
         public bool TryRemove()
@@ -246,6 +259,7 @@ namespace ctrlC.Systems.AssetManagement
             try
             {
                 AssetDataPath path = AssetDataPath.Create(PrefabFolderPathShort, PrefixedName);
+                PrefabStorageSystem.log.Info($"path: {path}");
                 (Prefab.asset ?? AssetDatabase.user.AddAsset(path, Prefab)).Save();
                 return true;
             }
