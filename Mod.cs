@@ -48,9 +48,6 @@ namespace ctrlC
         private static readonly string[] compatibleGameVersions = { "1.2.5f1", };
         private bool devMode = false;
 
-        SystemUpdatePhase OverlayRendererUpdatePhase;
-        SystemUpdatePhase SelectionToolUpdatePhase;
-        SystemUpdatePhase PlacementToolUpdatePhase;
 
         public static void ReadCategoryNames(string cat1, string cat2, string cat3, string cat4)
         {
@@ -65,17 +62,10 @@ namespace ctrlC
         {
             
             updateSystem.UpdateAt<ModUISystem>(SystemUpdatePhase.UIUpdate);
-            updateSystem.UpdateAt<PlacementTool>(PlacementToolUpdatePhase);
-            updateSystem.UpdateAt<SelectionTool>(SelectionToolUpdatePhase);
-            updateSystem.UpdateAt<OverlayCircleRenderer>(OverlayRendererUpdatePhase);
+            updateSystem.UpdateAt<PlacementTool>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<SelectionTool>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAt<OverlayCircleRenderer>(SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<ThumbnailCameraTool>(SystemUpdatePhase.ToolUpdate);
-            log.Info($"--- Tools created ---");
-            log.Info($"");
-            log.Info($"Update phases set to");
-            log.Info($"PlacementTool: {PlacementToolUpdatePhase}");
-            log.Info($"SelectionTool: {SelectionToolUpdatePhase}");
-            log.Info($"OverlayRenderer: {OverlayRendererUpdatePhase}");
-            log.Info($"----- ------");
         }
 
         public void OnDispose()
@@ -105,11 +95,6 @@ namespace ctrlC
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
             m_Setting.RegisterKeyBindings();
             AssetDatabase.global.LoadSettings(nameof(ctrlC), m_Setting, new Setting(this));
-            
-            devMode = m_Setting.DevMode;
-            PlacementToolUpdatePhase = m_Setting.PlacementToolUpdatePhase;
-            SelectionToolUpdatePhase = m_Setting.SelectionToolUpdatePhase;
-            OverlayRendererUpdatePhase = m_Setting.OverlayRendererUpdatePhase;
 
             if (compatibleGameVersions.Contains(currentGameVersion) || devMode)
             {

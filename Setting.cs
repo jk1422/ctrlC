@@ -137,15 +137,6 @@ namespace ctrlC
 
         [SettingsUISection(kDevSection, kDevGroup)]
         public bool DevMode { get; set; }
-        [SettingsUIAdvanced]
-        [SettingsUISection(kDevSection, kDevGroup)]
-        public SystemUpdatePhase PlacementToolUpdatePhase { get; set; } = SystemUpdatePhase.ToolUpdate;
-        [SettingsUIAdvanced]
-        [SettingsUISection(kDevSection, kDevGroup)]
-        public SystemUpdatePhase SelectionToolUpdatePhase { get; set; } = SystemUpdatePhase.ToolUpdate;
-        [SettingsUIAdvanced]
-        [SettingsUISection(kDevSection, kDevGroup)]
-        public SystemUpdatePhase OverlayRendererUpdatePhase { get; set; } = SystemUpdatePhase.ToolUpdate;
 
         public override void SetDefaults()
         {
@@ -169,12 +160,6 @@ namespace ctrlC
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DevMode)), "Dev Mode" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.DevMode)), $"This will override the version saftey control and let the mod load even if outdated" },
-
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.PlacementToolUpdatePhase)), "Placement Tool Update Phase" },
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.SelectionToolUpdatePhase)), "Selection Tool Update Phase" },
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OverlayRendererUpdatePhase)), "Overlay renderer Update Phase" },
-
 
                 { m_Setting.GetSettingsLocaleID(), "ctrlC" },
                 { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Main" },
