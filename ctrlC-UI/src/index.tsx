@@ -5,11 +5,21 @@ import { CameraUIRoot } from "mods/ThumbnailCameraUI"
 
 
 const register: ModRegistrar = (moduleRegistry) => {
+
+    console.log("Registering ModUI modules...");
+
     //TODO: Make sure this only shows if correct version of the game.........
     moduleRegistry.append('GameTopLeft', PrefabMenu);
-    moduleRegistry.append('GameTopLeft', UIRoot);
+    console.log("Prefabmenu registered...");
+
+    moduleRegistry.append('GameTopLeft', UIRoot); // <-- Causes crash
+    console.log("UIRoot registered...");
+
     moduleRegistry.append('Game', CameraUIRoot);
+    console.log("CameraUIRoot registered...");
+
     moduleRegistry.extend("game-ui/game/components/toolbar/top/toggles.tsx", "PhotoModeToggle", PrefabMenuButton);
+    console.log("PrefabMenuButton registered...");
 }
 
 export default register;

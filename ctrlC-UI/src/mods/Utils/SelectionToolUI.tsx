@@ -5,7 +5,6 @@ import { Icon, Button, FloatingButton } from "cs2/ui";
 import { bindValue, useValue, trigger } from 'cs2/api';
 import { UIBindingConstants } from "../../helpers/Bindings";
 
-import { ToolButton, LEDSignSmall } from 'mods/Utils/Components'
 
 import {SelectionToolBG } from 'mods/Utils/vector';
 
@@ -14,6 +13,8 @@ import sct_buildings from "img/filterIcons/buildingW.png";
 import sct_trees from "img/filterIcons/treeW.png";
 import sct_props from "img/filterIcons/propW.png";
 import sct_area from "img/filterIcons/areaW_DMG.png";
+
+import { LEDSignSmall as ImportedLEDSignSmall } from 'mods/Utils/LEDSign';
 
 const sct_CircleSelection = bindValue<boolean>(mod.id, UIBindingConstants.SELECTION_CIRCLE_ENABLED, false);
 const sct_All = bindValue<boolean>(mod.id, UIBindingConstants.SCT_ALL, true);
@@ -61,7 +62,7 @@ export const SelectionToolUI = () => {
                 {/* Tool section for showing LED indicators and toggling between tools */}
                 <div className={[style.col3, style.dFlex, style.ps].join(' ')}>
                     <div className={style.LEDSmall}>
-                        <LEDSignSmall ray={!useValue(sct_CircleSelection)} />
+                        <ImportedLEDSignSmall ray={!useValue(sct_CircleSelection)} />
                     </div>
                 </div>
                 <div className={[style.col3, style.dFlex].join(' ')}>
@@ -79,7 +80,7 @@ export const SelectionToolUI = () => {
                 </div>
                 <div className={[style.col3, style.dFlex, style.pe].join(' ')}>
                     <div className={style.LEDSmall}>
-                        <LEDSignSmall circle={useValue(sct_CircleSelection)} />
+                        <ImportedLEDSignSmall circle={useValue(sct_CircleSelection)} />
                     </div>
                 </div>
             </div>
@@ -95,5 +96,26 @@ export const SelectionToolUI = () => {
                 </div>
             </div>
         </>
+    );
+};
+
+interface buttonInterface {
+    icon?: string;
+    label?: string;
+    state?: boolean;
+    onClick?: () => void;
+}
+
+// FilterButton component, represents each filter option with an icon and selection state
+export const ToolButton: FC<buttonInterface> = ({ icon, label, state, onClick }) => {
+    return (
+        <div className={style.filterWrapper}>
+            <div className={style.toolButtonFrame}>
+                <Button className={state ? style.toolButtonActive : style.toolButtonInactive} onClick={onClick}>
+                    {icon && <Icon src={icon} className={style.icon}></Icon>}
+                    {label && <label className={style.toolButtonLabel}>{label}</label>}
+                </Button>
+            </div>
+        </div>
     );
 };

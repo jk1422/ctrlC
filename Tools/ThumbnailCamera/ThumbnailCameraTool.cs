@@ -62,6 +62,7 @@ namespace ctrlC.Tools
         }
         protected override void OnCreate()
         {
+            log.Info("Creating Thumbnail camera tool...");
             base.OnCreate();
 
             this.Enabled = false;

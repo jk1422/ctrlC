@@ -6,7 +6,6 @@ using ctrlC.Rendering;
 using ctrlC.Systems.AssetManagement;
 using ctrlC.Tools;
 using ctrlC.Tools.Selection;
-using ctrlC.Utils.MessageUtils;
 using Game;
 using Game.Input;
 using Game.Modding;
@@ -43,9 +42,9 @@ namespace ctrlC
 
         internal static NotificationUISystem _NotificationUISystem;
         internal static ModUISystem m_ModUISystem;
-        internal static Setting m_Setting;
+        internal static Setting m_Setting; 
 
-        private static readonly string[] compatibleGameVersions = { "1.2.5f1", };
+        private static readonly string[] compatibleGameVersions = { "1.5.3f1" };
         private bool devMode = false;
 
 
@@ -86,9 +85,12 @@ namespace ctrlC
             }
             if (!Directory.Exists(PathConstants.GetCouiThumbnailPath()))
             {
+                log.Info($"Coui path didnt exist, creating path..");
                 Directory.CreateDirectory(PathConstants.GetCouiThumbnailPath());
             }
             string currentGameVersion = Game.Version.current.shortVersion;
+            
+            log.Info($"Game version is {currentGameVersion}");
 
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
@@ -96,13 +98,13 @@ namespace ctrlC
             m_Setting.RegisterKeyBindings();
             AssetDatabase.global.LoadSettings(nameof(ctrlC), m_Setting, new Setting(this));
 
+            devMode = m_Setting.DevMode;
             if (compatibleGameVersions.Contains(currentGameVersion) || devMode)
             {
                 m_ModUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ModUISystem>();
                 ReadCategoryNames(m_Setting.Category1Name, m_Setting.Category2Name, m_Setting.Category3Name, m_Setting.Category4Name);
                 SetActions();
                 OnCreateWorld(updateSystem);
-        
                 PrefabStorageSystem.TryLoadPrefabs();
             }
             else
@@ -112,17 +114,17 @@ namespace ctrlC
                 HandleOutdatedMod();
             }
 
-            Discord.GetSpecificMessages(MsgConstants.MESSAGE_TYPATRON, (retrievedMessage, success) =>
-            {
-                if (success && retrievedMessage != null)
-                {
-                    LedSignUtils.message = retrievedMessage.Content + " < |";
-                }
-                else
-                {
-                    LedSignUtils.message = "< |";
-                }
-            });
+            //Discord.GetSpecificMessages(MsgConstants.MESSAGE_TYPATRON, (retrievedMessage, success) =>
+            //{
+            //    if (success && retrievedMessage != null)
+            //    {
+            //        LedSignUtils.message = retrievedMessage.Content + " < |";
+            //    }
+            //    else
+            //    {
+            //        LedSignUtils.message = "< |";
+            //    }
+            //});
             
         }
 

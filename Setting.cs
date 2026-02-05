@@ -13,9 +13,7 @@ namespace ctrlC
     [FileLocation(nameof(ctrlC))]
     [SettingsUIGroupOrder(kSupportGroup, kCategoryGroup, kSliderGroup, kDropdownGroup, kKeybindingGroup)]
     [SettingsUIShowGroupName(kSupportGroup, kCategoryGroup, kSliderGroup, kDropdownGroup, kKeybindingGroup)]
-    [SettingsUIKeyboardAction(Mod.kOpenModActionName, ActionType.Button, usages: new string[] { Usages.kMenuUsage, "TestUsage" }, interactions: new string[] { "UIButton" })]
-    [SettingsUIGamepadAction(Mod.kOpenModActionName, ActionType.Button, usages: new string[] { Usages.kMenuUsage, "TestUsage" }, interactions: new string[] { "UIButton" })]
-    [SettingsUIMouseAction(Mod.kOpenModActionName, ActionType.Button, usages: new string[] { Usages.kMenuUsage, "TestUsage" }, interactions: new string[] { "UIButton" })]
+
     public class Setting : ModSetting
     {
         public const string kSection = "Main";
@@ -54,6 +52,8 @@ namespace ctrlC
             }
         }
 
+        [SettingsUISection(kSection, kDevGroup)]
+        public bool DevMode { get; set; }
 
         [SettingsUIButton]
         [SettingsUISection(kSection, kCategoryGroup)]
@@ -88,7 +88,7 @@ namespace ctrlC
                 if (_autoOpenPrefabMenu != value)
                 {
                     _autoOpenPrefabMenu = value;
-                    Mod.AutoOpenPrefabMenu = value;  // Kalla på metoden som uppdaterar den statiska variabeln
+                    Mod.AutoOpenPrefabMenu = value;  
                 }
             }
         }
@@ -135,8 +135,7 @@ namespace ctrlC
 
 
 
-        [SettingsUISection(kDevSection, kDevGroup)]
-        public bool DevMode { get; set; }
+
 
         public override void SetDefaults()
         {
@@ -157,9 +156,6 @@ namespace ctrlC
             return new Dictionary<string, string>
             {
                 { m_Setting.GetOptionTabLocaleID(Setting.kDevSection), "Dev" },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DevMode)), "Dev Mode" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.DevMode)), $"This will override the version saftey control and let the mod load even if outdated" },
 
                 { m_Setting.GetSettingsLocaleID(), "ctrlC" },
                 { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Main" },
@@ -202,6 +198,16 @@ namespace ctrlC
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.MirrorBinding)), "Mirror Key" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.MirrorBinding)), $"Keyboard binding for mirroring the copied stuff" },
+
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.PhotoBinding)), "Prefab thumbnail camera Key" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.PhotoBinding)), $"Keyboard binding for taking a thumbnail picture" },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DevMode)), "Ignore version safety check" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.DevMode)), $"After a game update, ctrlC is disabled by default to avoid possible crashes.\r\nEnabling this option will force the mod to load despite the update.\r\nUse at your own risk." },
+
+
+
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetBindings)), "Reset key bindings" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetBindings)), $"Reset all key bindings of the mod" },

@@ -13,12 +13,13 @@ declare module "cs2/utils" {
    * when any key has values which are not strictly equal between the arguments.
    * Returns true when the values of all keys are strictly equal.
    */
-  export export function shallowEqual(a: any, b: any, depth?: number): boolean;
+  export export function shallowEqual(a: any, b: any, depth?: number, path?: string): boolean;
   export export function useMemoizedValue<T>(value: T, equalityComparer: EqualityComparer<T>): T;
   export export function formatLargeNumber(value: number): string;
   export export function useFormattedLargeNumber(value: number): string;
   export export function useRem(): number;
   export export function useCssLength(length: string): number;
+  export export function preloadImages<T extends Record<string, string> | string[]>(urls: T): T;
   
   export {};
   

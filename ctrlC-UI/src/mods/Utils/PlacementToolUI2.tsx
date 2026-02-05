@@ -94,6 +94,7 @@ export const LCDView: React.FC<LCDMenuInterface> = ({ SubMenu, setInputValue, St
                         className={style.LCDTextInput}
                         value={name}
                         onChange={handleInputChange}
+                        placeholder="Enter a Name"
                     />
                 </div>
                 <div>{SubMenu.element}</div>
@@ -169,7 +170,7 @@ export const SubMenu_Category: React.FC<LCDCategoryInterface> = ({
             {categories.map((category, index) => (
                 <button
                     key={category}
-                    className={`${style.LCDCategoryInput} ${selectedCategoryIndex === index ? style.LCDCategoryInputSelected : ""}`}
+                    className={`${style.LCDMenuItem} ${selectedCategoryIndex === index ? style.LCDMenuSelected : ""}`}
                     onClick={() => handleChange(index)}
                 >
                     {category}

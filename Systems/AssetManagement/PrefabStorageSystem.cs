@@ -156,16 +156,16 @@ namespace ctrlC.Systems.AssetManagement
                 foreach (DirectoryInfo subDir in dir.GetDirectories())
                 {
                     log.Info($"Found included asset directory: '{subDir.Name}'");
-
+            
                     string destinationPath = Path.Combine(PathConstants.PrefabStoragePath, subDir.Name);
-
+            
                     if (Directory.Exists(destinationPath))
                     {
                         log.Info($"Asset '{subDir.Name}' already exists in '{PathConstants.PrefabStoragePath}'. Removing the asset.");
                         Directory.Delete(subDir.FullName, true);
                         continue;
                     }
-
+            
                     try
                     {
                         // Move the asset directory to the prefab storage location.

@@ -20,9 +20,12 @@ namespace ctrlC.Tools
 
         protected override void OnCreate()
         {
+            log.Info("PlacementTool OnCreate");
             base.OnCreate();
+            log.Info("PlacementTool base.OnCreate() done");
             Enabled = false;
             _modUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
+            log.Info("PlacementTool OnCreate done");
         }
         
         public void DeactivateTool()

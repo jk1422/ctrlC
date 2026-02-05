@@ -1,5 +1,5 @@
 ﻿@import 'theme.module.scss';
-@import 'main.module.scss';
+
 
 .ModuleHolder {
     display: flex;
@@ -40,8 +40,21 @@
     border: none;
     text-shadow: 0 0 10rem rgba(106, 158, 171, 0.5), 0 0 20rem rgba(106, 158, 171, 0.4);
 }
-
+.LCDTextInput {
+    width: 100%;
+    border: none;
+    font-family: 'LCDdot', sans-serif;
+    font-size: 32rem;
+    color: rgb(14, 25, 77);
+    background: rgb(106, 158, 171);
+    margin-bottom: 5rem;
+    text-shadow: 0 0 10rem rgba(106, 158, 171, 0.5), 0 0 20rem rgba(106, 158, 171, 0.4);
+}
 .LCDMenuItem:hover {
+    color: rgba(0, 0, 0, 1);
+    background: rgb(106, 158, 171);
+}
+.LCDMenuSelected {
     color: rgba(0, 0, 0, 1);
     background: rgb(106, 158, 171);
 }
@@ -126,6 +139,9 @@
     padding: 3rem;
     height: 20rem;
 }
+.LCDCategoryInput {
+    font-family: 'LCDdot', sans-serif;
+}
 
 .statusLabel, .statusMessage {
     font-family: 'LCDdot', sans-serif;
@@ -137,4 +153,20 @@
 .statusMessage {
     margin: 0; 
     text-align:center;
+}
+.toolButtonsRack {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding: 5rem;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+.toolRack {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 0rem;
 }

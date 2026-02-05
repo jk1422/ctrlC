@@ -1,4 +1,6 @@
 ﻿using Colossal.Entities;
+using Colossal.Logging;
+using ctrlC.Tools.Selection;
 using Game.Rendering;
 using Unity.Collections;
 using Unity.Entities;
@@ -9,6 +11,7 @@ namespace ctrlC.Rendering
 {
     public partial class OverlayCircleRenderer : SystemBase
     {
+        public static ILog log = LogManager.GetLogger($"{nameof(ctrlC)}.{nameof(OverlayCircleRenderer)}").SetShowsErrorsInUI(false);
         private OverlayRenderSystem _overlayRenderSystem;
         private EntityQuery _circleQuery;
         private EntityQuery _deselectCircleQuery;
@@ -20,16 +23,20 @@ namespace ctrlC.Rendering
 
         protected override void OnCreate()
         {
+            log.Info("OverlayCircleRenderer OnCreate");
             base.OnCreate();
+            log.Info("base created");
             _overlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
+            log.Info("overlay render system found");
 
             _circleQuery = GetEntityQuery(ComponentType.ReadOnly<CircleOverlay>());
             _deselectCircleQuery = GetEntityQuery(ComponentType.ReadOnly<DeselectCircleOverlay>());
             _idleCircleQuery = GetEntityQuery(ComponentType.ReadOnly<CircleIdle>());
-
+            log.Info("Queries");
             // Create an entity for the overlay buffer
             overlayEntity = EntityManager.CreateEntity();
             EntityManager.AddBuffer<OverlayBufferElement>(overlayEntity);
+            log.Info("Buffer added");
         }
 
         protected override void OnUpdate()

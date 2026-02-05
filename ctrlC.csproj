@@ -16,13 +16,13 @@
 
 	<ItemGroup>
 		<Reference Update="System">
-			<Private>false</Private>
+			<Private>False</Private>
 		</Reference>
 		<Reference Update="System.Core">
-			<Private>false</Private>
+			<Private>False</Private>
 		</Reference>
 		<Reference Update="System.Data">
-			<Private>false</Private>
+			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
 
@@ -47,78 +47,138 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="ctrlC-UI\src\thumbnails\" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Reference Include="Colossal.AssetPipeline">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.Collections">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.Core">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.IO.AssetDatabase">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.Localization">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.Logging">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.Mathematics">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.OdinSerializer">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.PSI.Common">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.UI">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.UI.Binding">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Game">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Unity.Burst">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Unity.Collections">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Unity.Entities">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Unity.InputSystem">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Unity.Mathematics">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="UnityEngine.CoreModule">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="UnityEngine.ImageConversionModule">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="UnityEngine.JSONSerializeModule">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="UnityEngine.UnityWebRequestModule">
-			<Private>false</Private>
-		</Reference>
-
+	  <Reference Include="Colossal.AssetPipeline">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.AssetPipeline.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Colossal.Core">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.Core.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Colossal.IO">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.IO.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Colossal.IO.AssetDatabase">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.IO.AssetDatabase.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Colossal.Localization">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.Localization.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Colossal.Logging">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.Logging.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Colossal.Mathematics">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.Mathematics.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Colossal.PSI.Common">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.PSI.Common.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Colossal.UI">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.UI.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Colossal.UI.Binding">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.UI.Binding.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Game">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Game.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Unity.Burst">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Unity.Burst.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Unity.Collections">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Unity.Collections.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Unity.Entities">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Unity.Entities.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Unity.InputSystem">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Unity.InputSystem.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="Unity.Mathematics">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Unity.Mathematics.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="UnityEngine">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="UnityEngine.CoreModule">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="UnityEngine.ImageConversionModule">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="UnityEngine.JSONSerializeModule">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="UnityEngine.UnityWebRequestModule">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
+	  <Reference Include="UnityEngine.UnityWebRequestWWWModule">
+	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+	    <Private>False</Private>
+	  </Reference>
 	</ItemGroup>
 
 	<Target Name="BuildUI" AfterTargets="AfterBuild">
 		<Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/ctrlC-UI" />
 	</Target>
+
+	<ItemGroup>
+	  <Reference Update="System.Drawing">
+	    <Private>False</Private>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Update="System.IO.Compression.FileSystem">
+	    <Private>False</Private>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Update="System.Numerics">
+	    <Private>False</Private>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Update="System.Runtime.Serialization">
+	    <Private>False</Private>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Update="System.Xml">
+	    <Private>False</Private>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Update="System.Xml.Linq">
+	    <Private>False</Private>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="ctrlC-UI\src\thumbnails\" />
+	</ItemGroup>
 
 </Project>

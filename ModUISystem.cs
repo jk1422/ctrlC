@@ -26,7 +26,7 @@ namespace ctrlC
         #endregion Logger
 
         // Tools and Systems
-        private SelectionTool selectionTool;
+        private SelectionTool selectionTool; 
 
         private PlacementTool placementTool;
 
@@ -42,7 +42,7 @@ namespace ctrlC
 
         // Selection Options
         public bool SelectAll { get; set; } = true;
-        public bool SelectRoads { get; set; } = true;
+        public bool SelectRoads { get; set; } = true; 
         public bool SelectBuildings { get; set; } = true;
         public bool SelectTrees { get; set; } = true;
         public bool SelectProps { get; set; } = true;
@@ -191,9 +191,13 @@ namespace ctrlC
 
         protected override void OnCreate()
         {
+            Log.Info("ModUISystem: OnCreate called");
             base.OnCreate();
+            Log.Info("ModUISystem: Base OnCreate completed");
             InitializeBindings();
+            Log.Info("ModUISystem: Bindings initialized");
             InitializeTools();
+            Log.Info("ModUISystem: Tools initialized");
         }
 
         private void InitializeBindings()

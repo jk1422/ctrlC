@@ -11,7 +11,6 @@ using Game.Notifications;
 using Game.Objects;
 using Game.Prefabs;
 using Game.Tools;
-using Game.UI.InGame;
 using Game.Vehicles;
 using System;
 using System.Collections.Generic;
@@ -20,9 +19,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.LowLevel;
-using UnityEngine.Windows;
-using static Colossal.AssetPipeline.Diagnostic.Report;
 
 namespace ctrlC.Tools.Selection
 {

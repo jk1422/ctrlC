@@ -2,15 +2,17 @@
 import style from "mods/Style/main.module.scss";
 import { Icon, Button, FloatingButton } from "cs2/ui";
 import { bindValue, useValue, trigger } from 'cs2/api';
+
 import mod from "../../mod.json";
 import { UIBindingConstants } from "../helpers/Bindings";
 import thumbnailPlaceholder from "img/prefabThumbnail.png";
-// My Elements
-import { LEDSign, LogoText, SelectionToolBG, SelectionToolUI, PlacementToolUI } from 'mods/Utils/Components';
+import icon from "img/logo.svg";
 
-// Icons
-import icon from "img/Logo.svg";
+import { LogoText as ImportedLogo} from 'mods/Utils/vector';
+import { LEDSign as ImportedLEDSign } from 'mods/Utils/LEDSign';
 
+import { SelectionToolUI as ImportedSelectionToolUI } from 'mods/Utils/SelectionToolUI';
+import { PlacementToolUI as ImportedPlacementToolUI } from 'mods/Utils/PlacementToolUI2';
 
 
 //Bindings values for checking tool state
@@ -32,22 +34,23 @@ export const Menu: FC = () => {
             {/* Header section with logo and LED sign */}
             <div className={style.cardHeader}>
                 <div className={style.row}>
-                    <LogoText />
+                    <ImportedLogo />
                 </div>
                 <div className={style.row}>
-                    <LEDSign />
+                    <ImportedLEDSign /> {/* Krasch */}
                 </div>
             </div>
             {/* Body section containing the Selection Tool UI */}
             <div className={style.cardBody}>
                 <div className={style.bodyContent}>
-                    {useValue(selectionToolEnabled) ? <SelectionToolUI /> : ""}
-                    {useValue(placementToolEnabled) ? <PlacementToolUI/> : ""}
+                    {useValue(selectionToolEnabled) ? <ImportedSelectionToolUI /> : ""}
+                    {useValue(placementToolEnabled) ? <ImportedPlacementToolUI /> : ""}
                 </div>
             </div>
         </div>
     );
 };
+
 
 export const UIRoot: FC = () => {
     const click_sct_tool_toggle = useCallback(() => { trigger(mod.id, UIBindingConstants.SELECTION_TOOL_TOGGLE); }, []);
