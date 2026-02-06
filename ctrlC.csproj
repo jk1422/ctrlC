@@ -1,184 +1,198 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>Library</OutputType>
-		<TargetFramework>net472</TargetFramework>
-		<LangVersion>9.0</LangVersion>
-		<Configurations>Debug;Release</Configurations>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Configurations>Debug;Release</Configurations>
+    <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
+  </PropertyGroup>
 
-		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
-		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-	</PropertyGroup>
+  <PropertyGroup>
+    <CSII_ToolPath Condition="'$(CSII_ToolPath)' == ''">
+      $([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))
+    </CSII_ToolPath>
 
-	<!--Imports must be after PropertyGroup block-->
-	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
-	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
+    <ModPropsPath>$(CSII_ToolPath)\Mod.props</ModPropsPath>
+    <ModTargetsPath>$(CSII_ToolPath)\Mod.targets</ModTargetsPath>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<Reference Update="System">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="System.Core">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="System.Data">
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+  <!-- Imports must be after PropertyGroup block -->
+  <Import Project="$(ModPropsPath)" Condition="Exists('$(ModPropsPath)')" />
+  <Import Project="$(ModTargetsPath)" Condition="Exists('$(ModTargetsPath)')" />
 
-	<ItemGroup>
-		<None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
-		<None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Include=".BuildContent\IncludedAssets\**\*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-	<ItemGroup>
-		<Content Include=".BuildContent\Images\*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-	<ItemGroup>
-		<Content Include="ctrlC_thumbnails\*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
+  <PropertyGroup>
+    <CSII_ManagedPath Condition="'$(CSII_ManagedPath)' == ''">
+      $([System.Environment]::GetEnvironmentVariable('CSII_MANAGEDPATH', 'EnvironmentVariableTarget.User'))
+    </CSII_ManagedPath>
+  </PropertyGroup>
 
-	<ItemGroup>
-	  <Reference Include="Colossal.AssetPipeline">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.AssetPipeline.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Colossal.Core">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.Core.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Colossal.IO">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.IO.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Colossal.IO.AssetDatabase">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.IO.AssetDatabase.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Colossal.Localization">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.Localization.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Colossal.Logging">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.Logging.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Colossal.Mathematics">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.Mathematics.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Colossal.PSI.Common">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.PSI.Common.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Colossal.UI">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.UI.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Colossal.UI.Binding">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Colossal.UI.Binding.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Game">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Game.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Unity.Burst">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Unity.Burst.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Unity.Collections">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Unity.Collections.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Unity.Entities">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Unity.Entities.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Unity.InputSystem">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Unity.InputSystem.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="Unity.Mathematics">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\Unity.Mathematics.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="UnityEngine">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="UnityEngine.CoreModule">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="UnityEngine.ImageConversionModule">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="UnityEngine.JSONSerializeModule">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityWebRequestModule">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityWebRequestWWWModule">
-	    <HintPath>D:\Spel\Cities- Skylines II - PC Edition\Content\Cities2_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
-	    <Private>False</Private>
-	  </Reference>
-	</ItemGroup>
+  <Target Name="ValidatePaths" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(CSII_ManagedPath)' == ''"
+           Text="CSII_ManagedPath is not set. Set env var CSII_MANAGEDPATH to your Cities2_Data\Managed folder, or build with -p:CSII_ManagedPath=..."/>
+    <Error Condition="!Exists('$(CSII_ManagedPath)\Game.dll')"
+           Text="CSII_ManagedPath points to '$(CSII_ManagedPath)' but Game.dll was not found. Expected Cities2_Data\Managed." />
 
-	<Target Name="BuildUI" AfterTargets="AfterBuild">
-		<Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/ctrlC-UI" />
-	</Target>
+    <Error Condition="'$(CSII_ToolPath)' == ''"
+           Text="CSII_ToolPath is not set. Set env var CSII_TOOLPATH to the folder that contains Mod.props and Mod.targets, or build with -p:CSII_ToolPath=..."/>
+    <Error Condition="!Exists('$(ModPropsPath)') Or !Exists('$(ModTargetsPath)')"
+           Text="CSII_ToolPath points to '$(CSII_ToolPath)' but Mod.props/Mod.targets were not found." />
+  </Target>
 
-	<ItemGroup>
-	  <Reference Update="System.Drawing">
-	    <Private>False</Private>
-	  </Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Update="System">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="System.Core">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="System.Data">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-	  <Reference Update="System.IO.Compression.FileSystem">
-	    <Private>False</Private>
-	  </Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
+    <None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
+  </ItemGroup>
 
-	<ItemGroup>
-	  <Reference Update="System.Numerics">
-	    <Private>False</Private>
-	  </Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Content Include=".BuildContent\IncludedAssets\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".BuildContent\Images\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ctrlC_thumbnails\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
-	<ItemGroup>
-	  <Reference Update="System.Runtime.Serialization">
-	    <Private>False</Private>
-	  </Reference>
-	</ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="Colossal.AssetPipeline">
+      <HintPath>$(CSII_ManagedPath)\Colossal.AssetPipeline.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Colossal.Core">
+      <HintPath>$(CSII_ManagedPath)\Colossal.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Colossal.IO">
+      <HintPath>$(CSII_ManagedPath)\Colossal.IO.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Colossal.IO.AssetDatabase">
+      <HintPath>$(CSII_ManagedPath)\Colossal.IO.AssetDatabase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Colossal.Localization">
+      <HintPath>$(CSII_ManagedPath)\Colossal.Localization.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Colossal.Logging">
+      <HintPath>$(CSII_ManagedPath)\Colossal.Logging.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Colossal.Mathematics">
+      <HintPath>$(CSII_ManagedPath)\Colossal.Mathematics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Colossal.PSI.Common">
+      <HintPath>$(CSII_ManagedPath)\Colossal.PSI.Common.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Colossal.UI">
+      <HintPath>$(CSII_ManagedPath)\Colossal.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Colossal.UI.Binding">
+      <HintPath>$(CSII_ManagedPath)\Colossal.UI.Binding.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Game">
+      <HintPath>$(CSII_ManagedPath)\Game.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
 
-	<ItemGroup>
-	  <Reference Update="System.Xml">
-	    <Private>False</Private>
-	  </Reference>
-	</ItemGroup>
+    <Reference Include="Unity.Burst">
+      <HintPath>$(CSII_ManagedPath)\Unity.Burst.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Collections">
+      <HintPath>$(CSII_ManagedPath)\Unity.Collections.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Entities">
+      <HintPath>$(CSII_ManagedPath)\Unity.Entities.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(CSII_ManagedPath)\Unity.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Mathematics">
+      <HintPath>$(CSII_ManagedPath)\Unity.Mathematics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
 
-	<ItemGroup>
-	  <Reference Update="System.Xml.Linq">
-	    <Private>False</Private>
-	  </Reference>
-	</ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>$(CSII_ManagedPath)\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(CSII_ManagedPath)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(CSII_ManagedPath)\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>$(CSII_ManagedPath)\UnityEngine.JSONSerializeModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>$(CSII_ManagedPath)\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule">
+      <HintPath>$(CSII_ManagedPath)\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="ctrlC-UI\src\thumbnails\" />
-	</ItemGroup>
+  <Target Name="BuildUI" AfterTargets="AfterBuild">
+    <Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/ctrlC-UI" />
+  </Target>
+
+  <ItemGroup>
+    <Reference Update="System.Drawing">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="System.IO.Compression.FileSystem">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="System.Numerics">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="System.Runtime.Serialization">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="System.Xml">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="System.Xml.Linq">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ctrlC-UI\src\thumbnails\" />
+  </ItemGroup>
 
 </Project>
