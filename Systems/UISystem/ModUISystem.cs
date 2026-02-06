@@ -2,7 +2,6 @@
 using Colossal.Serialization.Entities;
 using Colossal.UI.Binding;
 using ctrlC.Constants;
-using ctrlC.Systems.AssetManagement;
 using ctrlC.Tools;
 using ctrlC.Tools.Selection;
 using ctrlC.Utils;
@@ -220,10 +219,8 @@ namespace ctrlC.Systems.UISystem
 
         public void ToggleCircleSelection()
         {
-            log.Info($"Toggling the selectionMode..");
             selectionTool.ToggleSelectionMode();
             CircleSelectionEnabled = !selectionTool.standardToolMode;
-            log.Info($"CircleEnabled is {CircleSelectionEnabled}");
         }
     }
 }
