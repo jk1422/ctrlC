@@ -28,15 +28,11 @@
   </PropertyGroup>
 
   <Target Name="ValidatePaths" BeforeTargets="PrepareForBuild">
-    <Error Condition="'$(CSII_ManagedPath)' == ''"
-           Text="CSII_ManagedPath is not set. Set env var CSII_MANAGEDPATH to your Cities2_Data\Managed folder, or build with -p:CSII_ManagedPath=..."/>
-    <Error Condition="!Exists('$(CSII_ManagedPath)\Game.dll')"
-           Text="CSII_ManagedPath points to '$(CSII_ManagedPath)' but Game.dll was not found. Expected Cities2_Data\Managed." />
+    <Error Condition="'$(CSII_ManagedPath)' == ''" Text="CSII_ManagedPath is not set. Set env var CSII_MANAGEDPATH to your Cities2_Data\Managed folder, or build with -p:CSII_ManagedPath=..." />
+    <Error Condition="!Exists('$(CSII_ManagedPath)\Game.dll')" Text="CSII_ManagedPath points to '$(CSII_ManagedPath)' but Game.dll was not found. Expected Cities2_Data\Managed." />
 
-    <Error Condition="'$(CSII_ToolPath)' == ''"
-           Text="CSII_ToolPath is not set. Set env var CSII_TOOLPATH to the folder that contains Mod.props and Mod.targets, or build with -p:CSII_ToolPath=..."/>
-    <Error Condition="!Exists('$(ModPropsPath)') Or !Exists('$(ModTargetsPath)')"
-           Text="CSII_ToolPath points to '$(CSII_ToolPath)' but Mod.props/Mod.targets were not found." />
+    <Error Condition="'$(CSII_ToolPath)' == ''" Text="CSII_ToolPath is not set. Set env var CSII_TOOLPATH to the folder that contains Mod.props and Mod.targets, or build with -p:CSII_ToolPath=..." />
+    <Error Condition="!Exists('$(ModPropsPath)') Or !Exists('$(ModTargetsPath)')" Text="CSII_ToolPath points to '$(CSII_ToolPath)' but Mod.props/Mod.targets were not found." />
   </Target>
 
   <ItemGroup>

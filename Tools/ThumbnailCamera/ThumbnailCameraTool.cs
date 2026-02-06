@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Unity.Jobs;
 using UnityEngine;
+using ctrlC.Systems.UISystem;
 
 namespace ctrlC.Tools
 {
@@ -97,8 +98,8 @@ namespace ctrlC.Tools
             }
 
             ModUISystem modUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
-            modUISystem.ShowPrefabMenu = false;
-            modUISystem.ShowCameraUI = true;
+            modUISystem._ui.ShowPrefabMenu = false;
+            modUISystem._ui.ShowCameraUI = true;
             t_PhotoAction.shouldBeEnabled = true;
             log.Info("Thumbnail camera started with StorageObject: " + t_StorageObject.PrefixedName);
         }
@@ -109,8 +110,8 @@ namespace ctrlC.Tools
             t_PhotoAction.shouldBeEnabled = false;
             this.Enabled = false;
             ModUISystem modUISystem = World.GetOrCreateSystemManaged<ModUISystem>();
-            modUISystem.ShowPrefabMenu = true;
-            modUISystem.ShowCameraUI = false;
+            modUISystem._ui.ShowPrefabMenu = true;
+            modUISystem._ui.ShowCameraUI = false;
             base.OnStopRunning();
             log.Info("Thumbnail camera stopped");
         }
@@ -182,7 +183,7 @@ namespace ctrlC.Tools
                 UnityEngine.Object.Destroy(thumbnailTexture);
                 UnityEngine.Object.Destroy(texture);
 
-                World.GetOrCreateSystemManaged<ModUISystem>().UpdatePrefabList();
+                World.GetOrCreateSystemManaged<ModUISystem>()._ui.UpdatePrefabList();
 
                 Disable();
             }

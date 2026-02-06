@@ -4,6 +4,7 @@ using Colossal.PSI.Common;
 using ctrlC.Constants;
 using ctrlC.Rendering;
 using ctrlC.Systems.AssetManagement;
+using ctrlC.Systems.UISystem;
 using ctrlC.Tools;
 using ctrlC.Tools.Selection;
 using Game;
@@ -113,19 +114,6 @@ namespace ctrlC
                 log.Info($"For more info, visit {PathConstants.XLink}");
                 HandleOutdatedMod();
             }
-
-            //Discord.GetSpecificMessages(MsgConstants.MESSAGE_TYPATRON, (retrievedMessage, success) =>
-            //{
-            //    if (success && retrievedMessage != null)
-            //    {
-            //        LedSignUtils.message = retrievedMessage.Content + " < |";
-            //    }
-            //    else
-            //    {
-            //        LedSignUtils.message = "< |";
-            //    }
-            //});
-            
         }
 
 
@@ -140,46 +128,6 @@ namespace ctrlC
                 onClicked: OpenLink,
                 thumbnail: PathConstants.ModPath + "/.BuildContent/Images/C.png"
             );
-        }
-
-        private void SendPrefabUpdateMessage()
-        {
-            _NotificationUISystem.AddOrUpdateNotification(
-            "ctrlCPrefabUpdater",
-            title: "Prefab updater!",
-            text: "Your old prefabs needs to be updated. For more info, click on me",
-            progressState: ProgressState.None,
-            progress: 0,
-            onClicked: OpenPrefabUpdaterLink,
-            thumbnail: PathConstants.ModPath + "/.BuildContent/Images/C.png"
-            );
-            
-
-        }
-
-        private void OpenPrefabUpdaterLink()
-        {
-            Application.OpenURL("https://www.patreon.com/posts/120696673");
-
-            string confirmationFilePath = Path.Combine(PathConstants.ModPath, "confirmed.file");
-
-            try
-            {
-                if (!File.Exists(confirmationFilePath))
-                {
-                    File.Create(confirmationFilePath).Dispose();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error creating confirmation file: {ex.Message}");
-            }
-        }
-
-        private bool HasSeenPrefabUpdateMessage()
-        {
-            string confirmationFilePath = Path.Combine(PathConstants.ModPath, "confirmed.file");
-            return File.Exists(confirmationFilePath);
         }
 
         private void OpenLink()
@@ -204,6 +152,5 @@ namespace ctrlC
         {
             m_ModUISystem.StartMod();
         }
-
     }
 }

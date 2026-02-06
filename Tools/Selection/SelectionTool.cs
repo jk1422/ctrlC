@@ -1,6 +1,7 @@
 ﻿using Colossal.Logging;
 using ctrlC.Rendering;
 using ctrlC.Systems;
+using ctrlC.Systems.UISystem;
 using ctrlC.Utils;
 using Game.Buildings;
 using Game.Common;
@@ -70,6 +71,8 @@ namespace ctrlC.Tools.Selection
         private bool rayDefaultMode = true;
 
         // Filters
+        public SelectionFilterState Filters = new SelectionFilterState();
+
         public SelectableFilters activeFilters = SelectableFilters.None;
         private EntityQuery selectablesQuery;
 
@@ -446,35 +449,10 @@ namespace ctrlC.Tools.Selection
 			Area = 1 << 4
 		}
 
-		public SelectableFilters GetActiveFilters()
-		{
-			SelectableFilters filters = SelectableFilters.None;
+        public SelectableFilters GetActiveFilters()
+            => Filters.ToMask();
 
-			if (_ModUISystem.SelectRoads)
-			{
-				filters |= SelectableFilters.Road;
-			}
-			if (_ModUISystem.SelectBuildings)
-			{
-				filters |= SelectableFilters.Building;
-			}
-			if (_ModUISystem.SelectTrees)
-			{
-				filters |= SelectableFilters.Tree;
-			}
-			if (_ModUISystem.SelectProps)
-			{
-				filters |= SelectableFilters.Prop;
-			}
-			if (_ModUISystem.SelectAreas)
-			{
-				filters |= SelectableFilters.Area;
-			}
-
-			return filters;
-		}
-
-		public EntityQuery GetAllSelectebles()
+        public EntityQuery GetAllSelectebles()
 		{
 			List<EntityQueryDesc> queryDescs = new List<EntityQueryDesc>();
 

@@ -1,5 +1,6 @@
 ﻿using Colossal.Logging;
 using ctrlC.Systems.AssetManagement;
+using ctrlC.Systems.UISystem;
 using Game.Input;
 using Game.Prefabs;
 using Game.Tools;
@@ -46,7 +47,7 @@ namespace ctrlC.Tools
 
                 if (!isSavedPrefab)
                 {
-                    _modUISystem.ResetSelectedPrefab();
+                    _modUISystem._ui.ResetSelected();
                 }
             }
             else
