@@ -45,7 +45,7 @@ namespace ctrlC
         internal static ModUISystem m_ModUISystem;
         internal static Setting m_Setting; 
 
-        private static readonly string[] compatibleGameVersions = { "1.5.3f1" };
+        private static readonly string[] compatibleGameVersions = { "1.5.3f1", "1.5.4f1" };
         private bool devMode = false;
 
 
