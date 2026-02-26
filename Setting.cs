@@ -52,8 +52,6 @@ namespace ctrlC
             }
         }
 
-        [SettingsUISection(kSection, kDevGroup)]
-        public bool DevMode { get; set; }
 
         [SettingsUIButton]
         [SettingsUISection(kSection, kCategoryGroup)]
@@ -202,11 +200,6 @@ namespace ctrlC
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.PhotoBinding)), "Prefab thumbnail camera Key" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.PhotoBinding)), $"Keyboard binding for taking a thumbnail picture" },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DevMode)), "Ignore version safety check" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.DevMode)), $"After a game update, ctrlC is disabled by default to avoid possible crashes.\r\nEnabling this option will force the mod to load despite the update.\r\nUse at your own risk." },
-
-
 
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetBindings)), "Reset key bindings" },

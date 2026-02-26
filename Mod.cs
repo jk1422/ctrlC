@@ -45,10 +45,6 @@ namespace ctrlC
         internal static ModUISystem m_ModUISystem;
         internal static Setting m_Setting; 
 
-        private static readonly string[] compatibleGameVersions = { "1.5.3f1", "1.5.4f1" };
-        private bool devMode = false;
-
-
         public static void ReadCategoryNames(string cat1, string cat2, string cat3, string cat4)
         {
             PrefabCategories[0] = cat1;
@@ -99,8 +95,8 @@ namespace ctrlC
             m_Setting.RegisterKeyBindings();
             AssetDatabase.global.LoadSettings(nameof(ctrlC), m_Setting, new Setting(this));
 
-            devMode = m_Setting.DevMode;
-            if (compatibleGameVersions.Contains(currentGameVersion) || devMode)
+
+            try 
             {
                 m_ModUISystem = World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ModUISystem>();
                 ReadCategoryNames(m_Setting.Category1Name, m_Setting.Category2Name, m_Setting.Category3Name, m_Setting.Category4Name);
@@ -108,9 +104,9 @@ namespace ctrlC
                 OnCreateWorld(updateSystem);
                 PrefabStorageSystem.TryLoadPrefabs();
             }
-            else
+            catch
             {
-                log.Warn($"CtrlC is outdated! Current version of ctrlC is only compatible with game versions '{string.Join(", ", compatibleGameVersions)}' and the current game version is '{currentGameVersion}'");
+                log.Warn($"CtrlC is outdated! Current version of ctrlC is not compatible with game version '{currentGameVersion}'");
                 log.Info($"For more info, visit {PathConstants.XLink}");
                 HandleOutdatedMod();
             }
